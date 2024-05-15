@@ -1,0 +1,33 @@
+﻿<Window x:Class="StockValuationApp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:StockValuationApp"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="600" Width="800">
+    <Grid>
+        <TextBox x:Name="tbxName" HorizontalAlignment="Left" Margin="157,83,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="120"/>
+        <TextBox x:Name="tbxTicker" HorizontalAlignment="Left" Margin="157,131,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="120"/>
+        <Label x:Name="lblName" Content="Name:" HorizontalAlignment="Left" Margin="72,79,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="lblTicker" Content="Ticker" HorizontalAlignment="Left" Margin="72,127,0,0" VerticalAlignment="Top"/>
+        <ListView x:Name="lvwStockInfo" d:ItemsSource="{d:SampleData ItemCount=5}" Margin="361,27,37,43">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn/>
+                </GridView>
+            </ListView.View>
+        </ListView>
+        <ComboBox HorizontalAlignment="Left" Margin="157,182,0,0" VerticalAlignment="Top" Width="120"/>
+        <Label x:Name="lblMetric" Content="Metric:" HorizontalAlignment="Left" Margin="72,175,0,0" VerticalAlignment="Top"/>
+        <Button x:Name="btnCalculateValuation" Content="Calculate Valuation" HorizontalAlignment="Left" Margin="157,230,0,0" VerticalAlignment="Top"/>
+        <ListView x:Name="lvwAllStocks" HorizontalAlignment="Left" Height="286" Margin="43,255,0,0" VerticalAlignment="Top" Width="280" d:ItemsSource="{d:SampleData ItemCount=5}">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn/>
+                </GridView>
+            </ListView.View>
+        </ListView>
+
+    </Grid>
+</Window>
