@@ -6,9 +6,12 @@ using System.Threading.Tasks;
 
 namespace StockValuationApp.Entities.Stocks.Metrics.Earnings
 {
-    public abstract class Earnings
+    public class Ebitda : Earning
     {
-        public virtual int EbitValue { get; set; } = -1;
-        public virtual int EbitdaValue { get; set; } = -1;
+        public override int EbitdaValue
+        {
+            get { return base.EbitdaValue; }
+            set { base.EbitdaValue = value; }
+        }
     }
 }

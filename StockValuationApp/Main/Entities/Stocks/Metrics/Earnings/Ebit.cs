@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace StockValuationApp.Entities.Stocks.Metrics.Earnings
 {
-    public class Ebit : Earnings
+    public class Ebit : Earning
     {
         public override int EbitValue
         {

@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 
 namespace StockValuationApp.Entities.Stocks.Metrics.Earnings
 {
-    public class Ebitda : Earnings
+    public class NetIncome : Earning
     {
-        public override int EbitdaValue
+        public override int NetIncomeValue
         {
-            get { return base.EbitdaValue; }
-            set { base.EbitdaValue = value; }
+            get { return base.NetIncomeValue; }
+            set { base.NetIncomeValue = value; }
         }
     }
 }

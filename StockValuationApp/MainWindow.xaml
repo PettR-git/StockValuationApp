@@ -18,16 +18,17 @@
                 </GridView>
             </ListView.View>
         </ListView>
-        <ComboBox HorizontalAlignment="Left" Margin="157,182,0,0" VerticalAlignment="Top" Width="120"/>
+        <ComboBox x:Name="cmbMetrics" HorizontalAlignment="Left" Margin="157,182,0,0" VerticalAlignment="Top" Width="120"/>
         <Label x:Name="lblMetric" Content="Metric:" HorizontalAlignment="Left" Margin="72,175,0,0" VerticalAlignment="Top"/>
-        <Button x:Name="btnCalculateValuation" Content="Calculate Valuation" HorizontalAlignment="Left" Margin="157,230,0,0" VerticalAlignment="Top"/>
-        <ListView x:Name="lvwAllStocks" HorizontalAlignment="Left" Height="286" Margin="43,255,0,0" VerticalAlignment="Top" Width="280" d:ItemsSource="{d:SampleData ItemCount=5}">
+        <Button x:Name="btnCalculateValuation" Content="Calculate Valuation" HorizontalAlignment="Left" Margin="157,230,0,0" VerticalAlignment="Top" Click="btnCalculateValuation_Click"/>
+        <ListView x:Name="lvwAllStocks" HorizontalAlignment="Left" Height="286" Margin="43,255,0,0" VerticalAlignment="Top" Width="280" d:ItemsSource="{d:SampleData ItemCount=5}" SelectionChanged="lvwAllStocks_SelectionChanged">
             <ListView.View>
                 <GridView>
                     <GridViewColumn/>
                 </GridView>
             </ListView.View>
         </ListView>
+        <Button x:Name="btnAddStock" Content="Add Stock" HorizontalAlignment="Left" Margin="93,230,0,0" VerticalAlignment="Top" Click="btnAddStock_Click"/>
 
     </Grid>
 </Window>

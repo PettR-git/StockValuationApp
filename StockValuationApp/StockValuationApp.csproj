@@ -35,6 +35,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.13.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
@@ -55,17 +58,24 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Entities\Calculations\CalculateValuationMetric.cs" />
-    <Compile Include="Entities\Enums\MetricType.cs" />
-    <Compile Include="Entities\Stocks\Metrics\Earnings\Earnings.cs" />
-    <Compile Include="Entities\Stocks\Metrics\Earnings\Ebit.cs" />
-    <Compile Include="Entities\Stocks\Metrics\Earnings\Ebitda.cs" />
-    <Compile Include="Entities\Stocks\Metrics\Metric.cs" />
-    <Compile Include="Entities\Stocks\Stock.cs" />
-    <Compile Include="Entities\Stocks\StockManager.cs" />
+    <Compile Include="Main\Calculations\CalculateValuationMetric.cs" />
+    <Compile Include="Main\Enums\MetricType.cs" />
+    <Compile Include="Main\Entities\Generic\ListManager.cs" />
+    <Compile Include="Main\Entities\Stocks\Metrics\MetricEventArgs.cs" />
+    <Compile Include="Main\Entities\Stocks\Metrics\Earnings\Earning.cs" />
+    <Compile Include="Main\Entities\Stocks\Metrics\Earnings\Ebit.cs" />
+    <Compile Include="Main\Entities\Stocks\Metrics\Earnings\Ebitda.cs" />
+    <Compile Include="Main\Entities\Stocks\Metrics\Earnings\NetIncome.cs" />
+    <Compile Include="Main\Entities\Stocks\Metrics\EnterpriseValue.cs" />
+    <Compile Include="Main\Entities\Stocks\Metrics\YearlyFinancials.cs" />
+    <Compile Include="Main\Entities\Stocks\Stock.cs" />
+    <Compile Include="Main\Entities\Stocks\StockManager.cs" />
     <Compile Include="StockInfoWindow.xaml.cs">
       <DependentUpon>StockInfoWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Main\Utilities\BinarySerialize.cs" />
+    <Compile Include="Main\Utilities\JsonSerialize.cs" />
+    <Compile Include="Main\Utilities\XMLSerialize.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -101,6 +111,7 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -109,8 +120,6 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Entities\Generic\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
