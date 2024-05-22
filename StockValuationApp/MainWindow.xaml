@@ -5,30 +5,32 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:StockValuationApp"
         mc:Ignorable="d"
+        WindowStartupLocation="CenterScreen"
         Title="MainWindow" Height="600" Width="800">
     <Grid>
-        <TextBox x:Name="tbxName" HorizontalAlignment="Left" Margin="157,83,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="120"/>
-        <TextBox x:Name="tbxTicker" HorizontalAlignment="Left" Margin="157,131,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="120"/>
-        <Label x:Name="lblName" Content="Name:" HorizontalAlignment="Left" Margin="72,79,0,0" VerticalAlignment="Top"/>
-        <Label x:Name="lblTicker" Content="Ticker" HorizontalAlignment="Left" Margin="72,127,0,0" VerticalAlignment="Top"/>
+        <TextBox x:Name="tbxName" HorizontalAlignment="Left" Margin="157,74,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="120"/>
+        <TextBox x:Name="tbxTicker" HorizontalAlignment="Left" Margin="157,122,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="120"/>
+        <Label x:Name="lblName" Content="Name:" HorizontalAlignment="Left" Margin="69,70,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="lblTicker" Content="Ticker" HorizontalAlignment="Left" Margin="69,118,0,0" VerticalAlignment="Top"/>
         <ListView x:Name="lvwStockInfo" d:ItemsSource="{d:SampleData ItemCount=5}" Margin="361,27,37,43">
             <ListView.View>
                 <GridView>
-                    <GridViewColumn/>
+                    <GridViewColumn Width="500"/>
                 </GridView>
             </ListView.View>
         </ListView>
-        <ComboBox x:Name="cmbMetrics" HorizontalAlignment="Left" Margin="157,182,0,0" VerticalAlignment="Top" Width="120"/>
-        <Label x:Name="lblMetric" Content="Metric:" HorizontalAlignment="Left" Margin="72,175,0,0" VerticalAlignment="Top"/>
-        <Button x:Name="btnCalculateValuation" Content="Calculate Valuation" HorizontalAlignment="Left" Margin="157,230,0,0" VerticalAlignment="Top" Click="btnCalculateValuation_Click"/>
-        <ListView x:Name="lvwAllStocks" HorizontalAlignment="Left" Height="286" Margin="43,255,0,0" VerticalAlignment="Top" Width="280" d:ItemsSource="{d:SampleData ItemCount=5}" SelectionChanged="lvwAllStocks_SelectionChanged">
+        <ComboBox x:Name="cmbMetrics" HorizontalAlignment="Left" Margin="72,511,0,0" VerticalAlignment="Top" Width="120"/>
+        <Label x:Name="lblMetric" Content="Metric:" HorizontalAlignment="Left" Margin="21,509,0,0" VerticalAlignment="Top"/>
+        <Button x:Name="btnCalculateValuation" Content="Calculate Valuation" HorizontalAlignment="Left" Margin="217,512,0,0" VerticalAlignment="Top" Click="btnCalculateValuation_Click"/>
+        <ListView x:Name="lvwAllStocks" HorizontalAlignment="Left" Height="282" Margin="21,212,0,0" VerticalAlignment="Top" Width="301" d:ItemsSource="{d:SampleData ItemCount=5}" SelectionChanged="lvwAllStocks_SelectionChanged">
             <ListView.View>
                 <GridView>
-                    <GridViewColumn/>
+                    <GridViewColumn Width="300"/>
                 </GridView>
             </ListView.View>
         </ListView>
-        <Button x:Name="btnAddStock" Content="Add Stock" HorizontalAlignment="Left" Margin="93,230,0,0" VerticalAlignment="Top" Click="btnAddStock_Click"/>
+        <Button x:Name="btnAddStock" Content="Add Stock" HorizontalAlignment="Left" Margin="143,165,0,0" VerticalAlignment="Top" Click="btnAddStock_Click"/>
+        <Label x:Name="lblChooseStockInfo" Content="To calculate, choose stock in list" HorizontalAlignment="Left" Margin="92,532,0,0" VerticalAlignment="Top"/>
 
     </Grid>
 </Window>

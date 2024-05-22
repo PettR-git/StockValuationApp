@@ -22,16 +22,17 @@ namespace StockValuationApp
     public partial class StockInfoWindow : Window
     {
         private MetricType metricType;
-        private Stock stock;
         public EventHandler<MetricEventArgs> MetricsGiven;
-        public StockInfoWindow(MetricType metricType, Stock stock)
+        public StockInfoWindow(MetricType metricType)
         {
             InitializeComponent();
             this.metricType = metricType;
-            this.stock = stock;
             InitializeGUI();
         }
 
+        /// <summary>
+        /// Label content differ depending on metric type
+        /// </summary>
         private void InitializeGUI()
         {
             switch (metricType)
@@ -56,10 +57,17 @@ namespace StockValuationApp
                     lblSecondMetric.Content = "Net Debt:";
                     lblThirdMetric.Content = "EBITDA";
                     tbxFirstMetric.Visibility = Visibility.Hidden;
+                    lblMill1.Content = "";
                     break;
             }
         }
 
+        /// <summary>
+        /// On click, create metric event args and intantiate 
+        /// properties depending on current metric type
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btnOK_Click(object sender, RoutedEventArgs e)
         {
             MetricEventArgs args = new MetricEventArgs();
@@ -108,20 +116,25 @@ namespace StockValuationApp
                     Console.WriteLine("Issue with invalid metrictype");
                     break;
             }
+            args.Year = ParseOk(tbxYear.Text);
 
-            if (firstMetric == -1 || secondMetric == -1 || thirdMetric == -1)
+            if (firstMetric == -1 || secondMetric == -1 || thirdMetric == -1 || args.Year == -1)
             {
                 MessageBox.Show("One or more input values are invalid.", "Input Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
             args.MetricType = metricType;
-            args.Year = tbxYear.Text;
-            args.Stock = stock;
 
+            //Publish event with the metric arguments
             MetricsGiven?.Invoke(this, args);
             this.Close();
         }
 
+        /// <summary>
+        /// Try parse, string to int
+        /// </summary>
+        /// <param name="strVal"></param>
+        /// <returns>integer, val or -1</returns>
         private int ParseOk(string strVal)
         {
             bool ok = int.TryParse(strVal, out int val);

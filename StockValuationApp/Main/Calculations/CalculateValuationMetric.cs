@@ -15,22 +15,23 @@ namespace StockValuationApp.Entities.Calculations
         public static double CalcEvEarnings((int marketVal, int netDebt)ev, int earnings)
         {
             int evVal = ev.marketVal + ev.netDebt;
-            double result = evVal / earnings;
+            double result = (double)evVal / earnings;
 
             return result;
         }
 
         public static double CalcPriceToEarnings((int netIncome, int nmbrOfShares)eps, int price)
         {
-            double epsVal = eps.netIncome / eps.nmbrOfShares;
-            double result = price / epsVal;
+            double epsVal = (double)eps.netIncome / eps.nmbrOfShares;
+            double result = (double)price / epsVal;
 
             return result;
         }
 
         public static double CalcNetDebtToEbitda(int netDebt, int ebitda)
         {
-            double result = netDebt / ebitda;
+            double result = (double)netDebt / ebitda;
+
             return result;
         }
     }

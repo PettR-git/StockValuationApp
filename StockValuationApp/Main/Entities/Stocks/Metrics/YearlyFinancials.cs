@@ -8,14 +8,16 @@ using StockValuationApp.Entities.Stocks.Metrics.Earnings;
 
 namespace StockValuationApp.Entities.Stocks.Metrics
 {
+    /// <summary>
+    /// Holds all data for metrics in a specific year.
+    /// </summary>
     public class YearlyFinancials
     {
-        /// <summary>
-        /// Metric and its value
-        /// </summary>
+        //Metric and its value
         public Dictionary <MetricType, double> MetricDict { get; set; }
 
-        public string Year { get; set; } = DateTime.Now.Year.ToString();
+        /// Properties for year and components of a metric
+        public int Year { get; set; } = DateTime.Now.Year;
         public int Revenue { get; set; } = 0;
         public int NmbrOfShares { get; set; } = 0;
         public Earning Earnings { get; set; }
@@ -39,10 +41,17 @@ namespace StockValuationApp.Entities.Stocks.Metrics
                     case MetricType.PriceToEarnings:
                         metricStr = "P/E";
                         break;
+                    case MetricType.NetDebtToEbitda:
+                        metricStr = "Net Debt/EBITDA";
+                        break;
                 }
-                outStr += string.Format("{0}: {1} | Year {2}\n", metricStr, kvp.Value, Year);
+
+                if (Year > DateTime.Now.Year)
+                    outStr += "Estimation | ";
+                
+                outStr += string.Format("{0}: {1:F2} | Year {2}\n", metricStr, kvp.Value, Year);
             }
-            return outStr;
+            return outStr.TrimEnd();
         }
     }
 }

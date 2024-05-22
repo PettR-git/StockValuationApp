@@ -13,6 +13,12 @@ namespace StockValuationApp.Entities.Stocks
 {
     public class StockManager : ListManager<Stock>
     {
+        /// <summary>
+        /// Create stock object and initialize name and ticker
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="ticker"></param>
+        /// <returns>stock object</returns>
         public Stock CreateStock(string name, string ticker)
         {
             if (string.IsNullOrEmpty(ticker) || string.IsNullOrEmpty(name))
@@ -25,8 +31,14 @@ namespace StockValuationApp.Entities.Stocks
             return stock;
         }
 
-
-        private bool DoesFinanceObjExistFrYear(Stock stock, string year, MetricType metricType)
+        /// <summary>
+        /// If financials for a specific year exist return true
+        /// </summary>
+        /// <param name="stock"></param>
+        /// <param name="year"></param>
+        /// <param name="metricType"></param>
+        /// <returns>boolean</returns>
+        private bool DoesFinanceObjExistFrYear(Stock stock, int year, MetricType metricType)
         {
             if(stock.Financials != null)
             {
@@ -42,13 +54,21 @@ namespace StockValuationApp.Entities.Stocks
             return false;
         }
 
+        /// <summary>
+        /// Retrieve event args and create financial object
+        /// for a stock, given the metric type.
+        /// OR if object exist for that year, update it
+        /// </summary>
+        /// <param name="e">event args from StockInfoWindow</param>
+        /// <returns>succesfull creation/update</returns>
         public bool AddMetricDataFrStock(MetricEventArgs e)
         {
             MetricType metricType = e.MetricType;
             Stock stock = e.Stock;
-            String year = e.Year;
+            int year = e.Year;
             double metricVal = 0.0;
 
+            //Calculate specific metric and determine if object creation or update is needed
             switch (metricType)
             {
                 case MetricType.EvEbitda:
@@ -60,8 +80,8 @@ namespace StockValuationApp.Entities.Stocks
                         return true;
                     }
                     break;
-                case MetricType.EvEbit:
 
+                case MetricType.EvEbit:
                     metricVal = CalculateValuationMetric.CalcEvEarnings((e.MarketValue, e.NetDebt), e.Ebit);
                     if (!DoesFinanceObjExistFrYear(stock, year, metricType))
                     {
@@ -69,8 +89,8 @@ namespace StockValuationApp.Entities.Stocks
                         return true;
                     }
                     break;
-                case MetricType.PriceToEarnings:
 
+                case MetricType.PriceToEarnings:
                     metricVal = CalculateValuationMetric.CalcPriceToEarnings((e.NetIncome, e.NumberOfShares), e.Price);
                     if (!DoesFinanceObjExistFrYear(stock, year, metricType))
                     {
@@ -78,8 +98,8 @@ namespace StockValuationApp.Entities.Stocks
                         return true;
                     }                 
                     break;
-                case MetricType.NetDebtToEbitda:
 
+                case MetricType.NetDebtToEbitda:
                     metricVal = CalculateValuationMetric.CalcNetDebtToEbitda(e.NetDebt, e.Ebitda);
                     if (!DoesFinanceObjExistFrYear(stock, year, metricType))
                     {
@@ -87,6 +107,7 @@ namespace StockValuationApp.Entities.Stocks
                         return true;
                     }
                     break;
+
                 default:
                     Console.WriteLine("Metrictype is null or invalid value");
                     return false;
@@ -111,6 +132,11 @@ namespace StockValuationApp.Entities.Stocks
             return true;
         }
 
+        /// <summary>
+        /// Create price to earnings metric and intantiatiate its properties
+        /// </summary>
+        /// <param name="e"></param>
+        /// <param name="result"></param>
         private void CreatePriceToEarningsMetric(MetricEventArgs e, double result)
         {
             Earning earn = new NetIncome();
@@ -127,6 +153,11 @@ namespace StockValuationApp.Entities.Stocks
             });
         }
 
+        /// <summary>
+        /// Create ev to ebitda metric and intantiatiate its properties
+        /// </summary>
+        /// <param name="e"></param>
+        /// <param name="result"></param>
         private void CreateEvEbitdaMetric(MetricEventArgs e, double result)
         {
             Earning earn = new Ebitda();
@@ -148,6 +179,11 @@ namespace StockValuationApp.Entities.Stocks
             });
         }
 
+        /// <summary>
+        /// Create ev to ebit metric and intantiatiate its properties
+        /// </summary>
+        /// <param name="e"></param>
+        /// <param name="result"></param>
         private void CreateEvEbitMetric(MetricEventArgs e, double result)
         {
             Earning earn = new Ebit();
@@ -169,6 +205,11 @@ namespace StockValuationApp.Entities.Stocks
             });
         }
 
+        /// <summary>
+        /// Create net debt to ebitda metric and intantiatiate its properties
+        /// </summary>
+        /// <param name="e"></param>
+        /// <param name="result"></param>
         private void CreateNetDebtToEbitdaMetric(MetricEventArgs e, double result)
         {
             Earning earn = new Ebitda();
@@ -185,46 +226,121 @@ namespace StockValuationApp.Entities.Stocks
             });
         }
 
+        /// <summary>
+        /// Add stock test values
+        /// </summary>
         public void AddStockTestValues()
         {
-            List<Stock> stocks = new List<Stock> { 
+            var stocks = new List<Stock>
+            {
                 new Stock
                 {
                     Name = "Apple",
-                    Ticker = "APPL",
+                    Ticker = "AAPL",
+                    Financials = new List<YearlyFinancials>
+                    {
+                        new YearlyFinancials
+                        {
+                            Year = 2023,
+                            Revenue = 394328, // In millions
+                            NmbrOfShares = 16788, // In millions
+                            Earnings = new Earning { NetIncomeValue = 94680, EbitValue = 110910, EbitdaValue = 124710 },
+                            EnterpriseVal = new EnterpriseValue { MarketValue = 2500000, NetDebt = -57000 }, // Market value in millions
+                            MetricDict = new Dictionary<MetricType, double>
+                            {
+                                { MetricType.PriceToEarnings, 28.94 },
+                                { MetricType.EvEbitda, 18.89 }
+                            }
+                        },
+                        new YearlyFinancials
+                        {
+                            Year = 2022,
+                            Revenue = 365817, // In millions
+                            NmbrOfShares = 16800, // In millions
+                            Earnings = new Earning { NetIncomeValue = 94680, EbitValue = 105000, EbitdaValue = 120000 },
+                            EnterpriseVal = new EnterpriseValue { MarketValue = 2200000, NetDebt = -55000 }, // Market value in millions
+                            MetricDict = new Dictionary<MetricType, double>
+                            {
+                                { MetricType.PriceToEarnings, 30.00 },
+                                { MetricType.EvEbitda, 19.50 }
+                            }
+                        }
+                    }
                 },
                 new Stock
                 {
-                    Name = "Atlas Copco",
-                    Ticker = "ATCO"
+                    Name = "Microsoft Corporation",
+                    Ticker = "MSFT",
+                    Financials = new List<YearlyFinancials>
+                    {
+                        new YearlyFinancials
+                        {
+                            Year = 2023,
+                            Revenue = 198270, // In millions
+                            NmbrOfShares = 7470, // In millions
+                            Earnings = new Earning { NetIncomeValue = 61270, EbitValue = 78550, EbitdaValue = 93210 },
+                            EnterpriseVal = new EnterpriseValue { MarketValue = 2320000, NetDebt = -55000 }, // Market value in millions
+                            MetricDict = new Dictionary<MetricType, double>
+                            {
+                                { MetricType.PriceToEarnings, 34.12 },
+                                { MetricType.EvEbitda, 20.99 }
+                            }
+                        },
+                        new YearlyFinancials
+                        {
+                            Year = 2022,
+                            Revenue = 184900, // In millions
+                            NmbrOfShares = 7500, // In millions
+                            Earnings = new Earning { NetIncomeValue = 63000, EbitValue = 80000, EbitdaValue = 95000 },
+                            EnterpriseVal = new EnterpriseValue { MarketValue = 2100000, NetDebt = -50000 }, // Market value in millions
+                            MetricDict = new Dictionary<MetricType, double>
+                            {
+                                { MetricType.PriceToEarnings, 32.00 },
+                                { MetricType.EvEbitda, 19.80 }
+                            }
+                        }
+                    }
+                },
+                new Stock
+                {
+                    Name = "Amazon.com",
+                    Ticker = "AMZN",
+                    Financials = new List<YearlyFinancials>
+                    {
+                        new YearlyFinancials
+                        {
+                            Year = 2023,
+                            Revenue = 502190, // In millions
+                            NmbrOfShares = 10130, // In millions
+                            Earnings = new Earning { NetIncomeValue = 33800, EbitValue = 48020, EbitdaValue = 61430 },
+                            EnterpriseVal = new EnterpriseValue { MarketValue = 1693000, NetDebt = 2000 }, // Market value in millions
+                            MetricDict = new Dictionary<MetricType, double>
+                            {
+                                { MetricType.PriceToEarnings, 50.14 },
+                                { MetricType.EvEbitda, 27.57 }
+                            }
+                        },
+                        new YearlyFinancials
+                        {
+                            Year = 2022,
+                            Revenue = 469820, // In millions
+                            NmbrOfShares = 10000, // In millions
+                            Earnings = new Earning { NetIncomeValue = 33000, EbitValue = 47000, EbitdaValue = 60000 },
+                            EnterpriseVal = new EnterpriseValue { MarketValue = 1500000, NetDebt = 1000 }, // Market value in millions
+                            MetricDict = new Dictionary<MetricType, double>
+                            {
+                                { MetricType.PriceToEarnings, 48.00 },
+                                { MetricType.EvEbitda, 26.50 }
+                            }
+                        }
+                    }
                 }
             };
 
-            foreach(Stock stock in stocks)
+            foreach (Stock stock in stocks)
             {
                 addItem(stock);
             }
         }
-
-        /*private void AddFinancialTestValues()
-        {
-            Stock stock = null;
-            for (int i = 0; i<Count(); i++)
-            {
-                stock = getListItemAt(i);
-                stock.Financials.Add(new YearlyFinancials
-                {
-                    Year = "2022",
-                    Earnings = new NetIncome { NetIncomeValue = 99},
-                    EnterpriseVal = new EnterpriseValue { 
-                        MarketValue = 2930000,
-                        NetDebt = -36000,
-                    },
-                    MetricDict = new Dictionary<MetricType, double>().Add(MetricType.EvEbitda, CalculateValuationMetric.CalcEvEarnings((Ear)))
-                    
-                });
-            }
-        }*/
-
     }
 }

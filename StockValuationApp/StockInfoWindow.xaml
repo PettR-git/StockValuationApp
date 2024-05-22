@@ -5,21 +5,21 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:StockValuationApp"
         mc:Ignorable="d"
+        WindowStartupLocation="CenterScreen"
         Title="StockInfoWindow" Height="350" Width="300">
     <Grid>
         <Button x:Name="btnOK" Content="OK" HorizontalAlignment="Center" Margin="0,256,0,0" VerticalAlignment="Top" Click="btnOK_Click"/>
-        <Label x:Name="lblFirstMetric" Content="" HorizontalAlignment="Left" Margin="41,86,0,0" VerticalAlignment="Top"/>
-        <Label x:Name="lblSecondMetric" Content="" HorizontalAlignment="Left" Margin="41,141,0,0" VerticalAlignment="Top"/>
-        <Label x:Name="lblThirdMetric" Content="" HorizontalAlignment="Left" Margin="41,192,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="lblFirstMetric" Content="" HorizontalAlignment="Left" Margin="5,86,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="lblSecondMetric" Content="" HorizontalAlignment="Left" Margin="5,141,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="lblThirdMetric" Content="" HorizontalAlignment="Left" Margin="5,192,0,0" VerticalAlignment="Top"/>
         <TextBox x:Name="tbxFirstMetric" HorizontalAlignment="Left" Margin="110,90,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="120"/>
         <TextBox x:Name="tbxSecondMetric" HorizontalAlignment="Left" Margin="110,145,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="120"/>
         <TextBox x:Name="tbxThirdMetric" HorizontalAlignment="Left" Margin="110,200,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="120"/>
-        <Label x:Name="lblYear" Content="Year:" HorizontalAlignment="Left" Margin="41,36,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="lblYear" Content="Year:" HorizontalAlignment="Left" Margin="5,36,0,0" VerticalAlignment="Top"/>
         <TextBox x:Name="tbxYear" HorizontalAlignment="Left" Margin="110,40,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="120"/>
-        <Label Content="Millions" HorizontalAlignment="Left" Margin="235,36,0,0" VerticalAlignment="Top"/>
-        <Label Content="Millions" HorizontalAlignment="Left" Margin="235,192,0,0" VerticalAlignment="Top"/>
-        <Label Content="Millions" HorizontalAlignment="Left" Margin="235,141,0,0" VerticalAlignment="Top"/>
-        <Label Content="Millions" HorizontalAlignment="Left" Margin="235,86,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="lblMill1" Content="Millions" HorizontalAlignment="Left" Margin="235,86,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="lblMill2" Content="Millions" HorizontalAlignment="Left" Margin="235,141,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="lblMill3" Content="Millions" HorizontalAlignment="Left" Margin="235,196,0,0" VerticalAlignment="Top"/>
 
     </Grid>
 </Window>

@@ -7,10 +7,13 @@ using System.Threading.Tasks;
 
 namespace StockValuationApp.Entities.Stocks
 {
+    /// <summary>
+    /// All event args for metric data for a specific stock and year
+    /// </summary>
     public class MetricEventArgs
     {
         public Stock Stock { get; set; }
-        public string Year { get; set; }    
+        public int Year { get; set; }    
         public MetricType MetricType { get; set; }
         public int Ebitda {  get; set; }
         public int Ebit {  get; set; }
@@ -19,16 +22,5 @@ namespace StockValuationApp.Entities.Stocks
         public int MarketValue {  get; set; }   
         public int NumberOfShares {  get; set; }
         public int NetDebt {  get; set; }
-
-
-        /// <summary>
-        /// //TODO: Change to explicit names 
-        /// </summary>
-        public int StockParam1 {  get; set; }
-
-        /// <summary>
-        /// //TODO: Change to explicit names 
-        /// </summary>
-        public int StockParam2 {  get; set; }
     }
 }

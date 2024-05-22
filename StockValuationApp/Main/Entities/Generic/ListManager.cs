@@ -28,7 +28,7 @@ namespace WTS.Entities.Main
         public bool addItem(T item)
         {
             bool ok = false;
-            if (checkIndex(list.IndexOf(item))) {
+            if (item != null) {
                 list.Add(item);
                 ok = true;
             }
@@ -63,7 +63,7 @@ namespace WTS.Entities.Main
         private bool checkIndex(int index)
         {
             bool ok = false;
-            if (index < list.Count)
+            if (index <= list.Count && index >= 0)
             {
                 ok = true;
             }
@@ -75,7 +75,7 @@ namespace WTS.Entities.Main
         {
             T item;
 
-            if (!checkIndex(index))
+            if (checkIndex(index) == false)
                 return default(T);
 
             item = list[index];
