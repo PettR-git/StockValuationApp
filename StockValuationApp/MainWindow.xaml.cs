@@ -1,5 +1,8 @@
-﻿using StockValuationApp.Entities.Enums;
+﻿using Microsoft.Win32;
+using Newtonsoft.Json;
+using StockValuationApp.Entities.Enums;
 using StockValuationApp.Entities.Stocks;
+using StockValuationApp.Main.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,13 +27,14 @@ namespace StockValuationApp
     {
         private StockManager stockManager;
         private StockInfoWindow stockInfoWindow;
+        private string filename;
+        private StockJsonSerializerSettings jsonSerializerSettings;
         public MainWindow()
         {
             InitializeComponent();
             InitializeGUI();
             stockManager = new StockManager();
-            stockManager.AddStockTestValues();
-            UpdateStockUI();
+            jsonSerializerSettings = new StockJsonSerializerSettings();  
         }
 
         //Initialize UI
@@ -203,6 +207,207 @@ namespace StockValuationApp
             stockManager.addItem(stock); 
 
             UpdateStockUI();
+        }
+
+        private void NewApp()
+        {
+            stockManager = new StockManager();
+            lvwStockInfo.Items.Clear();
+            UpdateStockUI();
+        }
+
+        //In case file action was not wanted
+        private bool continueWithFileAction()
+        {
+            bool ready = false;
+            MessageBoxResult res = MessageBox.Show("Are you sure you want to proceed?", "Confirmation", MessageBoxButton.YesNo);
+
+            if (res == MessageBoxResult.Yes)
+                ready = true;
+
+            return ready;
+        }
+
+        /// <summary>
+        /// New file creation, essentially creating a new instance
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void newFile_click(object sender, RoutedEventArgs e)
+        {
+            if (continueWithFileAction())
+                NewApp();
+        }
+
+        /// <summary>
+        /// Open text file, with binary serialization
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void mnuFileOpenTF_click(object sender, RoutedEventArgs e)
+        {
+            if (!continueWithFileAction())
+                return;
+
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "Text files (*.txt)|*.txt";
+
+            if (openFileDialog.ShowDialog() == true)
+            {
+                try
+                {
+                    filename = openFileDialog.FileName;
+                    NewApp();
+
+                    if (!stockManager.binaryDeSerialize(filename))
+                        MessageBox.Show("No data provided from file.");
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error in file handling!");
+                    Console.WriteLine(ex.Message);
+                    return;
+                }
+
+                UpdateStockUI();
+            }
+        }
+
+
+        /// <summary>
+        /// Open json file, with serializersettings from util
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void mnuFileOpenJson_click(object sender, RoutedEventArgs e)
+        {
+            if (!continueWithFileAction())
+                return;
+
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "JSON files (*.json)|*.json";
+
+            if (openFileDialog.ShowDialog() == true)
+            {
+                try
+                {
+                    filename = openFileDialog.FileName;
+                    NewApp();
+
+                    if (!stockManager.jsonDeSerialize(filename, jsonSerializerSettings.JsonSettings))
+                        MessageBox.Show("Could not import data");
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error in file handling!");
+                    Console.WriteLine(ex.Message);
+                    return;
+                }
+
+                UpdateStockUI();
+            }
+        }
+
+        /// <summary>
+        /// Save current file as current file type
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void mnuFileSave_click(object sender, RoutedEventArgs e)
+        {
+            if (!continueWithFileAction())
+                return;
+            else if (filename == null)
+            {
+                MessageBox.Show("Save as a new file", "Error");
+            }
+            else if (filename.Substring(filename.Length - 4) == "json")
+            {
+                try
+                {
+                    stockManager.jsonSerialize(filename);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error in writing data to xml file!");
+                    Console.WriteLine(ex.Message);
+                }
+            }
+            else if (filename.Substring(filename.Length - 3) == "txt")
+            {
+                try
+                {
+                    stockManager.binarySerialize(filename);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error writing data to text file!");
+                    Console.WriteLine(ex.Message);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Save as textfile
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void mnuFileSaveAsTF_click(object sender, RoutedEventArgs e)
+        {
+            if (!continueWithFileAction())
+                return;
+
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+            saveFileDialog.Filter = "Text files (*.txt)|*.txt";
+
+            if (saveFileDialog.ShowDialog() == true)
+            {
+                try
+                {
+                    filename = saveFileDialog.FileName;
+                    stockManager.binarySerialize(filename);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error in writing data to file!");
+                    Console.WriteLine(ex.ToString());
+                }
+            }
+        }
+
+        /// <summary>
+        /// Save as json with its serializer settings from util
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void mnuFileSaveAsJson_click(object sender, RoutedEventArgs e)
+        {
+            if (!continueWithFileAction())
+                return;
+
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+            saveFileDialog.Filter = "JSON files (*.json)|*.json";
+
+            if (saveFileDialog.ShowDialog() == true)
+            {
+                try
+                {
+                    filename = saveFileDialog.FileName;
+                    stockManager.jsonSerialize(filename, jsonSerializerSettings.JsonSettings);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error in writing data to file!");
+                    Console.WriteLine(ex.Message);
+                }
+            }
+        }
+
+
+        //Exit the app from menu
+        private void mnuFileExportExit_click(object sender, RoutedEventArgs e)
+        {
+            Application.Current.Shutdown();
         }
     }
 }

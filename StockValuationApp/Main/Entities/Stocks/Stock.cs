@@ -11,6 +11,7 @@ namespace StockValuationApp.Entities.Stocks
     /// <summary>
     /// A stocks metric and financial data
     /// </summary>
+    [Serializable]
     public class Stock
     {
         public Stock() {

@@ -70,6 +70,7 @@
     <Compile Include="Main\Entities\Stocks\Metrics\YearlyFinancials.cs" />
     <Compile Include="Main\Entities\Stocks\Stock.cs" />
     <Compile Include="Main\Entities\Stocks\StockManager.cs" />
+    <Compile Include="Main\Utilities\StockJsonSerializerSettings.cs" />
     <Compile Include="StockInfoWindow.xaml.cs">
       <DependentUpon>StockInfoWindow.xaml</DependentUpon>
     </Compile>

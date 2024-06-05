@@ -9,6 +9,7 @@ namespace StockValuationApp.Entities.Stocks.Metrics
     /// <summary>
     /// Enterprise Value and its properties
     /// </summary>
+    [Serializable]
     public class EnterpriseValue
     {
         public int MarketValue {  get; set; }

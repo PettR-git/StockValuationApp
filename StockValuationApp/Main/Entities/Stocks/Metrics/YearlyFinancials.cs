@@ -11,6 +11,7 @@ namespace StockValuationApp.Entities.Stocks.Metrics
     /// <summary>
     /// Holds all data for metrics in a specific year.
     /// </summary>
+    [Serializable]
     public class YearlyFinancials
     {
         //Metric and its value

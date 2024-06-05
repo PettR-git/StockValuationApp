@@ -1,4 +1,5 @@
-﻿using StockValuationApp.Entities.Calculations;
+﻿using Newtonsoft.Json;
+using StockValuationApp.Entities.Calculations;
 using StockValuationApp.Entities.Enums;
 using StockValuationApp.Entities.Stocks.Metrics;
 using StockValuationApp.Entities.Stocks.Metrics.Earnings;

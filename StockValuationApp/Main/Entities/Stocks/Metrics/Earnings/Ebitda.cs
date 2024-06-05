@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace StockValuationApp.Entities.Stocks.Metrics.Earnings
 {
+    [Serializable]
     public class Ebitda : Earning
     {
         public override int EbitdaValue

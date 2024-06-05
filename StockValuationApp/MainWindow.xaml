@@ -8,6 +8,23 @@
         WindowStartupLocation="CenterScreen"
         Title="MainWindow" Height="600" Width="800">
     <Grid>
+        <Menu>
+            <MenuItem Header="_File" HorizontalAlignment="Stretch">
+                <MenuItem Header="_New" Click="newFile_click" VerticalAlignment="Top"/>
+                <MenuItem Header="_Open" x:Name="mnuFileOpen">
+                    <MenuItem Header="Text file" x:Name="mnuFileOpenTF" Click="mnuFileOpenTF_click"/>
+                    <MenuItem Header="Json" x:Name="mnuFileOpenJson" Click="mnuFileOpenJson_click"/>
+                </MenuItem>
+                <MenuItem Header="_Save" x:Name="mnuFileSave" Click="mnuFileSave_click"/>
+                <MenuItem Header="_Save as" x:Name="mnuFileSaveAs">
+                    <MenuItem Header="Text file" x:Name="mnuFileSaveAsTF" Click="mnuFileSaveAsTF_click"/>
+                    <MenuItem Header="Json" x:Name="mnuFileSaveAsJson" Click="mnuFileSaveAsJson_click"/>
+                </MenuItem>
+                <Separator/>
+                <MenuItem Header="_Exit" x:Name="mnuFileExit" Click="mnuFileExportExit_click"/>
+                <Menu/>
+            </MenuItem>
+        </Menu>
         <TextBox x:Name="tbxName" HorizontalAlignment="Left" Margin="157,74,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="120"/>
         <TextBox x:Name="tbxTicker" HorizontalAlignment="Left" Margin="157,122,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="120"/>
         <Label x:Name="lblName" Content="Name:" HorizontalAlignment="Left" Margin="69,70,0,0" VerticalAlignment="Top"/>
