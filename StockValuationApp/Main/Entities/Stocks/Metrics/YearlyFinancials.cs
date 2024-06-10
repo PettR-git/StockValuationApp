@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,12 +16,13 @@ namespace StockValuationApp.Entities.Stocks.Metrics
     public class YearlyFinancials
     {
         //Metric and its value
-        public Dictionary <MetricType, double> MetricDict { get; set; }
+        public Dictionary <KeyFigureTypes, double> KeyFiguresDict { get; set; }
 
         /// Properties for year and components of a metric
-        public int Year { get; set; } = DateTime.Now.Year;
+        public int Year { get; set; }
         public int Revenue { get; set; } = 0;
         public int NmbrOfShares { get; set; } = 0;
+        public int StockPrice {  get; set; } = 0;
         public Earning Earnings { get; set; }
         public EnterpriseValue EnterpriseVal { get; set; }
 
@@ -29,28 +31,35 @@ namespace StockValuationApp.Entities.Stocks.Metrics
             string outStr = string.Empty;
             string metricStr = string.Empty;
 
-            foreach (var kvp in MetricDict)
+            if (KeyFiguresDict != null)
             {
-                switch (kvp.Key)
+                foreach (var kvp in KeyFiguresDict)
                 {
-                    case MetricType.EvEbitda:
-                        metricStr = "EV/EBITDA";
-                        break;
-                    case MetricType.EvEbit:
-                        metricStr = "EV/EBIT";
-                        break;
-                    case MetricType.PriceToEarnings:
-                        metricStr = "P/E";
-                        break;
-                    case MetricType.NetDebtToEbitda:
-                        metricStr = "Net Debt/EBITDA";
-                        break;
-                }
+                    switch (kvp.Key)
+                    {
+                        case KeyFigureTypes.EvEbitda:
+                            metricStr = "EV/EBITDA";
+                            break;
+                        case KeyFigureTypes.EvEbit:
+                            metricStr = "EV/EBIT";
+                            break;
+                        case KeyFigureTypes.PriceToEarnings:
+                            metricStr = "P/E";
+                            break;
+                        case KeyFigureTypes.NetDebtToEbitda:
+                            metricStr = "Net Debt/EBITDA";
+                            break;
+                    }
 
-                if (Year > DateTime.Now.Year)
-                    outStr += "Estimation | ";
-                
-                outStr += string.Format("{0}: {1:F2} | Year {2}\n", metricStr, kvp.Value, Year);
+                    if (Year > DateTime.Now.Year)
+                        outStr += "Estimation | ";
+
+                    outStr += string.Format("{0}: {1:F2} | Year {2}\n", metricStr, kvp.Value, Year);
+                }
+            }
+            else
+            {
+                outStr = $"Unsufficient data to create Key Figure | Year {Year}";
             }
             return outStr.TrimEnd();
         }

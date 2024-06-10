@@ -7,11 +7,15 @@ using System.Threading.Tasks;
 
 namespace StockValuationApp.Entities.Enums
 {
-    public enum MetricType
+    public enum KeyFigureTypes
     {
         EvEbitda,
         EvEbit,
         PriceToEarnings,
-        NetDebtToEbitda
+        NetDebtToEbitda,
+        EvFreecashflow,
+        ReturnOnEquity,
+        ReturnOnInvCap,
+        EvSales
     }
 }

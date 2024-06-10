@@ -13,6 +13,8 @@ namespace StockValuationApp.Entities.Stocks.Metrics
     public class EnterpriseValue
     {
         public int MarketValue {  get; set; }
-        public int NetDebt {  get; set; }
+        public int LongTermDebt {  get; set; }
+        public int ShortTermDebt { get; set; }
+        public int CashAndEquivalents { get; set; }
     }
 }

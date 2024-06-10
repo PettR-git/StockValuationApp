@@ -10,11 +10,12 @@ namespace StockValuationApp.Entities.Calculations
     /// Provide different methods for calculating valuation metrics.
     /// Be aware, static class
     /// </summary>
-    public static class CalculateValuationMetric
+    public static class CalculateKeyFigure
     {
-        public static double CalcEvEarnings((int marketVal, int netDebt)ev, int earnings)
+        public static double CalcEvEarnings((int marketVal, int shortTermDebt, int longTermDebt, int cash)ev, int earnings)
         {
-            int evVal = ev.marketVal + ev.netDebt;
+            int netDebtVal = ev.shortTermDebt + ev.longTermDebt - ev.cash;
+            int evVal = ev.marketVal + netDebtVal;
             double result = (double)evVal / earnings;
 
             return result;
@@ -28,9 +29,10 @@ namespace StockValuationApp.Entities.Calculations
             return result;
         }
 
-        public static double CalcNetDebtToEbitda(int netDebt, int ebitda)
+        public static double CalcNetDebtToEbitda((int shortTermDebt, int longTermDebt, int cash)netDebt, int ebitda)
         {
-            double result = (double)netDebt / ebitda;
+            double netDebtVal = netDebt.longTermDebt + netDebt.shortTermDebt - netDebt.cash;
+            double result = (double)netDebtVal / ebitda;
 
             return result;
         }

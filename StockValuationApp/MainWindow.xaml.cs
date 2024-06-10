@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using StockValuationApp.Entities.Enums;
 using StockValuationApp.Entities.Stocks;
+using StockValuationApp.Entities.Stocks.Metrics;
 using StockValuationApp.Main.Utilities;
 using System;
 using System.Collections.Generic;
@@ -27,6 +28,7 @@ namespace StockValuationApp
     {
         private StockManager stockManager;
         private StockInfoWindow stockInfoWindow;
+        private StockPlotWindow stockPlotWindow;
         private string filename;
         private StockJsonSerializerSettings jsonSerializerSettings;
         public MainWindow()
@@ -40,31 +42,7 @@ namespace StockValuationApp
         //Initialize UI
         private void InitializeGUI()
         {
-            MetricType[] metricTypes = (MetricType[])Enum.GetValues(typeof(MetricType));
-            string metricStr = string.Empty;
-
-            foreach(MetricType metricType in metricTypes)
-            {
-                switch (metricType)
-                {
-                    case MetricType.EvEbitda:
-                        metricStr = "EV/EBITDA";
-                        break;
-                    case MetricType.EvEbit:
-                        metricStr = "EV/EBIT";
-                        break;
-                    case MetricType.PriceToEarnings:
-                        metricStr = "P/E";
-                        break;
-                    case MetricType.NetDebtToEbitda:
-                        metricStr = "Net Debt/EBITDA";
-                        break;
-                    default:
-                        Console.WriteLine("Incorrect metrictype");
-                        break;
-                }
-                cmbMetrics.Items.Add(metricStr);
-            }         
+            string metricStr = string.Empty;     
         }
 
         /// <summary>
@@ -76,37 +54,13 @@ namespace StockValuationApp
         private void btnCalculateValuation_Click(object sender, RoutedEventArgs e)
         {
             int index = lvwAllStocks.SelectedIndex;
-            Stock stock = stockManager.getListItemAt(index);
 
-            if (index == -1 || stock == null || cmbMetrics.SelectedItem == null)
-            {
-               MessageBox.Show("Choose a stock from stock list to calculate", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            if (index == -1)
                 return;
-            }
 
-            string metricStr = (string)cmbMetrics.SelectedItem;
-            MetricType metricType = MetricType.EvEbitda;
-
-            switch (metricStr)
-            {
-                case "EV/EBITDA":
-                    metricType = MetricType.EvEbitda;
-                    break;
-                case "EV/EBIT":
-                    metricType = MetricType.EvEbit;
-                    break;
-                case "P/E":
-                    metricType = MetricType.PriceToEarnings;
-                    break;
-                case "Net Debt/EBITDA":
-                    metricType = MetricType.NetDebtToEbitda;
-                    break;
-                default:
-                    Console.WriteLine("Metrictype not added to switch");
-                    break;
-            }
+            Stock stock = stockManager.getListItemAt(index);
  
-            stockInfoWindow = new StockInfoWindow(metricType);
+            stockInfoWindow = new StockInfoWindow();
             stockInfoWindow.MetricsGiven += OnGetMetricsData;
             stockInfoWindow.ShowDialog();
 
@@ -122,10 +76,24 @@ namespace StockValuationApp
         private void OnGetMetricsData(object sender, MetricEventArgs e)
         {
             int index = lvwAllStocks.SelectedIndex;
-            e.Stock = stockManager.getListItemAt(index);
+
+            if (index == -1)
+                return;
+
+            Stock stock = stockManager.getListItemAt(index);
+
+            if (stock != null)
+                e.Stock = stock;
 
             if (!stockManager.AddMetricDataFrStock(e))
                 MessageBox.Show("Error in adding metrics data", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+
+        private void NewApp()
+        {
+            stockManager = new StockManager();
+            lvwStockInfo.Items.Clear();
+            UpdateStockUI();
         }
 
         /// <summary>
@@ -150,7 +118,6 @@ namespace StockValuationApp
         private void UpdateFinancialUI(Stock stock)
         {
             lvwStockInfo.Items.Clear();
-            lvwStockInfo.Items.Add(stock.ToString());
 
             foreach (var fin in stock.Financials)
             {
@@ -175,14 +142,13 @@ namespace StockValuationApp
             Stock stock = stockManager.getListItemAt(index);
 
             lvwStockInfo.Items.Clear();
-            lvwStockInfo.Items.Add(stock.ToString());
+            lblKeyFinancialFigures.Content = $"Key Financial Figures for {stock.Name}";
 
             foreach(var fin in stock.Financials)
             {
                 if(fin != null)
                     lvwStockInfo.Items.Add(fin.ToString());
             }
-
         }
 
         /// <summary>
@@ -209,13 +175,23 @@ namespace StockValuationApp
             UpdateStockUI();
         }
 
-        private void NewApp()
+        private void btnGraphs_Click(object sender, RoutedEventArgs e)
         {
-            stockManager = new StockManager();
-            lvwStockInfo.Items.Clear();
-            UpdateStockUI();
+            int index = lvwAllStocks.SelectedIndex;
+
+            if (index == -1)
+                return;
+
+            List<YearlyFinancials> yearlyFinancials = stockManager.getListItemAt(index).Financials;
+
+            if(yearlyFinancials != null || yearlyFinancials.Count <= 0)
+            {
+                stockPlotWindow = new StockPlotWindow(yearlyFinancials);
+                stockPlotWindow.Show();
+            }
         }
 
+        #region File Handling
         //In case file action was not wanted
         private bool continueWithFileAction()
         {
@@ -403,11 +379,12 @@ namespace StockValuationApp
             }
         }
 
-
         //Exit the app from menu
         private void mnuFileExportExit_click(object sender, RoutedEventArgs e)
         {
             Application.Current.Shutdown();
         }
+
+        #endregion
     }
 }

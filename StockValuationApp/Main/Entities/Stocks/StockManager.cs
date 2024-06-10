@@ -3,9 +3,12 @@ using StockValuationApp.Entities.Calculations;
 using StockValuationApp.Entities.Enums;
 using StockValuationApp.Entities.Stocks.Metrics;
 using StockValuationApp.Entities.Stocks.Metrics.Earnings;
+using StockValuationApp.Main.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using WTS.Entities.Main;
@@ -39,20 +42,32 @@ namespace StockValuationApp.Entities.Stocks
         /// <param name="year"></param>
         /// <param name="metricType"></param>
         /// <returns>boolean</returns>
-        private bool DoesFinanceObjExistFrYear(Stock stock, int year, MetricType metricType)
+        private (bool, YearlyFinancials) DoesFinanceObjExistFrYear(Stock stock, int year)
         {
-            if(stock.Financials != null)
+            bool yearExist = false;
+            YearlyFinancials yearlyFinancials = null;
+
+            foreach (var yf in stock.Financials)
             {
-                foreach (var yf in stock.Financials)
+                if (yf.Year == year)
                 {
-                    if (yf.Year == year)
-                    {
-                        return true;
-                    }
+                    yearExist = true;
+                    yearlyFinancials = yf;
                 }
             }
 
-            return false;
+            return(yearExist, yearlyFinancials);
+        }
+
+        private bool CheckIntsValidity(int[] vals)
+        {
+            foreach (var val in vals)
+            {
+                if(val == 0)
+                    return false;
+            }
+
+            return true;
         }
 
         /// <summary>
@@ -64,284 +79,126 @@ namespace StockValuationApp.Entities.Stocks
         /// <returns>succesfull creation/update</returns>
         public bool AddMetricDataFrStock(MetricEventArgs e)
         {
-            MetricType metricType = e.MetricType;
             Stock stock = e.Stock;
             int year = e.Year;
-            double metricVal = 0.0;
+            double keyFigureVal = 0.0;
+
+            List<KeyFigureTypes> keyFigureTypes = Enum.GetValues(typeof(KeyFigureTypes)).Cast<KeyFigureTypes>().ToList();
+            var evTuple = (e.MarketValue, e.ShortTermDebt, e.LongTermDebt, e.CashAndEquivalents);
+            var netDebtTuple = (e.ShortTermDebt, e.LongTermDebt, e.CashAndEquivalents);
 
             //Calculate specific metric and determine if object creation or update is needed
-            switch (metricType)
+            (bool yfExist, YearlyFinancials yf) = DoesFinanceObjExistFrYear(stock, year);
+
+            if (yf == null)
             {
-                case MetricType.EvEbitda:
-
-                    metricVal = CalculateValuationMetric.CalcEvEarnings((e.MarketValue, e.NetDebt), e.Ebitda);
-                    if (!DoesFinanceObjExistFrYear(stock, year, metricType))
-                    {
-                        CreateEvEbitdaMetric(e, metricVal);
-                        return true;
-                    }
-                    break;
-
-                case MetricType.EvEbit:
-                    metricVal = CalculateValuationMetric.CalcEvEarnings((e.MarketValue, e.NetDebt), e.Ebit);
-                    if (!DoesFinanceObjExistFrYear(stock, year, metricType))
-                    {
-                        CreateEvEbitMetric(e, metricVal);
-                        return true;
-                    }
-                    break;
-
-                case MetricType.PriceToEarnings:
-                    metricVal = CalculateValuationMetric.CalcPriceToEarnings((e.NetIncome, e.NumberOfShares), e.Price);
-                    if (!DoesFinanceObjExistFrYear(stock, year, metricType))
-                    {
-                        CreatePriceToEarningsMetric(e, metricVal);
-                        return true;
-                    }                 
-                    break;
-
-                case MetricType.NetDebtToEbitda:
-                    metricVal = CalculateValuationMetric.CalcNetDebtToEbitda(e.NetDebt, e.Ebitda);
-                    if (!DoesFinanceObjExistFrYear(stock, year, metricType))
-                    {
-                        CreateNetDebtToEbitdaMetric(e, metricVal);
-                        return true;
-                    }
-                    break;
-
-                default:
-                    Console.WriteLine("Metrictype is null or invalid value");
-                    return false;
+                yf = new YearlyFinancials();
             }
 
-            //In case finance object exist for that year, update finance obj and its metric data
-            foreach (var yf in stock.Financials)
+            yf.Year = year;
+            yf.Earnings = new Earning();
+            yf.Earnings.EbitValue = e.Ebit;
+            yf.Earnings.EbitdaValue = e.Ebitda;
+            yf.Earnings.NetIncomeValue = e.NetIncome;
+            yf.Revenue = e.Revenue;
+            yf.EnterpriseVal = new EnterpriseValue();
+            yf.EnterpriseVal.MarketValue = e.MarketValue;
+            yf.EnterpriseVal.LongTermDebt = e.LongTermDebt;
+            yf.EnterpriseVal.ShortTermDebt = e.ShortTermDebt;
+            yf.EnterpriseVal.CashAndEquivalents = e.CashAndEquivalents;
+            yf.NmbrOfShares = e.NumberOfShares;
+            yf.StockPrice = e.Price;
+            //@TODO Add more stock financials
+
+            if(yfExist == false)
             {
-                if(yf.Year == year)
+                stock.Financials.Add(yf);
+            }
+
+            SortKeyFinancialsByYear(stock);
+
+            foreach (var keyFigureType in keyFigureTypes)
+            {
+                switch (keyFigureType)
                 {
-                    if (yf.MetricDict.ContainsKey(metricType))
-                    {
-                        yf.MetricDict[metricType] = metricVal;
-                    }
-                    else
-                    {
-                        yf.MetricDict.Add(metricType, metricVal);
-                    }
+                    case KeyFigureTypes.EvEbitda:
+
+                        if (!CheckIntsValidity(new int[] { evTuple.ShortTermDebt, evTuple.LongTermDebt, evTuple.MarketValue, evTuple.CashAndEquivalents, e.Ebitda }))
+                            continue;
+
+                        keyFigureVal = CalculateKeyFigure.CalcEvEarnings(evTuple, e.Ebitda);
+                        break;
+
+                    case KeyFigureTypes.EvEbit:
+
+                        if (!CheckIntsValidity(new int[] { evTuple.ShortTermDebt, evTuple.LongTermDebt, evTuple.MarketValue, evTuple.CashAndEquivalents, e.Ebit}))
+                            continue;
+
+                        keyFigureVal = CalculateKeyFigure.CalcEvEarnings(evTuple, e.Ebit);
+                        break;
+
+                    case KeyFigureTypes.PriceToEarnings:
+
+                        if(!CheckIntsValidity(new int[] {e.NetIncome, e.NumberOfShares, e.Price}))
+                            continue;
+
+                        keyFigureVal = CalculateKeyFigure.CalcPriceToEarnings((e.NetIncome, e.NumberOfShares), e.Price);
+                        break;
+
+                    case KeyFigureTypes.NetDebtToEbitda:
+
+                        if (!CheckIntsValidity(new int[] { evTuple.ShortTermDebt, evTuple.LongTermDebt, evTuple.CashAndEquivalents, e.Ebitda }))
+                            continue;
+
+                        keyFigureVal = CalculateKeyFigure.CalcNetDebtToEbitda(netDebtTuple, e.Ebitda);
+                        break;
+
+                    default:
+                        Console.WriteLine("Key figure is not yet implemented");
+                        continue;
                 }
+
+                UpdateOrCreateKeyFigure(stock, yf, keyFigureType, keyFigureVal);
             }
 
             return true;
         }
 
         /// <summary>
-        /// Create price to earnings metric and intantiatiate its properties
+        /// Update or create keyfigure for stock
         /// </summary>
-        /// <param name="e"></param>
+        /// <param name="stock"></param>
+        /// <param name="yf"></param>
+        /// <param name="keyFigure"></param>
         /// <param name="result"></param>
-        private void CreatePriceToEarningsMetric(MetricEventArgs e, double result)
+        private void UpdateOrCreateKeyFigure(Stock stock, YearlyFinancials yf, KeyFigureTypes keyFigure, double result)
         {
-            Earning earn = new NetIncome();
-            earn.NetIncomeValue = e.NetIncome;
+            int index = stock.Financials.IndexOf(yf);
 
-            Dictionary<MetricType, double> metricDict = new Dictionary<MetricType, double>();
-            metricDict[MetricType.PriceToEarnings] = result;
-
-            e.Stock.Financials.Add(new YearlyFinancials
+            //if keyfigure dictionary doesnt exist, create dictionary and keyfigure
+            if(stock.Financials[index].KeyFiguresDict == null)
             {
-                Earnings = earn,
-                MetricDict = metricDict,
-                Year = e.Year
-            });
-        }
+                Dictionary<KeyFigureTypes, double> metricDict = new Dictionary<KeyFigureTypes, double>();
+                metricDict[keyFigure] = result;
 
-        /// <summary>
-        /// Create ev to ebitda metric and intantiatiate its properties
-        /// </summary>
-        /// <param name="e"></param>
-        /// <param name="result"></param>
-        private void CreateEvEbitdaMetric(MetricEventArgs e, double result)
-        {
-            Earning earn = new Ebitda();
-            EnterpriseValue ev = new EnterpriseValue();
-
-            earn.EbitdaValue = e.Ebitda;
-            ev.MarketValue = e.MarketValue;
-            ev.NetDebt = e.NetDebt;
-
-            Dictionary<MetricType, double> metricDict = new Dictionary<MetricType, double>();
-            metricDict[MetricType.EvEbitda] = result;
-
-            e.Stock.Financials.Add(new YearlyFinancials
+                stock.Financials[index].KeyFiguresDict = metricDict;
+            }
+            //if keyfigure in keyfigure dictionary doesnt exist, create keyfigure
+            else if (!stock.Financials[index].KeyFiguresDict.ContainsKey(keyFigure))
             {
-                Earnings = earn,
-                MetricDict = metricDict,
-                Year = e.Year,
-                EnterpriseVal = ev
-            });
-        }
-
-        /// <summary>
-        /// Create ev to ebit metric and intantiatiate its properties
-        /// </summary>
-        /// <param name="e"></param>
-        /// <param name="result"></param>
-        private void CreateEvEbitMetric(MetricEventArgs e, double result)
-        {
-            Earning earn = new Ebit();
-            EnterpriseValue ev = new EnterpriseValue();
-
-            earn.EbitValue = e.Ebit;
-            ev.MarketValue = e.MarketValue;
-            ev.NetDebt = e.NetDebt;
-
-            Dictionary<MetricType, double> metricDict = new Dictionary<MetricType, double>();
-            metricDict[MetricType.EvEbit] = result;
-
-            e.Stock.Financials.Add(new YearlyFinancials
+                stock.Financials[index].KeyFiguresDict.Add(keyFigure, result);
+            }
+            //keyfigure in keyfigure dictionary exist, update it
+            else
             {
-                Earnings = earn,
-                MetricDict = metricDict,
-                Year = e.Year,
-                EnterpriseVal = ev
-            });
-        }
-
-        /// <summary>
-        /// Create net debt to ebitda metric and intantiatiate its properties
-        /// </summary>
-        /// <param name="e"></param>
-        /// <param name="result"></param>
-        private void CreateNetDebtToEbitdaMetric(MetricEventArgs e, double result)
-        {
-            Earning earn = new Ebitda();
-            earn.EbitdaValue = e.Ebitda;
-
-            Dictionary<MetricType, double> metricDict = new Dictionary<MetricType, double>();
-            metricDict[MetricType.NetDebtToEbitda] = result;
-
-            e.Stock.Financials.Add(new YearlyFinancials
-            {
-                Earnings = earn,
-                MetricDict = metricDict,
-                Year = e.Year,
-            });
-        }
-
-        /// <summary>
-        /// Add stock test values
-        /// </summary>
-        public void AddStockTestValues()
-        {
-            var stocks = new List<Stock>
-            {
-                new Stock
-                {
-                    Name = "Apple",
-                    Ticker = "AAPL",
-                    Financials = new List<YearlyFinancials>
-                    {
-                        new YearlyFinancials
-                        {
-                            Year = 2023,
-                            Revenue = 394328, // In millions
-                            NmbrOfShares = 16788, // In millions
-                            Earnings = new Earning { NetIncomeValue = 94680, EbitValue = 110910, EbitdaValue = 124710 },
-                            EnterpriseVal = new EnterpriseValue { MarketValue = 2500000, NetDebt = -57000 }, // Market value in millions
-                            MetricDict = new Dictionary<MetricType, double>
-                            {
-                                { MetricType.PriceToEarnings, 28.94 },
-                                { MetricType.EvEbitda, 18.89 }
-                            }
-                        },
-                        new YearlyFinancials
-                        {
-                            Year = 2022,
-                            Revenue = 365817, // In millions
-                            NmbrOfShares = 16800, // In millions
-                            Earnings = new Earning { NetIncomeValue = 94680, EbitValue = 105000, EbitdaValue = 120000 },
-                            EnterpriseVal = new EnterpriseValue { MarketValue = 2200000, NetDebt = -55000 }, // Market value in millions
-                            MetricDict = new Dictionary<MetricType, double>
-                            {
-                                { MetricType.PriceToEarnings, 30.00 },
-                                { MetricType.EvEbitda, 19.50 }
-                            }
-                        }
-                    }
-                },
-                new Stock
-                {
-                    Name = "Microsoft Corporation",
-                    Ticker = "MSFT",
-                    Financials = new List<YearlyFinancials>
-                    {
-                        new YearlyFinancials
-                        {
-                            Year = 2023,
-                            Revenue = 198270, // In millions
-                            NmbrOfShares = 7470, // In millions
-                            Earnings = new Earning { NetIncomeValue = 61270, EbitValue = 78550, EbitdaValue = 93210 },
-                            EnterpriseVal = new EnterpriseValue { MarketValue = 2320000, NetDebt = -55000 }, // Market value in millions
-                            MetricDict = new Dictionary<MetricType, double>
-                            {
-                                { MetricType.PriceToEarnings, 34.12 },
-                                { MetricType.EvEbitda, 20.99 }
-                            }
-                        },
-                        new YearlyFinancials
-                        {
-                            Year = 2022,
-                            Revenue = 184900, // In millions
-                            NmbrOfShares = 7500, // In millions
-                            Earnings = new Earning { NetIncomeValue = 63000, EbitValue = 80000, EbitdaValue = 95000 },
-                            EnterpriseVal = new EnterpriseValue { MarketValue = 2100000, NetDebt = -50000 }, // Market value in millions
-                            MetricDict = new Dictionary<MetricType, double>
-                            {
-                                { MetricType.PriceToEarnings, 32.00 },
-                                { MetricType.EvEbitda, 19.80 }
-                            }
-                        }
-                    }
-                },
-                new Stock
-                {
-                    Name = "Amazon.com",
-                    Ticker = "AMZN",
-                    Financials = new List<YearlyFinancials>
-                    {
-                        new YearlyFinancials
-                        {
-                            Year = 2023,
-                            Revenue = 502190, // In millions
-                            NmbrOfShares = 10130, // In millions
-                            Earnings = new Earning { NetIncomeValue = 33800, EbitValue = 48020, EbitdaValue = 61430 },
-                            EnterpriseVal = new EnterpriseValue { MarketValue = 1693000, NetDebt = 2000 }, // Market value in millions
-                            MetricDict = new Dictionary<MetricType, double>
-                            {
-                                { MetricType.PriceToEarnings, 50.14 },
-                                { MetricType.EvEbitda, 27.57 }
-                            }
-                        },
-                        new YearlyFinancials
-                        {
-                            Year = 2022,
-                            Revenue = 469820, // In millions
-                            NmbrOfShares = 10000, // In millions
-                            Earnings = new Earning { NetIncomeValue = 33000, EbitValue = 47000, EbitdaValue = 60000 },
-                            EnterpriseVal = new EnterpriseValue { MarketValue = 1500000, NetDebt = 1000 }, // Market value in millions
-                            MetricDict = new Dictionary<MetricType, double>
-                            {
-                                { MetricType.PriceToEarnings, 48.00 },
-                                { MetricType.EvEbitda, 26.50 }
-                            }
-                        }
-                    }
-                }
-            };
-
-            foreach (Stock stock in stocks)
-            {
-                addItem(stock);
+                stock.Financials[index].KeyFiguresDict[keyFigure] = result;
             }
         }
+
+        public void SortKeyFinancialsByYear(Stock stock)
+        {
+            stock.Financials = stock.Financials.OrderBy(x => x.Year).ToList();
+        }
+
     }
 }

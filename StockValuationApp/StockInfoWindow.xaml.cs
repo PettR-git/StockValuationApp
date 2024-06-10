@@ -1,18 +1,14 @@
 ﻿using StockValuationApp.Entities.Enums;
 using StockValuationApp.Entities.Stocks;
+using StockValuationApp.Main.Enums;
 using System;
+using System.Reflection;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
+
 
 namespace StockValuationApp
 {
@@ -21,12 +17,10 @@ namespace StockValuationApp
     /// </summary>
     public partial class StockInfoWindow : Window
     {
-        private MetricType metricType;
         public EventHandler<MetricEventArgs> MetricsGiven;
-        public StockInfoWindow(MetricType metricType)
+        public StockInfoWindow()
         {
             InitializeComponent();
-            this.metricType = metricType;
             InitializeGUI();
         }
 
@@ -35,31 +29,6 @@ namespace StockValuationApp
         /// </summary>
         private void InitializeGUI()
         {
-            switch (metricType)
-            {
-                case MetricType.PriceToEarnings:
-                    lblFirstMetric.Content = "Price:";
-                    lblSecondMetric.Content = "Number of Shares:";
-                    lblThirdMetric.Content = "Net Income:";
-                    break;
-                case MetricType.EvEbitda:
-                    lblFirstMetric.Content = "Market value:";
-                    lblSecondMetric.Content = "Net Debt:";
-                    lblThirdMetric.Content = "EBITDA:";
-                    break;
-                case MetricType.EvEbit:
-                    lblFirstMetric.Content = "Market value:";
-                    lblSecondMetric.Content = "Net Debt:";
-                    lblThirdMetric.Content = "EBIT:";
-                    break;
-                case MetricType.NetDebtToEbitda:
-                    lblFirstMetric.Content = "";
-                    lblSecondMetric.Content = "Net Debt:";
-                    lblThirdMetric.Content = "EBITDA";
-                    tbxFirstMetric.Visibility = Visibility.Hidden;
-                    lblMill1.Content = "";
-                    break;
-            }
         }
 
         /// <summary>
@@ -71,59 +40,50 @@ namespace StockValuationApp
         private void btnOK_Click(object sender, RoutedEventArgs e)
         {
             MetricEventArgs args = new MetricEventArgs();
-            int firstMetric= 0, secondMetric= 0, thirdMetric = 0;
+            PropertyInfo[] allEventProperties = typeof(MetricEventArgs).GetProperties();
+            PropertyInfo[] metricProperties = allEventProperties.Skip(1).ToArray();
 
-            switch (metricType)
+            args.Year = ValidateAndParseToInt(tbxYear.Text);
+            args.Revenue = ValidateAndParseToInt(tbxRevenue.Text);
+            args.MarketValue = ValidateAndParseToInt(tbxMarketValue.Text);
+            args.CapitalExpenditures = ValidateAndParseToInt(tbxCapitalExpenditures.Text);
+            args.NumberOfShares = ValidateAndParseToInt(tbxCashAndEquiv.Text);
+            args.OperationalCashflow = ValidateAndParseToInt(tbxOperCashflow.Text);   
+            args.TotalLiabilities = ValidateAndParseToInt(tbxTotalLiabilities.Text);
+            args.CashAndEquivalents = ValidateAndParseToInt(tbxCashAndEquiv.Text);
+            args.Dividends = ValidateAndParseToInt(tbxDividends.Text);
+            args.Ebit = ValidateAndParseToInt(tbxEbit.Text);
+            args.Ebitda = ValidateAndParseToInt(tbxEbitda.Text);
+            args.LongTermDebt = ValidateAndParseToInt(tbxLongTermDebt.Text);
+            args.ShortTermDebt = ValidateAndParseToInt(tbxShortTermDebt.Text);
+            args.NetIncome = ValidateAndParseToInt(tbxNetIncome.Text);
+            args.Price = ValidateAndParseToInt(tbxStockPrice.Text);
+
+            foreach (var property in metricProperties)
             {
-                case MetricType.PriceToEarnings:
-                    firstMetric = ParseOk(tbxFirstMetric.Text);
-                    secondMetric = ParseOk(tbxSecondMetric.Text);
-                    thirdMetric = ParseOk(tbxThirdMetric.Text);
+                var value = 0.0;
 
-                    args.Price = firstMetric;
-                    args.NumberOfShares = secondMetric;
-                    args.NetIncome = thirdMetric;
-                    break;
+                //Properties of type double
+                if(property.Name == "Dividends")
+                {
+                     value = (double)property.GetValue(args, null);
+                }
+                //Properties of type int
+                else
+                {
+                    value = (int)property.GetValue(args, null);
+                }
 
-                case MetricType.EvEbitda:
-                    firstMetric = ParseOk(tbxFirstMetric.Text);
-                    secondMetric = ParseOk(tbxSecondMetric.Text);
-                    thirdMetric = ParseOk(tbxThirdMetric.Text);
-
-                    args.MarketValue = firstMetric;
-                    args.NetDebt = secondMetric;
-                    args.Ebitda = thirdMetric;
-                    break;
-
-                case MetricType.EvEbit:
-                    firstMetric = ParseOk(tbxFirstMetric.Text);
-                    secondMetric = ParseOk(tbxSecondMetric.Text);
-                    thirdMetric = ParseOk(tbxThirdMetric.Text);
-
-                    args.MarketValue = firstMetric;
-                    args.NetDebt = secondMetric;
-                    args.Ebit = thirdMetric;
-                    break;
-
-                case MetricType.NetDebtToEbitda:
-                    secondMetric = ParseOk(tbxSecondMetric.Text);
-                    thirdMetric = ParseOk(tbxThirdMetric.Text);
-
-                    args.NetDebt = secondMetric;
-                    args.Ebitda = thirdMetric;
-                    break;
-                default:
-                    Console.WriteLine("Issue with invalid metrictype");
-                    break;
+                if (value == -1)
+                {
+                    MessageBox.Show("One or more input values are invalid.", "Input Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }       
+                else if(args.Year == 0)
+                {
+                    MessageBox.Show("Enter a valid year.", "Input Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
-            args.Year = ParseOk(tbxYear.Text);
-
-            if (firstMetric == -1 || secondMetric == -1 || thirdMetric == -1 || args.Year == -1)
-            {
-                MessageBox.Show("One or more input values are invalid.", "Input Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                return;
-            }
-            args.MetricType = metricType;
 
             //Publish event with the metric arguments
             MetricsGiven?.Invoke(this, args);
@@ -134,17 +94,18 @@ namespace StockValuationApp
         /// Try parse, string to int
         /// </summary>
         /// <param name="strVal"></param>
-        /// <returns>integer, val or -1</returns>
-        private int ParseOk(string strVal)
+        /// <returns>parsed value or -1 for unparseable string and 0 for empty string</returns>
+        private int ValidateAndParseToInt(string strVal)
         {
+            if (strVal == string.Empty)
+                return 0;
+
             bool ok = int.TryParse(strVal, out int val);
 
             if (ok)
                 return val;
             else
-            {
                 return -1;
-            }
         }
     }
 }
