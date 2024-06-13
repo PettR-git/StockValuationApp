@@ -1,9 +1,11 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using StockValuationApp.Entities.Calculations;
 using StockValuationApp.Entities.Enums;
 using StockValuationApp.Entities.Stocks.Metrics;
 using StockValuationApp.Entities.Stocks.Metrics.Earnings;
 using StockValuationApp.Main.Enums;
+using StockValuationApp.Main.Uri;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,12 +13,21 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using WTS.Entities.Main;
 
 namespace StockValuationApp.Entities.Stocks
 {
     public class StockManager : ListManager<Stock>
     {
+        private UriFinanceManager uriManager;
+        private Dictionary<FinanceCategory, List<MetricTypes>> metricTemplate;
+
+        public StockManager()
+        {
+            uriManager = new UriFinanceManager();
+        }
+
         /// <summary>
         /// Create stock object and initialize name and ticker
         /// </summary>
@@ -59,7 +70,7 @@ namespace StockValuationApp.Entities.Stocks
             return(yearExist, yearlyFinancials);
         }
 
-        private bool CheckIntsValidity(int[] vals)
+        private bool CheckIntsValidity(double[] vals)
         {
             foreach (var val in vals)
             {
@@ -123,7 +134,7 @@ namespace StockValuationApp.Entities.Stocks
                 {
                     case KeyFigureTypes.EvEbitda:
 
-                        if (!CheckIntsValidity(new int[] { evTuple.ShortTermDebt, evTuple.LongTermDebt, evTuple.MarketValue, evTuple.CashAndEquivalents, e.Ebitda }))
+                        if (!CheckIntsValidity(new double[] { evTuple.ShortTermDebt, evTuple.LongTermDebt, evTuple.MarketValue, evTuple.CashAndEquivalents, e.Ebitda }))
                             continue;
 
                         keyFigureVal = CalculateKeyFigure.CalcEvEarnings(evTuple, e.Ebitda);
@@ -131,7 +142,7 @@ namespace StockValuationApp.Entities.Stocks
 
                     case KeyFigureTypes.EvEbit:
 
-                        if (!CheckIntsValidity(new int[] { evTuple.ShortTermDebt, evTuple.LongTermDebt, evTuple.MarketValue, evTuple.CashAndEquivalents, e.Ebit}))
+                        if (!CheckIntsValidity(new double[] { evTuple.ShortTermDebt, evTuple.LongTermDebt, evTuple.MarketValue, evTuple.CashAndEquivalents, e.Ebit}))
                             continue;
 
                         keyFigureVal = CalculateKeyFigure.CalcEvEarnings(evTuple, e.Ebit);
@@ -139,7 +150,7 @@ namespace StockValuationApp.Entities.Stocks
 
                     case KeyFigureTypes.PriceToEarnings:
 
-                        if(!CheckIntsValidity(new int[] {e.NetIncome, e.NumberOfShares, e.Price}))
+                        if(!CheckIntsValidity(new double[] {e.NetIncome, e.NumberOfShares, e.Price}))
                             continue;
 
                         keyFigureVal = CalculateKeyFigure.CalcPriceToEarnings((e.NetIncome, e.NumberOfShares), e.Price);
@@ -147,7 +158,7 @@ namespace StockValuationApp.Entities.Stocks
 
                     case KeyFigureTypes.NetDebtToEbitda:
 
-                        if (!CheckIntsValidity(new int[] { evTuple.ShortTermDebt, evTuple.LongTermDebt, evTuple.CashAndEquivalents, e.Ebitda }))
+                        if (!CheckIntsValidity(new double[] { evTuple.ShortTermDebt, evTuple.LongTermDebt, evTuple.CashAndEquivalents, e.Ebitda }))
                             continue;
 
                         keyFigureVal = CalculateKeyFigure.CalcNetDebtToEbitda(netDebtTuple, e.Ebitda);
@@ -198,6 +209,182 @@ namespace StockValuationApp.Entities.Stocks
         public void SortKeyFinancialsByYear(Stock stock)
         {
             stock.Financials = stock.Financials.OrderBy(x => x.Year).ToList();
+        }
+
+        /// <summary>
+        /// Categorize metrics depending on category that the Api is using
+        /// </summary>
+        private void InitializeMetricTemplate()
+        {
+            List<FinanceCategory> finCategories = Enum.GetValues(typeof(FinanceCategory)).Cast<FinanceCategory>().ToList();
+            List<MetricTypes> metrics = Enum.GetValues(typeof(MetricTypes)).Cast<MetricTypes>().ToList();
+
+            for(int i = 0; i<finCategories.Count(); i++)
+            {
+                FinanceCategory finCate = finCategories[i];
+                
+                switch (finCate)
+                {
+                    case FinanceCategory.Income:
+                        metricTemplate.Add(FinanceCategory.Income, new List<MetricTypes> {
+                            MetricTypes.netIncome,
+                            MetricTypes.ebitda,
+                            MetricTypes.revenue,
+                            MetricTypes.ebit,
+                        });
+                        break;
+                    case FinanceCategory.BalanceSheet:
+                        metricTemplate.Add(FinanceCategory.BalanceSheet, new List<MetricTypes>
+                        {
+                            MetricTypes.cashAndCashEquivalents,
+                            MetricTypes.totalAssets,
+                            MetricTypes.totalLiabilities,
+                            MetricTypes.longTermDebt,
+                            MetricTypes.shortTermDebt,                        
+                        });
+                        break;
+                    case FinanceCategory.Cashflow:
+                        metricTemplate.Add(FinanceCategory.Cashflow, new List<MetricTypes>
+                        {
+                            MetricTypes.operationalCashflow,
+                            MetricTypes.capitalExpenditures,
+                            MetricTypes.dividendsPaid,
+                        });
+                        break;
+                    case FinanceCategory.StatementAnalysis:
+                        metricTemplate.Add(FinanceCategory.StatementAnalysis, new List<MetricTypes>
+                        {
+                            MetricTypes.stockPrice,
+                            MetricTypes.numberOfShares,
+                            MetricTypes.marketCapitalization
+                        });
+                        break;
+                }
+            }
+        }
+
+        public async void GetSpecificMetricVal(Stock stock)
+        {
+            List<JObject> jObjs = null;
+            MetricEventArgs args = null;
+            const int maxApiYearIndex = 5;
+            List<int> indexYears = Enumerable.Range(0, maxApiYearIndex-1).ToList();
+            double metricVal = 0.0;
+
+            if (metricTemplate == null)
+            {
+                metricTemplate = new Dictionary<FinanceCategory, List<MetricTypes>>();
+                InitializeMetricTemplate();
+            }
+
+            foreach (int i in indexYears)
+            {
+                args = new MetricEventArgs();
+                args.Stock = stock;               
+
+                foreach (var metPair in metricTemplate)
+                {
+                    FinanceCategory category = metPair.Key;
+                    List<MetricTypes> metrics = metPair.Value;
+
+                    foreach (var met in metrics)
+                    {
+                        switch (category)
+                        {
+                            case FinanceCategory.Cashflow:
+                                jObjs = await uriManager.GetFinanceData(stock.Ticker, FinanceCategory.Cashflow, PeriodTypes.annual);
+
+                                if (jObjs[i][met.ToString()] != null)
+                                    metricVal = jObjs[i][met.ToString()].Value<double>();
+
+                                switch (met)
+                                {
+                                    case MetricTypes.operationalCashflow:
+                                        args.OperationalCashflow = metricVal;
+                                        break;
+                                    case MetricTypes.dividendsPaid:
+                                        args.Dividends = -metricVal;
+                                        break;
+                                    case MetricTypes.capitalExpenditures:
+                                        args.CapitalExpenditures = metricVal;
+                                        break;
+                                }
+                                continue;
+
+                            case FinanceCategory.StatementAnalysis:
+                                jObjs = await uriManager.GetFinanceData(stock.Ticker, FinanceCategory.StatementAnalysis, PeriodTypes.annual);
+
+                                if (jObjs[i][met.ToString()] != null)
+                                    metricVal = jObjs[i][met.ToString()].Value<double>();
+
+                                switch (met)
+                                {
+                                    case MetricTypes.stockPrice:
+                                        args.Price = metricVal;
+                                        break;
+                                    case MetricTypes.numberOfShares:
+                                        args.NumberOfShares = metricVal;
+                                        break;
+                                    case MetricTypes.marketCapitalization:
+                                        args.MarketValue = metricVal;
+                                        break;
+                                }
+                                continue;
+
+                            case FinanceCategory.Income:
+                                jObjs = await uriManager.GetFinanceData(stock.Ticker, FinanceCategory.Income, PeriodTypes.annual);
+
+                                if (jObjs[i][met.ToString()] != null)
+                                    metricVal = jObjs[i][met.ToString()].Value<double>();
+
+                                switch (met)
+                                {
+                                    case MetricTypes.revenue:
+                                        args.Revenue = metricVal;
+                                        break;
+                                    case MetricTypes.ebitda:
+                                        args.Ebitda = metricVal;
+                                        break;
+                                    case MetricTypes.ebit:
+                                        args.Ebit = metricVal;
+                                        break;
+                                    case MetricTypes.netIncome:
+                                        args.NetIncome = metricVal;
+                                        break;
+                                }
+                                continue;
+
+                            case FinanceCategory.BalanceSheet:
+                                jObjs = await uriManager.GetFinanceData(stock.Ticker, FinanceCategory.BalanceSheet, PeriodTypes.annual);
+
+                                if (jObjs[i][met.ToString()] != null)
+                                    metricVal = jObjs[i][met.ToString()].Value<double>();
+
+                                switch (met)
+                                {
+                                    case MetricTypes.cashAndCashEquivalents:
+                                        args.CashAndEquivalents = metricVal;
+                                        break;
+                                    case MetricTypes.totalAssets:
+                                        args.TotalAssets = metricVal;
+                                        break;
+                                    case MetricTypes.totalLiabilities:
+                                        args.TotalLiabilities = metricVal;
+                                        break;
+                                    case MetricTypes.longTermDebt:
+                                        args.LongTermDebt = metricVal;
+                                        break;
+                                    case MetricTypes.shortTermDebt:
+                                        args.ShortTermDebt = metricVal;
+                                        break;
+                                }
+                                continue;
+                        }
+                    }                 
+                }
+                args.Year = 2023 - i;
+                stock.MetricsGiven?.Invoke(this, args);
+            }
         }
 
     }

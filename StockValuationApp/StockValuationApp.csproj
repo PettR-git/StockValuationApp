@@ -110,6 +110,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Main\Calculations\CalculateKeyFigure.cs" />
+    <Compile Include="Main\Enums\FinanceCategory.cs" />
     <Compile Include="Main\Enums\KeyFigureTypes.cs" />
     <Compile Include="Main\Entities\Generic\ListManager.cs" />
     <Compile Include="Main\Entities\Stocks\Metrics\MetricEventArgs.cs" />
@@ -122,18 +123,23 @@
     <Compile Include="Main\Entities\Stocks\Stock.cs" />
     <Compile Include="Main\Entities\Stocks\StockManager.cs" />
     <Compile Include="Main\Enums\MetricTypes.cs" />
+    <Compile Include="Main\Enums\PeriodTypes.cs" />
     <Compile Include="Main\Plot\PlotStockMetrics.cs" />
+    <Compile Include="Main\Uri\HttpStockEstimates.cs" />
+    <Compile Include="Main\Uri\HttpStockMetrics.cs" />
+    <Compile Include="Main\Uri\HttpStockNews.cs" />
+    <Compile Include="Main\Uri\UriFinanceManager.cs" />
     <Compile Include="Main\Utilities\StockJsonSerializerSettings.cs" />
-    <Compile Include="StockInfoWindow.xaml.cs">
+    <Compile Include="Windows\StockInfoWindow.xaml.cs">
       <DependentUpon>StockInfoWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Main\Utilities\BinarySerialize.cs" />
     <Compile Include="Main\Utilities\JsonSerialize.cs" />
     <Compile Include="Main\Utilities\XMLSerialize.cs" />
-    <Compile Include="StockPlotWindow.xaml.cs">
+    <Compile Include="Windows\StockPlotWindow.xaml.cs">
       <DependentUpon>StockPlotWindow.xaml</DependentUpon>
     </Compile>
-    <Page Include="MainWindow.xaml">
+    <Page Include="Windows\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -141,15 +147,15 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="MainWindow.xaml.cs">
+    <Compile Include="Windows\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="StockInfoWindow.xaml">
+    <Page Include="Windows\StockInfoWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="StockPlotWindow.xaml">
+    <Page Include="Windows\StockPlotWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

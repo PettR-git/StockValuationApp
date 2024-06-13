@@ -12,9 +12,9 @@ namespace StockValuationApp.Entities.Stocks.Metrics
     [Serializable]
     public class EnterpriseValue
     {
-        public int MarketValue {  get; set; }
-        public int LongTermDebt {  get; set; }
-        public int ShortTermDebt { get; set; }
-        public int CashAndEquivalents { get; set; }
+        public double MarketValue {  get; set; }
+        public double LongTermDebt {  get; set; }
+        public double ShortTermDebt { get; set; }
+        public double CashAndEquivalents { get; set; }
     }
 }

@@ -1,0 +1,53 @@
+﻿<Window x:Class="StockValuationApp.Windows.StockInfoWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:StockValuationApp"
+        mc:Ignorable="d"
+        WindowStartupLocation="CenterScreen"
+        Title="StockInfoWindow" Height="550" Width="550">
+    <Grid>
+        <Rectangle HorizontalAlignment="Left" Height="52" Margin="108,14,0,0" Stroke="Black" VerticalAlignment="Top" Width="330"/>
+
+        <Rectangle HorizontalAlignment="Left" Height="399" Margin="5,84,0,0" Stroke="Black" VerticalAlignment="Top" Width="535"/>
+
+        <Button x:Name="btnOK" Content="OK" HorizontalAlignment="Center" Margin="0,502,0,0" VerticalAlignment="Top" Click="btnOK_Click" Height="22" Width="34"/>
+        <Label x:Name="lblRevenue" Content="Revenue:" HorizontalAlignment="Left" Margin="7,95,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="lblMarketValue" Content="Market Cap:" HorizontalAlignment="Left" Margin="7,145,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="lblYear" Content="Year:" HorizontalAlignment="Left" Margin="138,27,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="lblEbitda" Content="EBITDA:" HorizontalAlignment="Left" Margin="7,302,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="lblEbit" Content="EBIT:" HorizontalAlignment="Left" Margin="9,349,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="lblNetIncome" Content="Net Income:" HorizontalAlignment="Left" Margin="9,249,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="lblPrice" Content="Stock Price:" HorizontalAlignment="Left" Margin="6,441,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="lblNmbrOfShares" Content="Number of Shares:" HorizontalAlignment="Left" Margin="5,196,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="lblCapitalExp" Content="Capital Expenditures:" HorizontalAlignment="Left" Margin="276,302,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="lblTotAssets" Content="Total Assets: " HorizontalAlignment="Left" Margin="278,145,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="lblTotLiabilities" Content="Total Liabilities: " HorizontalAlignment="Left" Margin="275,192,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="lblDividends" Content="Dividends:" HorizontalAlignment="Left" Margin="9,395,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="lblShortTermDebt" Content="Short Term Debt: " HorizontalAlignment="Left" Margin="277,441,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="lblLongTermDebt" Content="Long Term Debt: " HorizontalAlignment="Left" Margin="276,395,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="lblCashAndEquiv" Content="Cash and Equivalents: " HorizontalAlignment="Left" Margin="276,248,0,0" VerticalAlignment="Top"/>
+        <TextBox x:Name="tbxRevenue" HorizontalAlignment="Left" Margin="118,99,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="120"/>
+        <TextBox x:Name="tbxMarketValue" HorizontalAlignment="Left" Margin="118,149,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="120"/>
+        <TextBox x:Name="tbxNmbrOfShares" HorizontalAlignment="Left" Margin="118,200,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="120"/>
+        <TextBox x:Name="tbxYear" HorizontalAlignment="Left" Margin="178,31,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="120"/>
+        <TextBox x:Name="tbxNetIncome" HorizontalAlignment="Left" Margin="118,256,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="120"/>
+        <TextBox x:Name="tbxDividends" HorizontalAlignment="Left" Margin="118,399,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="120"/>
+        <TextBox x:Name="tbxStockPrice" HorizontalAlignment="Left" Margin="116,445,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="120"/>
+        <TextBox x:Name="tbxTotalAssets" HorizontalAlignment="Left" Margin="408,149,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="120"/>
+        <TextBox x:Name="tbxTotalLiabilities" HorizontalAlignment="Left" Margin="408,200,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="120"/>
+        <TextBox x:Name="tbxCashAndEquiv" HorizontalAlignment="Left" Margin="409,252,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="120"/>
+        <TextBox x:Name="tbxShortTermDebt" HorizontalAlignment="Left" Margin="408,445,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="120"/>
+        <TextBox x:Name="tbxLongTermDebt" HorizontalAlignment="Left" Margin="408,399,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="120"/>
+        <TextBox x:Name="tbxEbitda" HorizontalAlignment="Left" Margin="118,310,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="120"/>
+        <TextBox x:Name="tbxEbit" HorizontalAlignment="Left" Margin="118,353,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="120"/>
+        <TextBox x:Name="tbxCapitalExpenditures" HorizontalAlignment="Left" Margin="409,306,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="120"/>
+        <TextBox x:Name="tbxOperCashflow" HorizontalAlignment="Left" Margin="409,353,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="120"/>
+        <Label x:Name="lblOperCashflow" Content="Operational Cashflow:" HorizontalAlignment="Left" Margin="275,349,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="lblSolidity" Content="Solidity:" HorizontalAlignment="Left" Margin="278,95,0,0" VerticalAlignment="Top"/>
+        <TextBox x:Name="tbxSolidity" HorizontalAlignment="Left" Margin="409,99,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="120"/>
+        <Button x:Name="btnImportFinData" Content="Import Data" HorizontalAlignment="Left" Margin="317,30,0,0" VerticalAlignment="Top" Width="72"/>
+
+    </Grid>
+</Window>

@@ -12,27 +12,27 @@ namespace StockValuationApp.Entities.Calculations
     /// </summary>
     public static class CalculateKeyFigure
     {
-        public static double CalcEvEarnings((int marketVal, int shortTermDebt, int longTermDebt, int cash)ev, int earnings)
+        public static double CalcEvEarnings((double marketVal, double shortTermDebt, double longTermDebt, double cash)ev, double earnings)
         {
-            int netDebtVal = ev.shortTermDebt + ev.longTermDebt - ev.cash;
-            int evVal = ev.marketVal + netDebtVal;
-            double result = (double)evVal / earnings;
+            double netDebtVal = ev.shortTermDebt + ev.longTermDebt - ev.cash;
+            double evVal = ev.marketVal + netDebtVal;
+            double result = evVal/earnings;
 
             return result;
         }
 
-        public static double CalcPriceToEarnings((int netIncome, int nmbrOfShares)eps, int price)
+        public static double CalcPriceToEarnings((double netIncome, double nmbrOfShares)eps, double price)
         {
-            double epsVal = (double)eps.netIncome / eps.nmbrOfShares;
-            double result = (double)price / epsVal;
+            double epsVal = eps.netIncome / eps.nmbrOfShares;
+            double result = price / epsVal;
 
             return result;
         }
 
-        public static double CalcNetDebtToEbitda((int shortTermDebt, int longTermDebt, int cash)netDebt, int ebitda)
+        public static double CalcNetDebtToEbitda((double shortTermDebt, double longTermDebt, double cash)netDebt, double ebitda)
         {
             double netDebtVal = netDebt.longTermDebt + netDebt.shortTermDebt - netDebt.cash;
-            double result = (double)netDebtVal / ebitda;
+            double result = netDebtVal / ebitda;
 
             return result;
         }

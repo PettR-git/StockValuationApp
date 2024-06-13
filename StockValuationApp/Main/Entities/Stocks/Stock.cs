@@ -20,10 +20,10 @@ namespace StockValuationApp.Entities.Stocks
         public string Name {  get; set; }
         public string Ticker { get; set; }
 
-        /// <summary>
-        /// Financials for a specific year
-        /// </summary>
+        //Financials for a specific year
         public List<YearlyFinancials> Financials { get; set; }
+
+        public EventHandler<MetricEventArgs> MetricsGiven;
 
         public override string ToString()
         {

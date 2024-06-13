@@ -8,20 +8,20 @@ namespace StockValuationApp.Main.Enums
 {
     public enum MetricTypes
     {
-        Revenue,
-        Ebitda,
-        Ebit, 
-        NetIncome, 
-        Price,
-        MarketValue,
-        NumberOfShares,
-        ShortTermDebt,
-        LongTermDebt,
-        Dividends, 
-        CashAndEquivalents,
-        OperationalCashflow,
-        CapitalExpenditures, 
-        TotalLiabilities, 
-        TotalAssets 
+        revenue,
+        ebitda,
+        ebit, 
+        netIncome, 
+        stockPrice,
+        marketCapitalization,
+        numberOfShares,
+        shortTermDebt,
+        longTermDebt,
+        dividendsPaid, 
+        cashAndCashEquivalents,
+        operationalCashflow,
+        capitalExpenditures, 
+        totalLiabilities, 
+        totalAssets 
     }
 }

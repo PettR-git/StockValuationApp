@@ -41,8 +41,8 @@ namespace StockValuationApp.Main.Plot
                 {
                     if (i < yearlyFinancials.Count())
                     {
-                        int revenue = yearlyFinancials.ElementAt(i).Revenue;
-                        int ebit = 0, ebitda = 0, netIncome = 0;
+                        double revenue = yearlyFinancials.ElementAt(i).Revenue;
+                        double ebit = 0, ebitda = 0, netIncome = 0;
 
                         if (yearlyFinancials.ElementAt(i).Earnings != null)
                         {
@@ -78,8 +78,8 @@ namespace StockValuationApp.Main.Plot
             //Configure extras
             finPlot.Plot.Legend.IsVisible = true;
             finPlot.Plot.Legend.Alignment = Alignment.UpperLeft;
-            finPlot.Plot.Legend.ManualItems.Add(new LegendItem { LabelText = MetricTypes.Revenue.ToString(), FillColor = palette.GetColor(0) });
-            finPlot.Plot.Legend.ManualItems.Add(new LegendItem { LabelText = MetricTypes.Ebitda.ToString(), FillColor = palette.GetColor(1) });
+            finPlot.Plot.Legend.ManualItems.Add(new LegendItem { LabelText = MetricTypes.revenue.ToString(), FillColor = palette.GetColor(0) });
+            finPlot.Plot.Legend.ManualItems.Add(new LegendItem { LabelText = MetricTypes.ebitda.ToString(), FillColor = palette.GetColor(1) });
             finPlot.Plot.DataBackground.Color = Color.FromHex("#0b3049");
 
             finPlot.Plot.Axes.Bottom.TickGenerator = new ScottPlot.TickGenerators.NumericManual(xAxesYears.ToArray());
@@ -102,10 +102,10 @@ namespace StockValuationApp.Main.Plot
                     {
                         if (yearlyFinancials.ElementAt(i).Earnings != null)
                         {
-                            int ebitdaPrev = yearlyFinancials.ElementAt(i).Earnings.EbitdaValue;
+                            double ebitdaPrev = yearlyFinancials.ElementAt(i).Earnings.EbitdaValue;
                             if (ebitdaPrev != 0)
                             {
-                                int ebitdaCurr = yearlyFinancials.ElementAt(i + 1).Earnings.EbitdaValue;
+                                double ebitdaCurr = yearlyFinancials.ElementAt(i + 1).Earnings.EbitdaValue;
                                 ebitdaGrowth.Add(100 * ((double)(ebitdaCurr - ebitdaPrev) / ebitdaPrev));
                             }
                             else
@@ -141,10 +141,10 @@ namespace StockValuationApp.Main.Plot
                 {
                     for (int i = 0; i < yearlyFinancials.Count() - 1; i++)
                     {
-                        int revPrev = yearlyFinancials.ElementAt(i).Earnings.EbitValue;
+                        double revPrev = yearlyFinancials.ElementAt(i).Earnings.EbitValue;
                         if (revPrev != 0)
                         {
-                            int revCurr = yearlyFinancials.ElementAt(i + 1).Earnings.EbitValue;
+                            double revCurr = yearlyFinancials.ElementAt(i + 1).Earnings.EbitValue;
                             revenueGrowth.Add(100 * ((double)(revCurr - revPrev) / revPrev));
                         }
                         else
@@ -179,10 +179,10 @@ namespace StockValuationApp.Main.Plot
                 {
                     for (int i = 0; i < yearlyFinancials.Count() - 1; i++)
                     {
-                        int ebitPrev = yearlyFinancials.ElementAt(i).Earnings.EbitValue;
+                        double ebitPrev = yearlyFinancials.ElementAt(i).Earnings.EbitValue;
                         if (ebitPrev != 0)
                         {
-                            int ebitCurr = yearlyFinancials.ElementAt(i + 1).Earnings.EbitValue;
+                            double ebitCurr = yearlyFinancials.ElementAt(i + 1).Earnings.EbitValue;
                             ebitGrowth.Add(100 * ((double)(ebitCurr - ebitPrev) / ebitPrev));
                         }
                         else
@@ -218,10 +218,10 @@ namespace StockValuationApp.Main.Plot
                 {
                     for (int i = 0; i < yearlyFinancials.Count() - 1; i++)
                     {
-                        int nIncPrev = yearlyFinancials.ElementAt(i).Earnings.NetIncomeValue;
+                        double nIncPrev = yearlyFinancials.ElementAt(i).Earnings.NetIncomeValue;
                         if (nIncPrev != 0)
                         {
-                            int incCurr = yearlyFinancials.ElementAt(i + 1).Earnings.NetIncomeValue;
+                            double incCurr = yearlyFinancials.ElementAt(i + 1).Earnings.NetIncomeValue;
                             nIncomeGrowth.Add(100 * ((double)(incCurr - nIncPrev) / nIncPrev));
                         }
                         else

@@ -19,7 +19,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace StockValuationApp
+namespace StockValuationApp.Windows
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -59,12 +59,15 @@ namespace StockValuationApp
                 return;
 
             Stock stock = stockManager.getListItemAt(index);
- 
-            stockInfoWindow = new StockInfoWindow();
-            stockInfoWindow.MetricsGiven += OnGetMetricsData;
-            stockInfoWindow.ShowDialog();
 
-            UpdateFinancialUI(stock);
+            if(stock != null)
+            {
+                stockInfoWindow = new StockInfoWindow(stock);
+                stock.MetricsGiven += OnGetMetricsData;
+                stockInfoWindow.ShowDialog();
+
+                UpdateFinancialUI(stock);
+            }           
         }
 
         /// <summary>
@@ -75,18 +78,15 @@ namespace StockValuationApp
         /// <param name="e">holds metric data for stock</param>
         private void OnGetMetricsData(object sender, MetricEventArgs e)
         {
-            int index = lvwAllStocks.SelectedIndex;
-
-            if (index == -1)
-                return;
-
-            Stock stock = stockManager.getListItemAt(index);
-
-            if (stock != null)
-                e.Stock = stock;
+            Stock stock = e.Stock;
 
             if (!stockManager.AddMetricDataFrStock(e))
+            {
                 MessageBox.Show("Error in adding metrics data", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            UpdateFinancialUI(stock);
         }
 
         private void NewApp()
@@ -188,6 +188,65 @@ namespace StockValuationApp
             {
                 stockPlotWindow = new StockPlotWindow(yearlyFinancials);
                 stockPlotWindow.Show();
+            }
+        }
+
+        private void btnDeleteStock_Click(object sender, RoutedEventArgs e)
+        {
+            int index = lvwAllStocks.SelectedIndex;
+
+            if (index == -1) return;
+
+            Stock stock = stockManager.getListItemAt(index);
+
+            if(stock != null)
+            {
+                stockManager.removeItem(stock);
+            }
+
+            UpdateStockUI();
+        }
+
+        private void btnDeleteYearlyFin_Click(object sender, RoutedEventArgs e)
+        {
+            int yfIndex = lvwStockInfo.SelectedIndex;
+            int stockIndex = lvwAllStocks.SelectedIndex;
+
+            if (yfIndex == -1 || stockIndex == -1) return;
+
+            Stock stock = stockManager.getListItemAt(stockIndex);
+            YearlyFinancials yf = stock.Financials.ElementAt(yfIndex);
+
+            if (yf != null)
+            {
+                stock.Financials.Remove(yf);
+            }
+
+            UpdateFinancialUI(stock);
+        }
+
+        private void btnImportStockData_Click(object sender, RoutedEventArgs e)
+        {
+            int index = lvwAllStocks.SelectedIndex;
+
+            if (index == -1) return;
+            Stock stock = stockManager.getListItemAt(index);
+
+            if (stock != null)
+            {
+                try
+                {
+                    stock.MetricsGiven += OnGetMetricsData;
+
+                    stockManager.GetSpecificMetricVal(stock);
+
+                    UpdateFinancialUI(stock);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error in importing stock data.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    Console.WriteLine(ex.ToString());
+                }
             }
         }
 

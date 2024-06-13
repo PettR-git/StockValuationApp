@@ -9,7 +9,7 @@ namespace StockValuationApp.Entities.Stocks.Metrics.Earnings
     [Serializable]
     public class NetIncome : Earning
     {
-        public override int NetIncomeValue
+        public override double NetIncomeValue
         {
             get { return base.NetIncomeValue; }
             set { base.NetIncomeValue = value; }

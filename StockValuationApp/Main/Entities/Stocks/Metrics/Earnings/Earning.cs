@@ -9,8 +9,8 @@ namespace StockValuationApp.Entities.Stocks.Metrics.Earnings
     [Serializable]
     public class Earning
     {
-        public virtual int NetIncomeValue { get; set; } = 0;
-        public virtual int EbitValue { get; set; } = 0;
-        public virtual int EbitdaValue { get; set; } = 0; 
+        public virtual double NetIncomeValue { get; set; } = 0;
+        public virtual double EbitValue { get; set; } = 0;
+        public virtual double EbitdaValue { get; set; } = 0; 
     }
 }

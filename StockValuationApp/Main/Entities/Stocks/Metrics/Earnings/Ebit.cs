@@ -9,7 +9,7 @@ namespace StockValuationApp.Entities.Stocks.Metrics.Earnings
     [Serializable]
     public class Ebit : Earning
     {
-        public override int EbitValue
+        public override double EbitValue
         {
             get { return base.EbitValue; }
             set { base.EbitValue = value; }

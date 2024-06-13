@@ -15,20 +15,20 @@ namespace StockValuationApp.Entities.Stocks
     {
         public Stock Stock { get; set; }
         public int Year { get; set; }    
-        public int Revenue {  get; set; }
-        public int Ebitda {  get; set; }
-        public int Ebit {  get; set; }
-        public int NetIncome {  get; set; }
-        public int Price {  get; set; }
-        public int MarketValue {  get; set; }   
-        public int NumberOfShares {  get; set; }
-        public int ShortTermDebt { get; set; }
-        public int LongTermDebt { get; set; }
+        public double Revenue {  get; set; }
+        public double Ebitda {  get; set; }
+        public double Ebit {  get; set; }
+        public double NetIncome {  get; set; }
+        public double Price {  get; set; }
+        public double MarketValue {  get; set; }   
+        public double NumberOfShares {  get; set; }
+        public double ShortTermDebt { get; set; }
+        public double LongTermDebt { get; set; }
         public double Dividends {  get; set; }
-        public int CashAndEquivalents {  get; set; }
-        public int OperationalCashflow {  get; set; }
-        public int CapitalExpenditures {  get; set; }
-        public int TotalLiabilities {  get; set; }
-        public int TotalAssets {  get; set; }
+        public double CashAndEquivalents {  get; set; }
+        public double OperationalCashflow {  get; set; }
+        public double CapitalExpenditures {  get; set; }
+        public double TotalLiabilities {  get; set; }
+        public double TotalAssets {  get; set; }
     }
 }

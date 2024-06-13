@@ -20,9 +20,9 @@ namespace StockValuationApp.Entities.Stocks.Metrics
 
         /// Properties for year and components of a metric
         public int Year { get; set; }
-        public int Revenue { get; set; } = 0;
-        public int NmbrOfShares { get; set; } = 0;
-        public int StockPrice {  get; set; } = 0;
+        public double Revenue { get; set; } = 0;
+        public double NmbrOfShares { get; set; } = 0;
+        public double StockPrice {  get; set; } = 0;
         public Earning Earnings { get; set; }
         public EnterpriseValue EnterpriseVal { get; set; }
 

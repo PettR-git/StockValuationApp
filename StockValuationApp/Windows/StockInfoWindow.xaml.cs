@@ -10,18 +10,19 @@ using System.Threading.Tasks;
 using System.Windows;
 
 
-namespace StockValuationApp
+namespace StockValuationApp.Windows
 {
     /// <summary>
     /// Interaction logic for StockInfoWindow.xaml
     /// </summary>
     public partial class StockInfoWindow : Window
     {
-        public EventHandler<MetricEventArgs> MetricsGiven;
-        public StockInfoWindow()
+        private readonly Stock stock;
+        public StockInfoWindow(Stock stock)
         {
             InitializeComponent();
             InitializeGUI();
+            this.stock = stock;
         }
 
         /// <summary>
@@ -43,28 +44,29 @@ namespace StockValuationApp
             PropertyInfo[] allEventProperties = typeof(MetricEventArgs).GetProperties();
             PropertyInfo[] metricProperties = allEventProperties.Skip(1).ToArray();
 
+            args.Stock = stock;
             args.Year = ValidateAndParseToInt(tbxYear.Text);
-            args.Revenue = ValidateAndParseToInt(tbxRevenue.Text);
-            args.MarketValue = ValidateAndParseToInt(tbxMarketValue.Text);
-            args.CapitalExpenditures = ValidateAndParseToInt(tbxCapitalExpenditures.Text);
-            args.NumberOfShares = ValidateAndParseToInt(tbxCashAndEquiv.Text);
-            args.OperationalCashflow = ValidateAndParseToInt(tbxOperCashflow.Text);   
-            args.TotalLiabilities = ValidateAndParseToInt(tbxTotalLiabilities.Text);
-            args.CashAndEquivalents = ValidateAndParseToInt(tbxCashAndEquiv.Text);
-            args.Dividends = ValidateAndParseToInt(tbxDividends.Text);
-            args.Ebit = ValidateAndParseToInt(tbxEbit.Text);
-            args.Ebitda = ValidateAndParseToInt(tbxEbitda.Text);
-            args.LongTermDebt = ValidateAndParseToInt(tbxLongTermDebt.Text);
-            args.ShortTermDebt = ValidateAndParseToInt(tbxShortTermDebt.Text);
-            args.NetIncome = ValidateAndParseToInt(tbxNetIncome.Text);
-            args.Price = ValidateAndParseToInt(tbxStockPrice.Text);
+            args.Revenue = ValidateAndParseToDouble(tbxRevenue.Text);
+            args.MarketValue = ValidateAndParseToDouble(tbxMarketValue.Text);
+            args.CapitalExpenditures = ValidateAndParseToDouble(tbxCapitalExpenditures.Text);
+            args.NumberOfShares = ValidateAndParseToDouble(tbxCashAndEquiv.Text);
+            args.OperationalCashflow = ValidateAndParseToDouble(tbxOperCashflow.Text);   
+            args.TotalLiabilities = ValidateAndParseToDouble(tbxTotalLiabilities.Text);
+            args.CashAndEquivalents = ValidateAndParseToDouble(tbxCashAndEquiv.Text);
+            args.Dividends = ValidateAndParseToDouble(tbxDividends.Text);
+            args.Ebit = ValidateAndParseToDouble(tbxEbit.Text);
+            args.Ebitda = ValidateAndParseToDouble(tbxEbitda.Text);
+            args.LongTermDebt = ValidateAndParseToDouble(tbxLongTermDebt.Text);
+            args.ShortTermDebt = ValidateAndParseToDouble(tbxShortTermDebt.Text);
+            args.NetIncome = ValidateAndParseToDouble(tbxNetIncome.Text);
+            args.Price = ValidateAndParseToDouble(tbxStockPrice.Text);
 
             foreach (var property in metricProperties)
             {
                 var value = 0.0;
 
                 //Properties of type double
-                if(property.Name == "Dividends")
+                if(property.Name != "Year")
                 {
                      value = (double)property.GetValue(args, null);
                 }
@@ -86,7 +88,7 @@ namespace StockValuationApp
             }
 
             //Publish event with the metric arguments
-            MetricsGiven?.Invoke(this, args);
+            stock.MetricsGiven?.Invoke(this, args);
             this.Close();
         }
 
@@ -95,6 +97,19 @@ namespace StockValuationApp
         /// </summary>
         /// <param name="strVal"></param>
         /// <returns>parsed value or -1 for unparseable string and 0 for empty string</returns>
+        private double ValidateAndParseToDouble(string strVal)
+        {
+            if (strVal == string.Empty)
+                return 0;
+
+            bool ok = double.TryParse(strVal, out double val);
+
+            if (ok)
+                return val;
+            else
+                return -1;
+        }
+
         private int ValidateAndParseToInt(string strVal)
         {
             if (strVal == string.Empty)

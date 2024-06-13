@@ -19,7 +19,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using Color = ScottPlot.Color;
 
-namespace StockValuationApp
+namespace StockValuationApp.Windows
 {
     /// <summary>
     /// Interaction logic for StockPlotWindow.xaml
