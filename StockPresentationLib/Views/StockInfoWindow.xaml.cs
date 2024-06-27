@@ -1,16 +1,14 @@
-﻿using StockValuationApp.Entities.Enums;
-using StockValuationApp.Entities.Stocks;
-using StockValuationApp.Main.Enums;
-using System;
+﻿using System;
 using System.Reflection;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using StockValuationApp.Entities.Stocks;
 
 
-namespace StockValuationApp.Windows
+namespace StockPresentationLib.Views
 {
     /// <summary>
     /// Interaction logic for StockInfoWindow.xaml

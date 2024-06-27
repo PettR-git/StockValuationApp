@@ -16,6 +16,7 @@
     <Deterministic>true</Deterministic>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -109,56 +110,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Main\Calculations\CalculateKeyFigure.cs" />
-    <Compile Include="Main\Enums\FinanceCategory.cs" />
-    <Compile Include="Main\Enums\KeyFigureTypes.cs" />
-    <Compile Include="Main\Entities\Generic\ListManager.cs" />
-    <Compile Include="Main\Entities\Stocks\Metrics\MetricEventArgs.cs" />
-    <Compile Include="Main\Entities\Stocks\Metrics\Earnings\Earning.cs" />
-    <Compile Include="Main\Entities\Stocks\Metrics\Earnings\Ebit.cs" />
-    <Compile Include="Main\Entities\Stocks\Metrics\Earnings\Ebitda.cs" />
-    <Compile Include="Main\Entities\Stocks\Metrics\Earnings\NetIncome.cs" />
-    <Compile Include="Main\Entities\Stocks\Metrics\EnterpriseValue.cs" />
-    <Compile Include="Main\Entities\Stocks\Metrics\YearlyFinancials.cs" />
-    <Compile Include="Main\Entities\Stocks\Stock.cs" />
-    <Compile Include="Main\Entities\Stocks\StockManager.cs" />
-    <Compile Include="Main\Enums\MetricTypes.cs" />
-    <Compile Include="Main\Enums\PeriodTypes.cs" />
-    <Compile Include="Main\Plot\PlotStockMetrics.cs" />
-    <Compile Include="Main\Uri\HttpStockEstimates.cs" />
-    <Compile Include="Main\Uri\HttpStockMetrics.cs" />
-    <Compile Include="Main\Uri\HttpStockNews.cs" />
-    <Compile Include="Main\Uri\UriFinanceManager.cs" />
-    <Compile Include="Main\Utilities\StockJsonSerializerSettings.cs" />
-    <Compile Include="Windows\StockInfoWindow.xaml.cs">
-      <DependentUpon>StockInfoWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Main\Utilities\BinarySerialize.cs" />
-    <Compile Include="Main\Utilities\JsonSerialize.cs" />
-    <Compile Include="Main\Utilities\XMLSerialize.cs" />
-    <Compile Include="Windows\StockPlotWindow.xaml.cs">
-      <DependentUpon>StockPlotWindow.xaml</DependentUpon>
-    </Compile>
-    <Page Include="Windows\MainWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Windows\MainWindow.xaml.cs">
-      <DependentUpon>MainWindow.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Page Include="Windows\StockInfoWindow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Windows\StockPlotWindow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">
@@ -178,7 +133,7 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <None Include="OpenTK.dll.config" />
+    <None Include="app.config" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -186,7 +141,10 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <ProjectReference Include="..\AppViewsLib\StockLib.csproj">
+      <Project>{262ce65d-13a3-46a5-b936-102367250223}</Project>
+      <Name>StockLib</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\SkiaSharp.NativeAssets.macOS.2.88.8\build\net462\SkiaSharp.NativeAssets.macOS.targets" Condition="Exists('..\packages\SkiaSharp.NativeAssets.macOS.2.88.8\build\net462\SkiaSharp.NativeAssets.macOS.targets')" />

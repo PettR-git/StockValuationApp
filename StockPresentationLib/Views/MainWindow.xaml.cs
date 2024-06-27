@@ -1,6 +1,5 @@
 ﻿using Microsoft.Win32;
 using Newtonsoft.Json;
-using StockValuationApp.Entities.Enums;
 using StockValuationApp.Entities.Stocks;
 using StockValuationApp.Entities.Stocks.Metrics;
 using StockValuationApp.Main.Utilities;
@@ -19,7 +18,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace StockValuationApp.Windows
+namespace StockPresentationLib.Views
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
