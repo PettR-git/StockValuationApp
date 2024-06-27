@@ -27,7 +27,7 @@ namespace StockValuationApp.Entities.Stocks
 
         public override string ToString()
         {
-            string outStr = string.Format("Stock: {0}, with ticker ${1}", Name, Ticker.ToUpper());
+            string outStr = string.Format("Stock: {0}, ${1}", Name, Ticker.ToUpper());
             return outStr;
         }
     }

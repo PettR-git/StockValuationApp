@@ -1,9 +1,7 @@
 ﻿using ScottPlot;
 using ScottPlot.Plottables;
+using StockPresentationLib.Plot;
 using StockValuationApp.Entities.Stocks.Metrics;
-using StockValuationApp.Entities.Stocks.Metrics.Earnings;
-using StockValuationApp.Main.Enums;
-using StockValuationApp.Main.Plot;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,7 +17,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using Color = ScottPlot.Color;
 
-namespace StockValuationApp.Windows
+namespace StockPresentationLib.Views
 {
     /// <summary>
     /// Interaction logic for StockPlotWindow.xaml

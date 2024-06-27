@@ -15,8 +15,8 @@ namespace WTS.Utilities.Serializer
         {
             using (FileStream fileStream = new FileStream(fileName, FileMode.Create))
             {
-                BinaryFormatter bf = new BinaryFormatter();
-                bf.Serialize(fileStream, list);
+                //BinaryFormatter bf = new BinaryFormatter();
+                //bf.Serialize(fileStream, list);
                 fileStream.Close();
             }
         }
@@ -28,8 +28,8 @@ namespace WTS.Utilities.Serializer
 
             using (FileStream fileStream = new FileStream(fileName, FileMode.Open))
             {
-                BinaryFormatter b = new BinaryFormatter();
-                objs = (List<T>)b.Deserialize(fileStream);
+                //BinaryFormatter b = new BinaryFormatter();
+                //objs = (List<T>)b.Deserialize(fileStream);
                 fileStream.Close();
             }
 

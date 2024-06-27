@@ -9,7 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace StockValuationApp.Main.Plot
+namespace StockPresentationLib.Plot
 {
     public class PlotStockMetrics
     {
@@ -20,8 +20,6 @@ namespace StockValuationApp.Main.Plot
         private Scatter scatterEbitGrowth;
         private Scatter scatterNetIncGrowth;
         private Scatter scatterRevGrowth;
-
-
         public PlotStockMetrics(WpfPlot finPlot, List<YearlyFinancials> yearlyFinancials) 
         { 
             this.finPlot = finPlot;
