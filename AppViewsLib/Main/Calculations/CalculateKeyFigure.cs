@@ -12,27 +12,44 @@ namespace StockValuationApp.Entities.Calculations
     /// </summary>
     public static class CalculateKeyFigure
     {
+        public static double CalcRoe(double netIncome, double totAssets, double totLiabilities)
+        {
+            double result = netIncome/(totAssets-totLiabilities);
+
+            return result;
+        }
+
+        public static double CalcRoic(double netIncome, double dividends, double longTermDebt, double shortTermDebt, double totAssets, double totLiabilities)
+        {
+            double result = (netIncome - dividends)/(longTermDebt + shortTermDebt + totAssets - totLiabilities);
+
+            return result;
+        }
+
+        public static double CalcEvFreeCashflow((double marketVal, double shortTermDebt, double longTermDebt, double cash) ev, double operCF, double capExp)
+        {
+            double result = (ev.marketVal + ev.shortTermDebt + ev.longTermDebt - ev.cash) / (operCF - capExp);
+
+            return result;
+        }
+
         public static double CalcEvEarnings((double marketVal, double shortTermDebt, double longTermDebt, double cash)ev, double earnings)
         {
-            double netDebtVal = ev.shortTermDebt + ev.longTermDebt - ev.cash;
-            double evVal = ev.marketVal + netDebtVal;
-            double result = evVal/earnings;
+            double result = (ev.marketVal + ev.shortTermDebt + ev.longTermDebt - ev.cash)/earnings;
 
             return result;
         }
 
         public static double CalcPriceToEarnings((double netIncome, double nmbrOfShares)eps, double price)
         {
-            double epsVal = eps.netIncome / eps.nmbrOfShares;
-            double result = price / epsVal;
+            double result = price / (eps.netIncome / eps.nmbrOfShares);
 
             return result;
         }
 
         public static double CalcNetDebtToEbitda((double shortTermDebt, double longTermDebt, double cash)netDebt, double ebitda)
         {
-            double netDebtVal = netDebt.longTermDebt + netDebt.shortTermDebt - netDebt.cash;
-            double result = netDebtVal / ebitda;
+            double result = (netDebt.longTermDebt + netDebt.shortTermDebt - netDebt.cash) / ebitda;
 
             return result;
         }

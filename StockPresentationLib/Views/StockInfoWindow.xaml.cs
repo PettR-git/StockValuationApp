@@ -47,8 +47,9 @@ namespace StockPresentationLib.Views
             args.Revenue = ValidateAndParseToDouble(tbxRevenue.Text);
             args.MarketValue = ValidateAndParseToDouble(tbxMarketValue.Text);
             args.CapitalExpenditures = ValidateAndParseToDouble(tbxCapitalExpenditures.Text);
-            args.NumberOfShares = ValidateAndParseToDouble(tbxCashAndEquiv.Text);
-            args.OperationalCashflow = ValidateAndParseToDouble(tbxOperCashflow.Text);   
+            args.NumberOfShares = ValidateAndParseToDouble(tbxNmbrOfShares.Text);
+            args.OperationalCashflow = ValidateAndParseToDouble(tbxOperCashflow.Text);  
+            args.TotalAssets = ValidateAndParseToDouble(tbxTotalAssets.Text);
             args.TotalLiabilities = ValidateAndParseToDouble(tbxTotalLiabilities.Text);
             args.CashAndEquivalents = ValidateAndParseToDouble(tbxCashAndEquiv.Text);
             args.Dividends = ValidateAndParseToDouble(tbxDividends.Text);

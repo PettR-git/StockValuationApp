@@ -24,7 +24,7 @@ namespace StockPresentationLib.Views
     /// </summary>
     public partial class Earnings : UserControl
     {
-        private PlotStockMetrics plotStockMetrics;
+        private PlotEarnings plotStockMetrics;
         public Earnings()
         {
             InitializeComponent();
@@ -42,7 +42,7 @@ namespace StockPresentationLib.Views
 
                 if (stock != null)
                 {
-                    plotStockMetrics = new PlotStockMetrics(WpfPlot1, stock);
+                    plotStockMetrics = new PlotEarnings(WpfPlot1, stock);
                     PlotRevenueAndEarnings();
                     SetInitialCbxValues();
                 }

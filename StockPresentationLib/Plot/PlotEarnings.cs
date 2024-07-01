@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace StockPresentationLib.Plot
 {
-    public class PlotStockMetrics
+    public class PlotEarnings
     {
         private List<Tick> xAxesYears;
         private List<YearlyFinancials> yearlyFinancials;
@@ -24,7 +24,7 @@ namespace StockPresentationLib.Plot
         private Scatter scatterNetIncGrowth;
         private Scatter scatterRevGrowth;
         private ScottPlot.Palettes.Category10 palette;
-        public PlotStockMetrics(WpfPlot finPlot, Stock stock) 
+        public PlotEarnings(WpfPlot finPlot, Stock stock) 
         {
             this.finPlot = finPlot;
             this.stock = stock;
@@ -93,9 +93,13 @@ namespace StockPresentationLib.Plot
                 LabelText = "Net Income",
                 FillColor = palette.GetColor(2)
             });
-
             finPlot.Plot.Legend.IsVisible = true;
             finPlot.Plot.Legend.Alignment = Alignment.UpperLeft;
+
+            finPlot.Plot.Legend.BackgroundColor = ScottPlot.Color.FromHex("#A5CAAF");
+            finPlot.Plot.Legend.OutlineColor = ScottPlot.Color.FromHex("#212529");
+            finPlot.Plot.Legend.ShadowColor = ScottPlot.Color.FromHex("#A5CAAF").WithOpacity(0.1);
+            finPlot.Plot.Legend.ShadowOffset = new(4, 4);
             finPlot.Plot.DataBackground.Color = ScottPlot.Color.FromHex("#272B2F");
             finPlot.Plot.Grid.MajorLineColor = ScottPlot.Color.FromHex("#0e3d54");
             finPlot.Plot.FigureBackground.Color = ScottPlot.Color.FromHex("#212529");
