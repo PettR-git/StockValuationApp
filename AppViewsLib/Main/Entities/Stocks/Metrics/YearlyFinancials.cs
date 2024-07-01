@@ -59,7 +59,7 @@ namespace StockValuationApp.Entities.Stocks.Metrics
             }
             else
             {
-                outStr = $"Unsufficient data to create Key Figure | Year {Year}";
+                outStr = $"Insufficient data for key figures | Year {Year}";
             }
             return outStr.TrimEnd();
         }

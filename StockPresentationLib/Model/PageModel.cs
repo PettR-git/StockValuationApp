@@ -1,4 +1,5 @@
 ﻿using ScottPlot.WPF;
+using StockValuationApp.Entities.Stocks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,9 @@ namespace StockPresentationLib.Model
 {
     public class PageModel
     {
-        //Home
+        //Home (High persistance)
+        public List<Stock> Stocks { get; set; }
+        public Stock CurrentStock { get; set; }
 
         //Earnings
         public WpfPlot FinPlot { get; set; }

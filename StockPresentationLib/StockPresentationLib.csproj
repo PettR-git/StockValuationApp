@@ -9,6 +9,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Fonts\Aaargh.ttf" />
+    <None Remove="Fonts\Rubik-Medium.ttf" />
+    <None Remove="Fonts\Rubik-Regular.ttf" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Update="Views\MainWindow.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -25,6 +31,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AppViewsLib\StockLib.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Fonts\Aaargh.ttf" />
+    <Resource Include="Fonts\Rubik-Medium.ttf" />
+    <Resource Include="Fonts\Rubik-Regular.ttf" />
   </ItemGroup>
 
 </Project>

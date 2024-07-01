@@ -1,9 +1,4 @@
-﻿using Microsoft.Win32;
-using Newtonsoft.Json;
-using StockValuationApp.Entities.Stocks;
-using StockValuationApp.Entities.Stocks.Metrics;
-using StockValuationApp.Main.Utilities;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -21,12 +16,13 @@ using System.Windows.Shapes;
 namespace StockPresentationLib.Views
 {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    /// Interaction logic for Criterias.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class Criterias : UserControl
     {
-        public MainWindow()
+        public Criterias()
         {
+            InitializeComponent();
         }
     }
 }
