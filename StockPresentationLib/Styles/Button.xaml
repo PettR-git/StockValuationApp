@@ -17,7 +17,7 @@
 
                     <Border x:Name="border"
                             Height="50"
-                            Width="228"
+                            Width="120"
                             BorderThickness="0">
 
                         <Border.Background>
@@ -28,15 +28,15 @@
                         <Grid>
 
                             <Border x:Name="Indicator"
-                                    Height="35"
-                                    Width="4"
+                                    Height="40"
+                                    Width="2"
                                     HorizontalAlignment="Left"
                                     VerticalAlignment="Center"
-                                    Background="#FFFFFF"
+                                    Background="#FFA5CAAF"
                                     Visibility="Collapsed"
                                     CornerRadius="2" />
 
-                            <ContentPresenter />
+                            <ContentPresenter/>
 
                         </Grid>
                         
@@ -103,15 +103,48 @@
         </Setter>
 
     </Style>
+    
+    <Style x:Key="NormalButton" TargetType="{x:Type Button}">
+        <Setter Property="FontFamily" Value="/StockPresentationLib;component/Fonts/#Rubik" />
+        <Setter Property="Background" Value="#212529"/>
+        <Setter Property="Foreground" Value="#FFA5CAAF"/>
+        <Setter Property="BorderBrush" Value="Gray" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="10,5"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="border" 
+                        Background="{TemplateBinding Background}" 
+                        BorderBrush="{TemplateBinding BorderBrush}" 
+                        BorderThickness="{TemplateBinding BorderThickness}" 
+                        CornerRadius="5">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="#FF3D4157"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="#FF636276"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="border" Property="Background" Value="Black"/>
+                            <Setter Property="Foreground" Value="Black"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Resources>
+            <Style TargetType="Border">
+                <Setter Property="CornerRadius" Value="5" />
+            </Style>
+        </Style.Resources>
+    </Style>
 
-    <ImageBrush x:Key="close_app_def"
-                ImageSource="/Images/shutdown_def.png"
-                Stretch="None" />
 
-    <ImageBrush x:Key="close_app_mo"
-                ImageSource="/Images/shutdown_mo.png"
-                Stretch="None" />
-
+    <!-- Copyright (c) 2022 Arun Mutharasu -->
     <Style x:Key="ExitApp"
            TargetType="{x:Type Button}">
 
@@ -132,29 +165,14 @@
 
                 <ControlTemplate TargetType="{x:Type Button}">
 
-                    <Border x:Name="border"
-                            BorderThickness="0"
-                            Background="{StaticResource close_app_def}">
-
-                    </Border>
-
                     <ControlTemplate.Triggers>
 
                         <Trigger Property="IsMouseOver"
                                  Value="True">
-
-                            <Setter Property="Background"
-                                    TargetName="border"
-                                    Value="{StaticResource close_app_mo}" />
-
                         </Trigger>
 
                         <Trigger Property="IsPressed"
                                  Value="True">
-
-                            <Setter Property="Background"
-                                    TargetName="border"
-                                    Value="{StaticResource close_app_mo}" />
 
                         </Trigger>
 

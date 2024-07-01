@@ -294,8 +294,9 @@ namespace StockValuationApp.Entities.Stocks
                             case FinanceCategory.Cashflow:
                                 jObjs = await uriManager.GetFinanceData(stock.Ticker, FinanceCategory.Cashflow, PeriodTypes.annual);
 
-                                if (jObjs[i][met.ToString()] != null)
-                                    metricVal = jObjs[i][met.ToString()].Value<double>();
+                                if(jObjs.Count > 0)
+                                    if (jObjs[i][met.ToString()] != null)
+                                        metricVal = jObjs[i][met.ToString()].Value<double>();
 
                                 switch (met)
                                 {
@@ -314,8 +315,9 @@ namespace StockValuationApp.Entities.Stocks
                             case FinanceCategory.StatementAnalysis:
                                 jObjs = await uriManager.GetFinanceData(stock.Ticker, FinanceCategory.StatementAnalysis, PeriodTypes.annual);
 
-                                if (jObjs[i][met.ToString()] != null)
-                                    metricVal = jObjs[i][met.ToString()].Value<double>();
+                                if (jObjs.Count > 0)
+                                    if (jObjs[i][met.ToString()] != null)
+                                        metricVal = jObjs[i][met.ToString()].Value<double>();
 
                                 switch (met)
                                 {
@@ -334,8 +336,9 @@ namespace StockValuationApp.Entities.Stocks
                             case FinanceCategory.Income:
                                 jObjs = await uriManager.GetFinanceData(stock.Ticker, FinanceCategory.Income, PeriodTypes.annual);
 
-                                if (jObjs[i][met.ToString()] != null)
-                                    metricVal = jObjs[i][met.ToString()].Value<double>();
+                                if (jObjs.Count > 0)
+                                    if (jObjs[i][met.ToString()] != null)
+                                         metricVal = jObjs[i][met.ToString()].Value<double>();
 
                                 switch (met)
                                 {
@@ -357,8 +360,9 @@ namespace StockValuationApp.Entities.Stocks
                             case FinanceCategory.BalanceSheet:
                                 jObjs = await uriManager.GetFinanceData(stock.Ticker, FinanceCategory.BalanceSheet, PeriodTypes.annual);
 
-                                if (jObjs[i][met.ToString()] != null)
-                                    metricVal = jObjs[i][met.ToString()].Value<double>();
+                                if (jObjs.Count > 0)
+                                    if (jObjs[i][met.ToString()] != null)
+                                        metricVal = jObjs[i][met.ToString()].Value<double>();
 
                                 switch (met)
                                 {
@@ -382,7 +386,7 @@ namespace StockValuationApp.Entities.Stocks
                         }
                     }                 
                 }
-                args.Year = 2023 - i;
+                args.Year = DateTime.Now.Year - 1 - i;
                 stock.MetricsGiven?.Invoke(this, args);
             }
         }

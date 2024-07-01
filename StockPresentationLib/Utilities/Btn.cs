@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows;
 
+//Copyright (c) 2022 Arun Mutharasu
 namespace StockPresentationLib.Utilities
 {
     public class Btn : RadioButton

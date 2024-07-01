@@ -1,6 +1,6 @@
-﻿using ScottPlot;
-using ScottPlot.Plottables;
-using StockPresentationLib.Plot;
+﻿using StockPresentationLib.Plot;
+using StockPresentationLib.ViewModel;
+using StockValuationApp.Entities.Stocks;
 using StockValuationApp.Entities.Stocks.Metrics;
 using System;
 using System.Collections.Generic;
@@ -14,30 +14,44 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
 using System.Windows.Shapes;
-using Color = ScottPlot.Color;
 
 namespace StockPresentationLib.Views
 {
     /// <summary>
-    /// Interaction logic for StockPlotWindow.xaml
+    /// Interaction logic for Earnings.xaml
     /// </summary>
-    public partial class StockPlotWindow : Window
+    public partial class Earnings : UserControl
     {
         private PlotStockMetrics plotStockMetrics;
-
-        public StockPlotWindow(List<YearlyFinancials> yf)
+        public Earnings()
         {
             InitializeComponent();
 
-            //plotStockMetrics = new PlotStockMetrics(WpfPlot1, );
-            PlotRevenueAndEarnings();
-            SetInitialCbxValues();
-        } 
+            this.Loaded += Earnings_Loaded;
+        }
+
+        private void Earnings_Loaded(object sender, RoutedEventArgs e)
+        {
+            Stock stock = null;
+
+            if (this.DataContext is EarningsVM earningsVM)
+            {
+                stock = earningsVM.Stock;
+
+                if (stock != null)
+                {
+                    plotStockMetrics = new PlotStockMetrics(WpfPlot1, stock);
+                    PlotRevenueAndEarnings();
+                    SetInitialCbxValues();
+                }
+            }            
+        }
 
         private void SetInitialCbxValues()
         {
-            cbxEbitGrowth.IsChecked = true;   
+            cbxEbitGrowth.IsChecked = true;
             cbxNetIncGrowth.IsChecked = true;
         }
 
@@ -63,7 +77,7 @@ namespace StockPresentationLib.Views
 
         private void cbxEbitdaGrowth_Checked(object sender, RoutedEventArgs e)
         {
-            if(cbxEbitdaGrowth.IsChecked == true)
+            if (cbxEbitdaGrowth.IsChecked == true)
                 plotStockMetrics.PlotEbitdaGrowth(true);
             else
                 plotStockMetrics.PlotEbitdaGrowth(false);

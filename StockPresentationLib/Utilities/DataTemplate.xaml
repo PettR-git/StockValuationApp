@@ -1,4 +1,17 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:vm="clr-namespace:StockPresentationLib.ViewModel"
+                    xmlns:view="clr-namespace:StockPresentationLib.Views">
+    <DataTemplate DataType="{x:Type vm:HomeVM}">
+        <view:Home />
+    </DataTemplate>
     
+    <DataTemplate DataType="{x:Type vm:EarningsVM}">
+        <view:Earnings />
+    </DataTemplate>
+
+    <DataTemplate DataType="{x:Type vm:CriteriasVM}">
+        <view:Criterias />
+    </DataTemplate>
+
 </ResourceDictionary>
