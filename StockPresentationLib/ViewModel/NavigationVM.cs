@@ -14,7 +14,6 @@ namespace StockPresentationLib.ViewModel
     public class NavigationVM : ViewModelBase
     {
         private object _currentView;
-
         public PageModel PersistPageM { get; set; }
         public object CurrentView
         {
@@ -29,7 +28,7 @@ namespace StockPresentationLib.ViewModel
             CurrentView = homeVM;
         }
         private void Earnings(object obj) => CurrentView = new EarningsVM(PersistPageM.CurrentStock);
-        private void Returns(object obj) => CurrentView = new ReturnsVM();
+        private void Returns(object obj) => CurrentView = new ReturnsVM(PersistPageM.CurrentStock);
         private void Criterias(object obj) => CurrentView = new CriteriasVM();
         private void Consensus(object obj) => CurrentView = new ConsensusVM();
         public ICommand HomeCommand { get; set; }

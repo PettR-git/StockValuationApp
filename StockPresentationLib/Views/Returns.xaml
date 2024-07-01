@@ -1,0 +1,25 @@
+﻿<UserControl x:Class="StockPresentationLib.Views.Returns"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:StockPresentationLib.Views"
+             mc:Ignorable="d" 
+             xmlns:ScottPlot="clr-namespace:ScottPlot.WPF;assembly=ScottPlot.WPF"
+             d:DesignHeight="600"
+             d:DesignWidth="730"
+             Style="{StaticResource Page_Style}">
+
+    <Grid Margin="15">
+        <Border CornerRadius="0,20,20,0"
+                Background="#212529">
+
+        </Border>
+        <Grid>
+            <ScottPlot:WpfPlot x:Name="WpfPlot2" Margin="0,0,0,50"/>
+            <CheckBox x:Name="cbxRoeGrowth" Content="Return on Equity" HorizontalAlignment="Left" Margin="104,529,0,0" VerticalAlignment="Top" Checked="cbxRoeGrowth_Checked" Unchecked="cbxRoeGrowth_Checked"/>
+            <CheckBox x:Name="cbxRoicGrowth" Content="Return on Invested Capital" HorizontalAlignment="Left" Margin="256,529,0,0" VerticalAlignment="Top" Checked="cbxRoicGrowth_Checked" Unchecked="cbxRoicGrowth_Checked"/>
+            <CheckBox x:Name="cbxFcfGrowth" Content="Free Cashflow" HorizontalAlignment="Left" Margin="469,529,0,0" VerticalAlignment="Top" Checked="cbxFcfGrowth_Checked" Unchecked="cbxFcfGrowth_Checked"/>
+        </Grid>
+    </Grid>
+</UserControl>

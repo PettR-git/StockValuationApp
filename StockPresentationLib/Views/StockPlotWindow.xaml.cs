@@ -24,7 +24,7 @@ namespace StockPresentationLib.Views
     /// </summary>
     public partial class StockPlotWindow : Window
     {
-        private PlotStockMetrics plotStockMetrics;
+        private PlotEarnings plotStockMetrics;
 
         public StockPlotWindow(List<YearlyFinancials> yf)
         {

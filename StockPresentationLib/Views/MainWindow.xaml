@@ -60,7 +60,7 @@
                         </Grid>
                     </Menu:Btn>
 
-                    <!--// Customer //-->
+                    <!--// Earnings //-->
 
                     <Menu:Btn Style="{StaticResource BtnStyle}"
                               Command="{Binding EarningsCommand}">
@@ -75,7 +75,7 @@
 
                     </Menu:Btn>
 
-                    <!--// Products //-->
+                    <!--// Returns //-->
 
                     <Menu:Btn Style="{StaticResource BtnStyle}"
                               Command="{Binding ReturnsCommand}">
@@ -90,7 +90,7 @@
 
                     </Menu:Btn>
 
-                    <!--// Orders //-->
+                    <!--// Criterias //-->
 
                     <Menu:Btn Style="{StaticResource BtnStyle}"
                               Command="{Binding CriteriasCommand}">
@@ -105,7 +105,7 @@
 
                     </Menu:Btn>
 
-                    <!--// Transactions //-->
+                    <!--// Consensus //-->
 
                     <Menu:Btn Style="{StaticResource BtnStyle}"
                               Command="{Binding ConsensusCommand}">

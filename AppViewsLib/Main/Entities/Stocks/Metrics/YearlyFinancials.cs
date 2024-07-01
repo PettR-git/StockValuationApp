@@ -28,7 +28,7 @@ namespace StockValuationApp.Entities.Stocks.Metrics
 
         public override string ToString()
         {
-            string outStr = string.Empty;
+            string outStr = string.Format("Year {0}\n", Year);
             string metricStr = string.Empty;
 
             if (KeyFiguresDict != null)
@@ -49,12 +49,23 @@ namespace StockValuationApp.Entities.Stocks.Metrics
                         case KeyFigureTypes.NetDebtToEbitda:
                             metricStr = "Net Debt/EBITDA";
                             break;
+                        case KeyFigureTypes.EvFreecashflow:
+                            metricStr = "EV/FCF";
+                            break;
+                        case KeyFigureTypes.ReturnOnInvCap:
+                            metricStr = "ROIC";
+                            break;
+                        case KeyFigureTypes.ReturnOnEquity:
+                            metricStr = "ROE";
+                            break;
+                        default:
+                            continue;
                     }
 
                     if (Year > DateTime.Now.Year)
                         outStr += "Estimation | ";
 
-                    outStr += string.Format("{0}: {1:F2} | Year {2}\n", metricStr, kvp.Value, Year);
+                    outStr += string.Format("{0}: {1:F2} \n", metricStr, kvp.Value);
                 }
             }
             else

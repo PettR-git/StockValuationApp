@@ -16,6 +16,7 @@ namespace StockValuationApp.Entities.Enums
         EvFreecashflow,
         ReturnOnEquity,
         ReturnOnInvCap,
-        EvSales
+        EvSales,
+        FreeCashflow
     }
 }

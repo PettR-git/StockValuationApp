@@ -112,6 +112,7 @@ namespace StockValuationApp.Entities.Stocks
             yf.Earnings.EbitdaValue = e.Ebitda;
             yf.Earnings.NetIncomeValue = e.NetIncome;
             yf.Revenue = e.Revenue;
+
             yf.EnterpriseVal = new EnterpriseValue();
             yf.EnterpriseVal.MarketValue = e.MarketValue;
             yf.EnterpriseVal.LongTermDebt = e.LongTermDebt;
@@ -132,6 +133,37 @@ namespace StockValuationApp.Entities.Stocks
             {
                 switch (keyFigureType)
                 {
+                    case KeyFigureTypes.ReturnOnInvCap:
+                        if (!CheckIntsValidity([e.NetIncome, e.Dividends, e.TotalAssets, e.TotalLiabilities, e.LongTermDebt, e.ShortTermDebt]))
+                            continue;
+
+                        keyFigureVal = CalculateKeyFigure.CalcRoic(e.NetIncome, e.Dividends, e.LongTermDebt, e.ShortTermDebt, e.TotalAssets, e.TotalLiabilities);
+                        break;
+
+                    case KeyFigureTypes.EvFreecashflow:
+                        if (!CheckIntsValidity([ evTuple.ShortTermDebt, evTuple.LongTermDebt, evTuple.MarketValue,
+                            evTuple.CashAndEquivalents, e.OperationalCashflow, e.CapitalExpenditures ]))
+                        {
+                            continue;
+                        }
+
+                        keyFigureVal = CalculateKeyFigure.CalcEvFreeCashflow(evTuple, e.OperationalCashflow, e.CapitalExpenditures);
+                        break;
+
+                    case KeyFigureTypes.FreeCashflow:
+                        if (!CheckIntsValidity([e.OperationalCashflow, e.CapitalExpenditures]))
+                            continue;
+
+                        keyFigureVal = e.OperationalCashflow - e.CapitalExpenditures;
+                        break;
+
+                    case KeyFigureTypes.ReturnOnEquity:
+                        if (!CheckIntsValidity(new double[] {e.NetIncome, e.TotalAssets, e.TotalLiabilities }))
+                            continue;
+
+                        keyFigureVal = CalculateKeyFigure.CalcRoe(e.NetIncome, e.TotalAssets, e.TotalLiabilities);
+                        break;
+
                     case KeyFigureTypes.EvEbitda:
 
                         if (!CheckIntsValidity(new double[] { evTuple.ShortTermDebt, evTuple.LongTermDebt, evTuple.MarketValue, evTuple.CashAndEquivalents, e.Ebitda }))
