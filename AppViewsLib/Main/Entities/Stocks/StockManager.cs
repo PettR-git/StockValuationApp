@@ -158,7 +158,7 @@ namespace StockValuationApp.Entities.Stocks
                         break;
 
                     case KeyFigureTypes.ReturnOnEquity:
-                        if (!CheckIntsValidity(new double[] {e.NetIncome, e.TotalAssets, e.TotalLiabilities }))
+                        if (!CheckIntsValidity([e.NetIncome, e.TotalAssets, e.TotalLiabilities]))
                             continue;
 
                         keyFigureVal = CalculateKeyFigure.CalcRoe(e.NetIncome, e.TotalAssets, e.TotalLiabilities);
@@ -278,8 +278,8 @@ namespace StockValuationApp.Entities.Stocks
                     case FinanceCategory.Cashflow:
                         metricTemplate.Add(FinanceCategory.Cashflow, new List<MetricTypes>
                         {
-                            MetricTypes.operationalCashflow,
-                            MetricTypes.capitalExpenditures,
+                            MetricTypes.operatingCashFlow,
+                            MetricTypes.capitalExpenditure,
                             MetricTypes.dividendsPaid,
                         });
                         break;
@@ -300,7 +300,7 @@ namespace StockValuationApp.Entities.Stocks
             List<JObject> jObjs = null;
             MetricEventArgs args = null;
             const int maxApiYearIndex = 5;
-            List<int> indexYears = Enumerable.Range(0, maxApiYearIndex-1).ToList();
+            List<int> indexYears = Enumerable.Range(0, maxApiYearIndex).ToList();
             double metricVal = 0.0;
 
             if (metricTemplate == null)
@@ -327,19 +327,29 @@ namespace StockValuationApp.Entities.Stocks
                                 jObjs = await uriManager.GetFinanceData(stock.Ticker, FinanceCategory.Cashflow, PeriodTypes.annual);
 
                                 if(jObjs.Count > 0)
-                                    if (jObjs[i][met.ToString()] != null)
-                                        metricVal = jObjs[i][met.ToString()].Value<double>();
+                                {
+                                    if (!double.TryParse(jObjs[i][met.ToString()]?.ToString(), out metricVal))
+                                    {
+                                        Console.WriteLine($"Invalid parsing of JObject to double with metric: {met}");
+                                        continue;
+                                    }                 
+                                }
+                                else
+                                {
+                                    Console.WriteLine("No result from API query");
+                                    continue;
+                                }
 
                                 switch (met)
                                 {
-                                    case MetricTypes.operationalCashflow:
+                                    case MetricTypes.operatingCashFlow:
                                         args.OperationalCashflow = metricVal;
                                         break;
                                     case MetricTypes.dividendsPaid:
                                         args.Dividends = -metricVal;
                                         break;
-                                    case MetricTypes.capitalExpenditures:
-                                        args.CapitalExpenditures = metricVal;
+                                    case MetricTypes.capitalExpenditure:
+                                        args.CapitalExpenditures = -metricVal;
                                         break;
                                 }
                                 continue;
@@ -348,8 +358,18 @@ namespace StockValuationApp.Entities.Stocks
                                 jObjs = await uriManager.GetFinanceData(stock.Ticker, FinanceCategory.StatementAnalysis, PeriodTypes.annual);
 
                                 if (jObjs.Count > 0)
-                                    if (jObjs[i][met.ToString()] != null)
-                                        metricVal = jObjs[i][met.ToString()].Value<double>();
+                                {
+                                    if (!double.TryParse(jObjs[i][met.ToString()]?.ToString(), out metricVal))
+                                    {
+                                        Console.WriteLine($"Invalid parsing of JObject to double with metric: {met}");
+                                        continue;
+                                    }
+                                }
+                                else
+                                {
+                                    Console.WriteLine("No result from API query");
+                                    continue;
+                                }
 
                                 switch (met)
                                 {
@@ -369,8 +389,33 @@ namespace StockValuationApp.Entities.Stocks
                                 jObjs = await uriManager.GetFinanceData(stock.Ticker, FinanceCategory.Income, PeriodTypes.annual);
 
                                 if (jObjs.Count > 0)
-                                    if (jObjs[i][met.ToString()] != null)
-                                         metricVal = jObjs[i][met.ToString()].Value<double>();
+                                {
+                                    if(met == MetricTypes.ebit)
+                                    {
+                                        bool ebitdaValid = double.TryParse(jObjs[i][MetricTypes.ebitda.ToString()]?.ToString(), out double ebitda);
+                                        bool amorAndDepValid = double.TryParse(jObjs[i][MetricTypes.depreciationAndAmortization.ToString()]?.ToString(), out double amortAndDepric);
+
+                                        if (ebitdaValid && amorAndDepValid)
+                                        {
+                                            metricVal = ebitda - amortAndDepric;
+                                        }
+                                        else
+                                        {
+                                            Console.WriteLine($"Invalid parsing of JObject to double with metric: {met}");
+                                            continue;
+                                        }
+                                    }
+                                    else if (!double.TryParse(jObjs[i][met.ToString()]?.ToString(), out metricVal))
+                                    {
+                                        Console.WriteLine($"Invalid parsing of JObject to double with metric: {met}");
+                                        continue;
+                                    }
+                                }
+                                else
+                                {
+                                    Console.WriteLine("No result from API query");
+                                    continue;
+                                }
 
                                 switch (met)
                                 {
@@ -393,8 +438,18 @@ namespace StockValuationApp.Entities.Stocks
                                 jObjs = await uriManager.GetFinanceData(stock.Ticker, FinanceCategory.BalanceSheet, PeriodTypes.annual);
 
                                 if (jObjs.Count > 0)
-                                    if (jObjs[i][met.ToString()] != null)
-                                        metricVal = jObjs[i][met.ToString()].Value<double>();
+                                {
+                                    if (!double.TryParse(jObjs[i][met.ToString()]?.ToString(), out metricVal))
+                                    {
+                                        Console.WriteLine($"Invalid parsing of JObject to double with metric: {met}");
+                                        continue;
+                                    }
+                                }
+                                else
+                                {
+                                    Console.WriteLine("No result from API query");
+                                    continue;
+                                }
 
                                 switch (met)
                                 {

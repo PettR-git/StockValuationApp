@@ -1,7 +1,7 @@
-﻿using StockPresentationLib.Model;
-using StockValuationApp.Entities.Stocks;
+﻿using StockValuationApp.Entities.Stocks;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,42 +10,26 @@ namespace StockPresentationLib.ViewModel
 {
     public class HomeVM : Utilities.ViewModelBase
     {
-        private NavigationVM navigationVM;
+        private ObservableCollection<Stock> stocks;
         public EventHandler<Stock> UpdateStockEvent;
+        private Stock currStock;
 
-        public HomeVM(NavigationVM navigationVM)
+        public HomeVM()
         {
-            this.navigationVM = navigationVM;
-
-            if(navigationVM.PersistPageM == null)
-                navigationVM.PersistPageM = new PageModel();         
+            Stocks = new ObservableCollection<Stock>();       
         }
 
-        public Stock GetCurrentStock { get { return navigationVM.PersistPageM.CurrentStock; }}
+        public Stock GetCurrentStock { get { return currStock; }}
 
-        public List<Stock> Stocks {
-            get
-            {
-                if (navigationVM.PersistPageM.Stocks != null)
-                    return navigationVM.PersistPageM.Stocks;
-                else
-                {
-                    navigationVM.PersistPageM.Stocks = new List<Stock>();   
-                    return navigationVM.PersistPageM.Stocks;
-                }                
-            }
-            
-            set { 
-                if(navigationVM.PersistPageM.Stocks == null)
-                    navigationVM.PersistPageM.Stocks = new List<Stock>();
-                
-                navigationVM.PersistPageM.Stocks = value; 
-                OnPropertyChanged(); 
-            }  
+        public ObservableCollection<Stock> Stocks
+        {
+            get{ return stocks;}
+            set { stocks = value; OnPropertyChanged();}
         }
 
         public void UpdateCurrentStock(Stock stock)
         {
+            currStock = stock;
             UpdateStockEvent?.Invoke(this, stock);
         }
     }

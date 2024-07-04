@@ -1,5 +1,4 @@
-﻿using StockPresentationLib.Model;
-using StockPresentationLib.Utilities;
+﻿using StockPresentationLib.Utilities;
 using StockValuationApp.Entities.Stocks;
 using System;
 using System.Collections.Generic;
@@ -14,7 +13,15 @@ namespace StockPresentationLib.ViewModel
     public class NavigationVM : ViewModelBase
     {
         private object _currentView;
-        public PageModel PersistPageM { get; set; }
+        private Stock _currentStock;
+        //public PageModel PersistPageM { get; set; }
+
+        private HomeVM _homeVM;
+        private EarningsVM _earningsVM;
+        private ReturnsVM _returnsVM;
+        private CriteriasVM _criteriasVM;
+        private ConsensusVM _consensusVM;
+
         public object CurrentView
         {
             get { return _currentView; }
@@ -23,22 +30,67 @@ namespace StockPresentationLib.ViewModel
 
         private void Home(object obj)
         {
-            var homeVM = new HomeVM(this);
-            homeVM.UpdateStockEvent += OnUpdateCurrentStock;
-            CurrentView = homeVM;
+            if (_homeVM == null)
+            {
+                _homeVM = new HomeVM();
+                _homeVM.UpdateStockEvent += OnUpdateCurrentStock;
+            }
+            CurrentView = _homeVM;
         }
-        private void Earnings(object obj) => CurrentView = new EarningsVM(PersistPageM.CurrentStock);
-        private void Returns(object obj) => CurrentView = new ReturnsVM(PersistPageM.CurrentStock);
-        private void Criterias(object obj) => CurrentView = new CriteriasVM();
-        private void Consensus(object obj) => CurrentView = new ConsensusVM();
+
+        private void Earnings(object obj)
+        {
+            if (_earningsVM == null)
+            {
+                _earningsVM = new EarningsVM(_currentStock);
+            }
+            else
+            {
+                _earningsVM.Stock = _currentStock;
+            }
+            CurrentView = _earningsVM;
+        }
+
+        private void Returns(object obj)
+        {
+            if (_returnsVM == null)
+            {
+                _returnsVM = new ReturnsVM(_currentStock);
+            }
+            else
+            {
+                _returnsVM.Stock = _currentStock;
+            }
+            CurrentView = _returnsVM;
+        }
+
+        private void Criterias(object obj)
+        {
+            if (_criteriasVM == null)
+            {
+                _criteriasVM = new CriteriasVM();
+            }
+            CurrentView = _criteriasVM;
+        }
+
+        private void Consensus(object obj)
+        {
+            if (_consensusVM == null)
+            {
+                _consensusVM = new ConsensusVM();
+            }
+            CurrentView = _consensusVM;
+        }
+
         public ICommand HomeCommand { get; set; }
         public ICommand EarningsCommand { get; set; }
         public ICommand ReturnsCommand { get; set; }
         public ICommand CriteriasCommand { get; set; }
         public ICommand ConsesusCommand { get; set; }
+
         private void OnUpdateCurrentStock(object sender, Stock stock)
         {
-            PersistPageM.CurrentStock = stock;
+            _currentStock = stock;
             OnPropertyChanged(nameof(stock));
         }
 
@@ -49,11 +101,11 @@ namespace StockPresentationLib.ViewModel
             ReturnsCommand = new RelayCommand(Returns);
             CriteriasCommand = new RelayCommand(Criterias);
             ConsesusCommand = new RelayCommand(Consensus);
-            PersistPageM = new PageModel();
 
-            var homeVM = new HomeVM(this);
-            homeVM.UpdateStockEvent += OnUpdateCurrentStock;
-            CurrentView = homeVM;
+            _homeVM = new HomeVM();
+            _homeVM.UpdateStockEvent += OnUpdateCurrentStock;
+            CurrentView = _homeVM;
         }
     }
+
 }

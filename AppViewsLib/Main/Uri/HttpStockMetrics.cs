@@ -15,35 +15,27 @@ namespace StockValuationApp.Main.Uri
     public static class HttpStockMetrics
     {
         private static readonly HttpClient client = new HttpClient();
-        private const string apiKey = "wYAeK4VcdGgjyULYbg6kXxwlRQwqJlOM";
-        public static async Task<List<JObject>> ImportIncomeMetricData(string ticker, string period)
+
+        public static async Task<List<JObject>> ImportIncomeMetricData(string ticker, string period, string apiKey)
         {
             string url = $"https://financialmodelingprep.com/api/v3/income-statement/{ticker}?period={period}&apikey={apiKey}";
             List<JObject> jObjs = new List<JObject>();
 
-            try
-            {
-                string response = await FetchDataFromApiAsync(url);
-                JArray jArray = JArray.Parse(response); 
+            string response = await FetchDataFromApiAsync(url);
+            JArray jArray = JArray.Parse(response); 
 
-                foreach(var item in jArray)
-                {
-                    if(item is JObject jObject)
-                    {
-                        jObjs.Add(jObject);
-                    }
-                }
-            }
-            catch (Exception ex)
+            foreach(var item in jArray)
             {
-                Console.WriteLine(ex.Message);
+                if(item is JObject jObject)
+                {
+                    jObjs.Add(jObject);
+                }
             }
 
             return jObjs;
-        }
-        
+        }      
 
-        public static async Task<List<JObject>> ImportBalanceSheetMetricData(string ticker, string period)
+        public static async Task<List<JObject>> ImportBalanceSheetMetricData(string ticker, string period, string apiKey)
         {
             string url = $"https://financialmodelingprep.com/api/v3/balance-sheet-statement/{ticker}?period={period}&apikey={apiKey}";
             List<JObject> jObjs = new List<JObject>();
@@ -69,9 +61,9 @@ namespace StockValuationApp.Main.Uri
             return jObjs;
         }
 
-        public static async Task<List<JObject>> ImportCashFlowMetricData(string ticker, string period)
+        public static async Task<List<JObject>> ImportCashFlowMetricData(string ticker, string period, string apiKey)
         {
-            string url = $"https://financialmodelingprep.com/api/v3/income-statement/{ticker}?period={period}&apikey={apiKey}";
+            string url = $"https://financialmodelingprep.com/api/v3/cash-flow-statement/{ticker}?period={period}&apikey={apiKey}";
             List<JObject> jObjs = new List<JObject>();
 
             try
@@ -95,7 +87,7 @@ namespace StockValuationApp.Main.Uri
             return jObjs;
         }
 
-        public static async Task<List<JObject>> ImportStatementAnalysisData(string ticker, string period)
+        public static async Task<List<JObject>> ImportStatementAnalysisData(string ticker, string period, string apiKey)
         {
             string url = $"https://financialmodelingprep.com/api/v3/enterprise-values/{ticker}?period={period}&apikey={apiKey}";
             List<JObject> jObjs = new List<JObject>();
@@ -120,8 +112,6 @@ namespace StockValuationApp.Main.Uri
 
             return jObjs;
         }
-
-
 
         private static async Task<string> FetchDataFromApiAsync(string url)
         {

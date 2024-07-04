@@ -14,14 +14,14 @@ namespace StockValuationApp.Entities.Calculations
     {
         public static double CalcRoe(double netIncome, double totAssets, double totLiabilities)
         {
-            double result = netIncome/(totAssets-totLiabilities);
+            double result = 100*(netIncome/(totAssets-totLiabilities));
 
             return result;
         }
 
         public static double CalcRoic(double netIncome, double dividends, double longTermDebt, double shortTermDebt, double totAssets, double totLiabilities)
         {
-            double result = (netIncome - dividends)/(longTermDebt + shortTermDebt + totAssets - totLiabilities);
+            double result = 100*((netIncome - dividends)/(longTermDebt + shortTermDebt + totAssets - totLiabilities));
 
             return result;
         }

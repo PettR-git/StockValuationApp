@@ -19,9 +19,12 @@ namespace StockPresentationLib.Plot
         private List<YearlyFinancials> yearlyFinancials;
         private Stock stock;
         private WpfPlot finPlot;
+        private List<double> roeVals;
+        private List<double> roicVals;
+        private List<double> fcfVals;
         private Scatter scatterRoeGrowth;
         private Scatter scatterRoicGrowth;
-        private Scatter scatterFfcGrowth;
+        private Scatter scatterFcfGrowth;
         private ScottPlot.Palettes.Category10 palette;
         public PlotReturns(WpfPlot finPlot, Stock stock)
         {
@@ -29,25 +32,25 @@ namespace StockPresentationLib.Plot
             this.stock = stock;
             yearlyFinancials = stock.Financials;
             palette = new ScottPlot.Palettes.Category10();
+            roeVals = new List<double>();
+            roicVals = new List<double>();  
+            fcfVals = new List<double>();
         }
 
-        public void PlotAllReturns()
+        public void PlotRoeAndRoic()
         {
             //Bar graph and Scatter line growth
 
             List<Bar> bars = new List<Bar>();
             xAxesYears = new List<Tick>();
 
-            for (int i = 0, indexPos = 0, indexBar = 0, posTick = 0; i < yearlyFinancials.Count(); i++, indexPos += 2, indexBar++, posTick += 4)
+            for (int i = 0, indexPos = 0, indexBar = 0, posTick = 0; i < yearlyFinancials.Count(); i++, indexPos ++, indexBar++, posTick += 3)
             {
                 try
                 {
                     if (i < yearlyFinancials.Count())
                     {
                         double roe = 0, roic = 0, fcf = 0;
-                        double revenue = yearlyFinancials.ElementAt(i).Revenue;
-
-                        bars.Add(new Bar { Position = indexPos, Value = revenue, FillColor = palette.GetColor(0) });
 
                         if (yearlyFinancials[i].KeyFiguresDict != null)
                         {
@@ -56,20 +59,23 @@ namespace StockPresentationLib.Plot
                             if(keyFigureDict.TryGetValue(KeyFigureTypes.ReturnOnEquity, out double returnOnEquity))
                             {
                                 roe = returnOnEquity;
-                                bars.Add(new Bar { Position = ++indexPos, Value = roe, FillColor = palette.GetColor(0) });
+                                roeVals.Add(roe);
+                                bars.Add(new Bar { Position = indexPos++, Value = roe, FillColor = palette.GetColor(0) });
                             }
 
                             if (keyFigureDict.TryGetValue(KeyFigureTypes.ReturnOnInvCap, out double returnOnInvCap))
                             {
                                 roic = returnOnInvCap;
-                                bars.Add(new Bar { Position = ++indexPos, Value = roic, FillColor = palette.GetColor(1) });
+                                roicVals.Add(roic);
+                                bars.Add(new Bar { Position = indexPos++, Value = roic, FillColor = palette.GetColor(1) });
                             }
 
-                            if(keyFigureDict.TryGetValue(KeyFigureTypes.EvFreecashflow, out double returnEvFreecashflow))
+                           /* if(keyFigureDict.TryGetValue(KeyFigureTypes.EvFreecashflow, out double returnEvFreecashflow))
                             {
                                 fcf = returnEvFreecashflow;
-                                bars.Add(new Bar { Position = ++indexPos, Value = roic, FillColor = palette.GetColor(2) });
-                            }
+                                fcfVals.Add(fcf);
+                                bars.Add(new Bar { Position = ++indexPos, Value = fcf, FillColor = palette.GetColor(2) });
+                            }*/
                         }
                         xAxesYears.Add(new Tick(posTick, yearlyFinancials[i].Year.ToString()));
                     }
@@ -93,11 +99,11 @@ namespace StockPresentationLib.Plot
                 LabelText = "ROIC",
                 FillColor = palette.GetColor(1)
             });
-            finPlot.Plot.Legend.ManualItems.Add(new LegendItem
+           /* finPlot.Plot.Legend.ManualItems.Add(new LegendItem
             {
                 LabelText = "EV/FCF",
                 FillColor = palette.GetColor(2)
-            });
+            });*/
 
             finPlot.Plot.Legend.IsVisible = true;
             finPlot.Plot.Legend.Alignment = Alignment.UpperLeft;
@@ -113,7 +119,8 @@ namespace StockPresentationLib.Plot
             finPlot.Plot.Axes.Color(ScottPlot.Color.FromHex("#A5CAAF"));
             finPlot.Plot.Axes.Bottom.Label.Text = "Year";
             finPlot.Plot.Axes.Right.Label.Text = "Growth (%)";
-            finPlot.Plot.Axes.Left.Label.Text = "Metric Value";
+            finPlot.Plot.Axes.Left.Label.Text = "ROE/ROIC (%)";
+            finPlot.Plot.Axes.Title.Label.FontSize = 18;
             finPlot.Plot.Axes.Title.Label.Text = stock.ToString();
             finPlot.Plot.Axes.Bottom.TickGenerator = new ScottPlot.TickGenerators.NumericManual(xAxesYears.ToArray());
             finPlot.Plot.Axes.Bottom.MajorTickStyle.Length = 0;
@@ -122,63 +129,140 @@ namespace StockPresentationLib.Plot
             finPlot.Refresh();
         }
 
-        public void PlotRoeGrowth(bool showPlot)
+        public void PlotFreeCashflow()
         {
 
+        }
+
+        public void PlotRoeGrowth(bool showPlot)
+        {
+            if (showPlot)
+            {
+                List<double> roeGrowth = new List<double>() { 0.0 };
+                List<double> positions = new List<double>();
+
+                if (roeVals.Count > 0)
+                {
+                    double currRoe = 0, prevRoe = 0;
+
+                    for (int i = 0; i < roeVals.Count - 1; i++)
+                    {
+                        prevRoe = roeVals[i];
+
+                        if (prevRoe != 0)
+                        {
+                            currRoe = roeVals[i + 1];
+                            roeGrowth.Add(100 * (currRoe - prevRoe) / prevRoe);
+                        }
+                        else
+                        {
+                            roeGrowth.Add(0.0);
+                        }
+
+                        positions.Add(xAxesYears[i].Position);
+                    }
+
+                    positions.Add(xAxesYears.Last().Position);
+
+                    scatterRoeGrowth = finPlot.Plot.Add.Scatter(positions, roeGrowth);
+                    scatterRoeGrowth.Color = palette.GetColor(0);
+                    scatterRoeGrowth.Axes.YAxis = finPlot.Plot.Axes.Right;
+                    finPlot.Plot.Axes.Right.RegenerateTicks(2);
+                }
+            }
+            else
+            {
+                finPlot.Plot.Remove(scatterRoeGrowth);
+            }
+
+            finPlot.Refresh();
         }
 
         public void PlotRoicGrowth(bool showPlot)
         {
+            if (showPlot)
+            {
+                List<double> roicGrowth = new List<double>() { 0.0 };
+                List<double> positions = new List<double>();
 
+                if (roicVals.Count > 0)
+                {
+                    double currRoic = 0, prevRoic = 0;
+
+                    for (int i = 0; i < roicVals.Count - 1; i++)
+                    {
+                        prevRoic = roicVals[i];
+
+                        if (prevRoic != 0)
+                        {
+                            currRoic = roicVals[i + 1];
+                            roicGrowth.Add(100 * ((double)currRoic - prevRoic) / prevRoic);
+                        }
+                        else
+                        {
+                            roicGrowth.Add(0.0);
+                        }
+
+                        positions.Add(xAxesYears[i].Position);
+                    }
+
+                    positions.Add(xAxesYears.Last().Position);
+
+                    scatterRoicGrowth = finPlot.Plot.Add.Scatter(positions, roicGrowth);
+                    scatterRoicGrowth.Color = palette.GetColor(1);
+                    scatterRoicGrowth.Axes.YAxis = finPlot.Plot.Axes.Right;
+                    finPlot.Plot.Axes.Right.RegenerateTicks(2);
+                }
+            }
+            else
+            {
+                finPlot.Plot.Remove(scatterRoicGrowth);
+            }
+
+            finPlot.Refresh();
         }
 
-        public void PlotFcfGrowth(bool showPlot)
+      /*  public void PlotFcfGrowth(bool showPlot)
         {
+            if (showPlot)
+            {
+                List<double> fcfGrowth = new List<double>() { 0.0 };
+                List<double> positions = new List<double>();
 
-        }
+                if (fcfVals.Count > 0)
+                {
+                    double currFcf = 0, prevFcf = 0;
 
+                    for (int i = 0; i < fcfVals.Count - 1; i++)
+                    {
+                        prevFcf = fcfVals[i];
 
-        /*  public void PlotEbitdaGrowth(bool showPlot)
-          {
-              if (showPlot)
-              {
-                  List<double> ebitdaGrowth = new List<double>() { 0.0 };
-                  List<double> positions = new List<double>();
+                        if (currFcf != 0)
+                        {
+                            currFcf = fcfVals[i + 1];
+                            fcfGrowth.Add(100 * ((double)currFcf - prevFcf) / prevFcf);
+                        }
+                        else
+                        {
+                            fcfGrowth.Add(0.0);
+                        }
 
-                  if (yearlyFinancials != null && yearlyFinancials.Where(x => x.Earnings != null).Sum(x => x.Earnings.EbitdaValue) > 0)
-                  {
-                      for (int i = 0; i < yearlyFinancials.Count() - 1; i++)
-                      {
-                          if (yearlyFinancials.ElementAt(i).Earnings != null)
-                          {
-                              double ebitdaPrev = yearlyFinancials.ElementAt(i).Earnings.EbitdaValue;
-                              if (ebitdaPrev != 0)
-                              {
-                                  double ebitdaCurr = yearlyFinancials.ElementAt(i + 1).Earnings.EbitdaValue;
-                                  ebitdaGrowth.Add(100 * ((double)(ebitdaCurr - ebitdaPrev) / ebitdaPrev));
-                              }
-                              else
-                              {
-                                  ebitdaGrowth.Add(0.0);
-                              }
+                        positions.Add(xAxesYears[i].Position);
+                    }
 
-                              positions.Add(xAxesYears[i].Position);
-                          }
-                      }
-                      positions.Add(xAxesYears.Last().Position);
+                    positions.Add(xAxesYears.Last().Position);
 
-                      scatterEbitdaGrowth = finPlot.Plot.Add.Scatter(positions, ebitdaGrowth);
-                      scatterEbitdaGrowth.Color = palette.GetColor(1);
-                      scatterEbitdaGrowth.Axes.YAxis = finPlot.Plot.Axes.Right;
-                  }
-              }
-              else
-              {
-                  finPlot.Plot.Remove(scatterEbitdaGrowth);
-              }
+                    scatterFcfGrowth = finPlot.Plot.Add.Scatter(positions, fcfGrowth);
+                    scatterFcfGrowth.Color = palette.GetColor(1);
+                    scatterFcfGrowth.Axes.YAxis = finPlot.Plot.Axes.Right;
+                }
+            }
+            else
+            {
+                finPlot.Plot.Remove(scatterFcfGrowth);
+            }
 
-              finPlot.Refresh();
-          }*/
-
+            finPlot.Refresh();
+        }*/
     }
 }

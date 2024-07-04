@@ -13,14 +13,16 @@
     <Grid Margin="15">
         <Border CornerRadius="0,20,20,0"
                 Background="#212529">
-
         </Border>
         <Grid>
-            <ScottPlot:WpfPlot x:Name="WpfPlot1" Margin="0,56,0,0"/>
-            <CheckBox x:Name="cbxRevGrowth" Content="Revenue Growth (%)" HorizontalAlignment="Left" Margin="44,17,0,0" VerticalAlignment="Top" Checked="cbxRevGrowth_Checked" Unchecked="cbxRevGrowth_Checked"/>
-            <CheckBox x:Name="cbxEbitdaGrowth" Content="EBITDA Growth (%)" HorizontalAlignment="Left" Margin="373,17,0,0" VerticalAlignment="Top" Checked="cbxEbitdaGrowth_Checked" Unchecked="cbxEbitdaGrowth_Checked"/>
-            <CheckBox x:Name="cbxEbitGrowth" Content="EBIT Growth (%)" HorizontalAlignment="Left" Margin="214,17,0,0" VerticalAlignment="Top" Checked="cbxEbitGrowth_Checked" Unchecked="cbxEbitGrowth_Checked"/>
-            <CheckBox x:Name="cbxNetIncGrowth" Content="Net Income Growth (%)" HorizontalAlignment="Left" Margin="527,17,0,0" VerticalAlignment="Top" Checked="cbxNetIncGrowth_Checked" Unchecked="cbxNetIncGrowth_Checked"/>
+            <ScottPlot:WpfPlot x:Name="WpfPlot1" Margin="0,0,0,70" />
+            <CheckBox x:Name="cbxRevGrowth" Style = "{StaticResource RoundedCheckBoxStyle}" Content="Revenue Growth (% YoY)" HorizontalAlignment="Left" Margin="44,540,0,0" VerticalAlignment="Top" Checked="cbxRevGrowth_Checked" Unchecked="cbxRevGrowth_Checked" IsChecked="{Binding CbxRevGrwthChecked}"/>
+            <CheckBox x:Name="cbxEbitdaGrowth" Style = "{StaticResource RoundedCheckBoxStyle}" Content="EBITDA Growth (% YoY)" HorizontalAlignment="Left" Margin="373,540,0,0" VerticalAlignment="Top" Checked="cbxEbitdaGrowth_Checked" Unchecked="cbxEbitdaGrowth_Checked" IsChecked="{Binding CbxEbitdaGrwthChecked}"/>
+            <CheckBox x:Name="cbxEbitGrowth" Style = "{StaticResource RoundedCheckBoxStyle}" Content="EBIT Growth (% YoY)" HorizontalAlignment="Left" Margin="214,540,0,0" VerticalAlignment="Top" Checked="cbxEbitGrowth_Checked" Unchecked="cbxEbitGrowth_Checked" IsChecked="{Binding CbxEbitGrwthChecked}"/>
+            <CheckBox x:Name="cbxNetIncGrowth" Style = "{StaticResource RoundedCheckBoxStyle}" Content="Net Income Growth (% YoY)" HorizontalAlignment="Left" Margin="527,540,0,0" VerticalAlignment="Top" Checked="cbxNetIncGrowth_Checked" Unchecked="cbxNetIncGrowth_Checked" IsChecked="{Binding CbxNetIncGrwthChecked}"/>
+            <ComboBox x:Name="cmbRetPlot" Margin="44,508,577,45">
+                <ComboBox Width="120"/>
+            </ComboBox>
         </Grid>
     </Grid>
 </UserControl>

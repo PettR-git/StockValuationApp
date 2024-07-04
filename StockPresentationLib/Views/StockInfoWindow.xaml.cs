@@ -16,6 +16,7 @@ namespace StockPresentationLib.Views
     public partial class StockInfoWindow : Window
     {
         private readonly Stock stock;
+
         public StockInfoWindow(Stock stock)
         {
             InitializeComponent();
@@ -24,15 +25,32 @@ namespace StockPresentationLib.Views
         }
 
         /// <summary>
-        /// Label content differ depending on metric type
+        /// Initialize GUI elements and set content for TextBlocks.
         /// </summary>
         private void InitializeGUI()
         {
+            lblRevenue.Text = "Revenue:";
+            lblMarketValue.Text = "Market Cap:";
+            lblYear.Text = "Year:";
+            lblEbitda.Text = "EBITDA:";
+            lblEbit.Text = "EBIT:";
+            lblNetIncome.Text = "Net Income:";
+            lblPrice.Text = "Stock Price:";
+            lblNmbrOfShares.Text = "Number of Shares:";
+            lblCapitalExp.Text = "Capital Expenditures:";
+            lblTotAssets.Text = "Total Assets:";
+            lblTotLiabilities.Text = "Total Liabilities:";
+            lblDividends.Text = "Dividends:";
+            lblShortTermDebt.Text = "Short Term Debt:";
+            lblLongTermDebt.Text = "Long Term Debt:";
+            lblCashAndEquiv.Text = "Cash and Equivalents:";
+            lblOperCashflow.Text = "Operational Cashflow:";
+            lblSolidity.Text = "Solidity:";
         }
 
         /// <summary>
-        /// On click, create metric event args and intantiate 
-        /// properties depending on current metric type
+        /// On click, create metric event args and instantiate 
+        /// properties depending on current metric type.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -48,7 +66,7 @@ namespace StockPresentationLib.Views
             args.MarketValue = ValidateAndParseToDouble(tbxMarketValue.Text);
             args.CapitalExpenditures = ValidateAndParseToDouble(tbxCapitalExpenditures.Text);
             args.NumberOfShares = ValidateAndParseToDouble(tbxNmbrOfShares.Text);
-            args.OperationalCashflow = ValidateAndParseToDouble(tbxOperCashflow.Text);  
+            args.OperationalCashflow = ValidateAndParseToDouble(tbxOperCashflow.Text);
             args.TotalAssets = ValidateAndParseToDouble(tbxTotalAssets.Text);
             args.TotalLiabilities = ValidateAndParseToDouble(tbxTotalLiabilities.Text);
             args.CashAndEquivalents = ValidateAndParseToDouble(tbxCashAndEquiv.Text);
@@ -62,14 +80,14 @@ namespace StockPresentationLib.Views
 
             foreach (var property in metricProperties)
             {
-                var value = 0.0;
+                double value = 0.0;
 
-                //Properties of type double
-                if(property.Name != "Year")
+                // Properties of type double
+                if (property.Name != "Year")
                 {
-                     value = (double)property.GetValue(args, null);
+                    value = (double)property.GetValue(args, null);
                 }
-                //Properties of type int
+                // Properties of type int
                 else
                 {
                     value = (int)property.GetValue(args, null);
@@ -79,47 +97,47 @@ namespace StockPresentationLib.Views
                 {
                     MessageBox.Show("One or more input values are invalid.", "Input Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
-                }       
-                else if(args.Year == 0)
+                }
+                else if (args.Year == 0)
                 {
                     MessageBox.Show("Enter a valid year.", "Input Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
                 }
             }
 
-            //Publish event with the metric arguments
+            // Publish event with the metric arguments
             stock.MetricsGiven?.Invoke(this, args);
             this.Close();
         }
 
         /// <summary>
-        /// Try parse, string to int
+        /// Try parse, string to double.
         /// </summary>
         /// <param name="strVal"></param>
-        /// <returns>parsed value or -1 for unparseable string and 0 for empty string</returns>
+        /// <returns>Parsed value or -1 for unparseable string and 0 for empty string.</returns>
         private double ValidateAndParseToDouble(string strVal)
         {
-            if (strVal == string.Empty)
+            if (string.IsNullOrWhiteSpace(strVal))
                 return 0;
 
             bool ok = double.TryParse(strVal, out double val);
 
-            if (ok)
-                return val;
-            else
-                return -1;
+            return ok ? val : -1;
         }
 
+        /// <summary>
+        /// Try parse, string to int.
+        /// </summary>
+        /// <param name="strVal"></param>
+        /// <returns>Parsed value or -1 for unparseable string and 0 for empty string.</returns>
         private int ValidateAndParseToInt(string strVal)
         {
-            if (strVal == string.Empty)
+            if (string.IsNullOrWhiteSpace(strVal))
                 return 0;
 
             bool ok = int.TryParse(strVal, out int val);
 
-            if (ok)
-                return val;
-            else
-                return -1;
+            return ok ? val : -1;
         }
     }
 }

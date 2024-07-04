@@ -37,11 +37,59 @@ namespace StockPresentationLib.Views
             InitializeComponent();
             stockManager = new StockManager();
             jsonSerializerSettings = new StockJsonSerializerSettings();
-            this.Loaded += Home_Loaded;
-            this.Unloaded += Home_Unloaded;
+            //this.Loaded += Home_Loaded;
+            //this.Unloaded += Home_Unloaded;
+            this.DataContextChanged += Home_DataContextChanged;
         }
 
-        private void Home_Loaded(object sender, RoutedEventArgs e)
+        private void Home_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            InitializeGUI();
+
+            if(DataContext is HomeVM homeDataContext){
+                homeVM = homeDataContext;
+                List<Stock> stocks = homeVM.Stocks.ToList();
+
+                if (stocks.Count > 0)
+                {
+                    int index = 0;
+
+                    foreach (Stock stock in stocks)
+                    {
+                        if (stock == homeVM.GetCurrentStock)
+                        {
+                            index = stocks.IndexOf(stock);
+                        }
+
+                        stockManager.addItem(stock);
+                    }
+                    lvwAllStocks.SelectedIndex = index;
+                }
+            }
+           /* else
+            {              
+                if(stockManager == null)
+                {
+                    stockManager = new StockManager();
+                }
+
+                if(stockManager.Count() > 0)
+                {
+
+                    for (int i = 0; i < stockManager.Count(); i++)
+                    {
+                        Stock stock = stockManager.getListItemAt(i);
+
+                        if (!homeVM.Stocks.Contains(stock))
+                        {
+                            homeVM.Stocks.Add(stock);
+                        }
+                    }
+                }
+            }*/
+        }
+
+       /* private void Home_Loaded(object sender, RoutedEventArgs e)
         {
             InitializeGUI();
 
@@ -67,9 +115,9 @@ namespace StockPresentationLib.Views
                     lvwAllStocks.SelectedIndex = index;
                 }
             }
-        }
+        }*/
 
-        private void Home_Unloaded(object sender, RoutedEventArgs e)
+        /*private void Home_Unloaded(object sender, RoutedEventArgs e)
         {
             if(homeVM != null)
             {
@@ -80,7 +128,7 @@ namespace StockPresentationLib.Views
                     homeVM.Stocks.Add(stockManager.getListItemAt(i));
                 }
             }
-        }
+        }*/
 
         //Initialize UI
         private void InitializeGUI()
@@ -136,7 +184,7 @@ namespace StockPresentationLib.Views
         {
             stockManager = new StockManager();
             lvwStockInfo.Items.Clear();
-            UpdateStockUI();
+            //UpdateStockUI();
         }
 
         /// <summary>
@@ -230,7 +278,8 @@ namespace StockPresentationLib.Views
             Stock stock = stockManager.CreateStock(name, ticker);
             stockManager.addItem(stock);
 
-            UpdateStockUI();
+            //UpdateStockUI();
+            homeVM.Stocks.Add(stock);
         }
 
         private void btnGraphs_Click(object sender, RoutedEventArgs e)
@@ -260,9 +309,10 @@ namespace StockPresentationLib.Views
             if (stock != null)
             {
                 stockManager.removeItem(stock);
+                homeVM.Stocks.Remove(stock);
             }
 
-            UpdateStockUI();
+            //UpdateStockUI();
         }
 
         private void btnDeleteYearlyFin_Click(object sender, RoutedEventArgs e)
