@@ -14,4 +14,19 @@
             </Style>
         </Style.Resources>
     </Style>
+
+    <Style x:Key="TextBoxStyle_Size12" TargetType="{x:Type TextBox}">
+        <Setter Property="FontFamily" Value="/StockPresentationLib;component/Fonts/#Rubik" />
+        <Setter Property="Background" Value="#212529"/>
+        <Setter Property="Foreground" Value="#FFA5CAAF"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Style.Resources>
+            <Style TargetType="Border">
+                <Setter Property="CornerRadius" Value="5" />
+            </Style>
+        </Style.Resources>
+    </Style>
+    
 </ResourceDictionary>

@@ -1,0 +1,54 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Style x:Key="RoundedCheckBoxStyle" TargetType="CheckBox">
+        <Setter Property="FontFamily" Value="/Fonts/#Rubik" />
+        <Setter Property="Foreground" Value="#FFA5CAAF" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="CheckBox">
+                    <Grid>
+                        <Border x:Name="Border" 
+                                    Width="16" 
+                                    Height="16" 
+                                    Background="White" 
+                                    BorderBrush="#FFA5CAAF" 
+                                    BorderThickness="2" 
+                                    CornerRadius="4"
+                                    VerticalAlignment="Center" 
+                                    HorizontalAlignment="Left" />
+                        <Path x:Name="CheckMark" 
+                                  VerticalAlignment="Center" 
+                                  HorizontalAlignment="Left" 
+                                  Width="10" 
+                                  Height="10" 
+                                  Stretch="Uniform" 
+                                  Fill="Black" 
+                                  Data="M 0 0 L 0 1 L 1 1 Z" 
+                                  Margin="3" 
+                                  Visibility="Collapsed" />
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="20,0,0,0" />
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="CheckMark" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="False">
+                            <Setter TargetName="CheckMark" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Border" Property="BorderBrush" Value="#FF74B2A6" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Foreground" Value="Gray" />
+                            <Setter TargetName="Border" Property="BorderBrush" Value="Gray" />
+                            <Setter TargetName="CheckMark" Property="Fill" Value="Gray" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>

@@ -76,8 +76,8 @@
                     </GridView>
                 </ListView.View>
             </ListView>
-            <Button x:Name="btnFinancialMetrics" Style="{StaticResource NormalButton}" Content="Enter Financial Metrics" HorizontalAlignment="Left" VerticalAlignment="Top" Click="btnCalculateValuation_Click" Margin="36,502,0,0" Height="28" Width="136"/>
-            <ListView x:Name="lvwAllStocks" HorizontalAlignment="Left" Height="280" VerticalAlignment="Top" Width="260" Style="{StaticResource ListView_Style}" d:ItemsSource="{d:SampleData ItemCount=5}" SelectionChanged="lvwAllStocks_SelectionChanged" Margin="26,206,0,0">
+            <Button x:Name="btnFinancialMetrics" Style="{StaticResource NormalButton}" Content="Enter Financial Metrics" HorizontalAlignment="Left" VerticalAlignment="Top" Click="btnCalculateValuation_Click" Margin="20,502,0,0" Height="28" Width="136"/>
+            <ListView x:Name="lvwAllStocks" HorizontalAlignment="Left" Height="280" VerticalAlignment="Top" Width="260" Style="{StaticResource ListView_Style}" SelectionChanged="lvwAllStocks_SelectionChanged" Margin="26,206,0,0" ItemsSource="{Binding Stocks, Mode=TwoWay}">
                 <ListView.View>
                     <GridView>
                         <GridViewColumn Width="300"/>
@@ -88,7 +88,7 @@
             <TextBlock x:Name="tbkKeyFinancialFigures" FontWeight="Medium" Style="{StaticResource Text_Style}" Text="Key Financial Figures" VerticalAlignment="Top" Margin="334,28,0,0" FontSize="14" Foreground="#212529"/>
             <Button x:Name="btnDeleteYearlyFin" Content="Delete" Style="{StaticResource NormalButton}" Height="28" Width="66" HorizontalAlignment="Left" VerticalAlignment="Top" Click="btnDeleteYearlyFin_Click" Margin="486,502,0,0"/>
             <Button x:Name="btnDeleteStock" Content="Delete Stock" Style="{StaticResource NormalButton}" HorizontalAlignment="Left" VerticalAlignment="Top" Click="btnDeleteStock_Click" Margin="159,158,0,0" Height="25" Width="86"/>
-            <Button x:Name="btnImportStockData" Content="Import Stock Data" Style="{StaticResource NormalButton}" Height="28" Width="124" HorizontalAlignment="Left" VerticalAlignment="Top" Click="btnImportStockData_Click" Margin="198,502,0,0"/>
+            <Button x:Name="btnImportStockData" Content="Import Stock Data" Style="{StaticResource NormalButton}" Height="28" Width="124" HorizontalAlignment="Left" VerticalAlignment="Top" Click="btnImportStockData_Click" Margin="172,502,0,0"/>
         </Grid>
     </Grid>
 </UserControl>

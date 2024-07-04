@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace StockValuationApp.Main.Enums
 {
+    /// <summary>
+    /// For specific API-calls
+    /// </summary>
     public enum MetricTypes
     {
         revenue,
@@ -19,9 +22,10 @@ namespace StockValuationApp.Main.Enums
         longTermDebt,
         dividendsPaid, 
         cashAndCashEquivalents,
-        operationalCashflow,
-        capitalExpenditures, 
+        operatingCashFlow,
+        capitalExpenditure, 
         totalLiabilities, 
-        totalAssets 
+        totalAssets,
+        depreciationAndAmortization
     }
 }

@@ -17,6 +17,7 @@
                 <ResourceDictionary Source="Utilities/DataTemplate.xaml" />
                 <ResourceDictionary Source="Styles/ListView.xaml" />
                 <ResourceDictionary Source="Styles/TextBox.xaml" />
+                <ResourceDictionary Source="Styles/CheckBox.xaml" />
 
             </ResourceDictionary.MergedDictionaries>
 

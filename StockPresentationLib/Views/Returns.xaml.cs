@@ -28,36 +28,40 @@ namespace StockPresentationLib.Views
         {
             InitializeComponent();
 
-            this.Loaded += Returns_Loaded;
+            this.DataContextChanged += Returns_Changed;
         }
 
-        private void Returns_Loaded(object sender, RoutedEventArgs e)
+        private void Returns_Changed(object sender, DependencyPropertyChangedEventArgs e)
         {
             Stock stock = null;
 
             if (this.DataContext is ReturnsVM returnsVM)
             {
-                stock = returnsVM.Stock;
-
-                if (stock != null)
-                {
+                if (returnsVM.Stock != null)
+                {              
+                    stock = returnsVM.Stock;
                     plotReturns = new PlotReturns(WpfPlot2, stock);
                     PlotAllReturns();
-                    SetInitialCbxValues();
-                }
+
+                    if (returnsVM.FirstPlot == true)
+                    {
+                        returnsVM.FirstPlot = false;
+                        SetInitialCbxValues();
+                    }
+                }            
             }
         }
 
         private void SetInitialCbxValues()
         {
-            cbxFcfGrowth.IsChecked = true;
-            cbxRoicGrowth.IsChecked = true;
-            cbxRoeGrowth.IsChecked = true;    
+            cbxFcfGrowth.IsChecked = false;
+            cbxRoicGrowth.IsChecked = false;
+            cbxRoeGrowth.IsChecked = false;    
         }
 
         public void PlotAllReturns()
         {
-            plotReturns.PlotAllReturns();
+            plotReturns.PlotRoeAndRoic();
         }
 
         private void PlotRoic()
@@ -66,26 +70,48 @@ namespace StockPresentationLib.Views
 
         private void cbxRoeGrowth_Checked(object sender, RoutedEventArgs e)
         {
-            if (cbxRoeGrowth.IsChecked == true)
-                plotReturns.PlotRoeGrowth(true);
-            else
-                plotReturns.PlotRoeGrowth(false);
+            if (this.DataContext is ReturnsVM returnsVM)
+            {
+                if (cbxRoeGrowth.IsChecked == true)
+                {
+                    returnsVM.CbxRoeGrwthChecked = true;
+                    plotReturns.PlotRoeGrowth(true);
+                }
+                else
+                {
+                    returnsVM.CbxRoeGrwthChecked = false;
+                    plotReturns.PlotRoeGrowth(false);
+                }
+            }
         }
 
         private void cbxRoicGrowth_Checked(object sender, RoutedEventArgs e)
         {
-            if (cbxRoicGrowth.IsChecked == true)
-                plotReturns.PlotRoicGrowth(true);
-            else
-                plotReturns.PlotRoicGrowth(false);
+            if (this.DataContext is ReturnsVM returnsVM)
+            {
+                if (cbxRoicGrowth.IsChecked == true)
+                {
+                    plotReturns.PlotRoicGrowth(true);
+                    returnsVM.CbxRoicGrwthChecked = true;
+                }
+                else
+                {
+                    plotReturns.PlotRoicGrowth(false);
+                    returnsVM.CbxRoicGrwthChecked = false;
+                }
+            }
         }
 
         private void cbxFcfGrowth_Checked(object sender, RoutedEventArgs e)
-        {
+        { /*
             if (cbxFcfGrowth.IsChecked == true)
+            {
                 plotReturns.PlotFcfGrowth(true);
+            }
             else
+            {
                 plotReturns.PlotFcfGrowth(false);
+            }*/
         }
     }
 }

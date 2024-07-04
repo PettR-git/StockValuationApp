@@ -24,29 +24,42 @@ namespace StockPresentationLib.Views
     /// </summary>
     public partial class Earnings : UserControl
     {
-        private PlotEarnings plotStockMetrics;
+        private PlotEarnings plotEarnings;
         public Earnings()
         {
             InitializeComponent();
 
-            this.Loaded += Earnings_Loaded;
+            this.DataContextChanged += Earnings_DataContextChanged;
         }
 
-        private void Earnings_Loaded(object sender, RoutedEventArgs e)
+        private void Earnings_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
-            Stock stock = null;
-
             if (this.DataContext is EarningsVM earningsVM)
             {
-                stock = earningsVM.Stock;
-
-                if (stock != null)
+                if (earningsVM.Stock != null)
                 {
-                    plotStockMetrics = new PlotEarnings(WpfPlot1, stock);
-                    PlotRevenueAndEarnings();
-                    SetInitialCbxValues();
+                    if(earningsVM.PlotEarnings == null || earningsVM.Stock != earningsVM.PlotEarnings.PlotStock)
+                    {
+                        bool newPlot = true;
+
+                        if(earningsVM.PlotEarnings?.PlotStock != null)
+                            newPlot = false;
+
+                        plotEarnings = new PlotEarnings(WpfPlot1, earningsVM.Stock);
+                        earningsVM.PlotEarnings = plotEarnings;
+                        PlotRevenueAndEarnings();
+
+                        if(newPlot)
+                            SetInitialCbxValues();
+                    }
+                    else
+                    {
+                        plotEarnings = earningsVM.PlotEarnings;
+                        plotEarnings.UpdatePlotAndStock(WpfPlot1, earningsVM.Stock);
+                        PlotRevenueAndEarnings();
+                    }
                 }
-            }            
+            }
         }
 
         private void SetInitialCbxValues()
@@ -57,54 +70,80 @@ namespace StockPresentationLib.Views
 
         private void PlotRevenueAndEarnings()
         {
-            plotStockMetrics.PlotRevenueAndEarnings();
+            plotEarnings.PlotRevenueAndEarnings();
         }
 
         public void RenderPlot()
         {
-            plotStockMetrics.RenderPlot();
-        }
-
-        public void PlotRoe()
-        {
-
-        }
-
-        private void PlotRoic()
-        {
-
+            plotEarnings.RenderPlot();
         }
 
         private void cbxEbitdaGrowth_Checked(object sender, RoutedEventArgs e)
         {
-            if (cbxEbitdaGrowth.IsChecked == true)
-                plotStockMetrics.PlotEbitdaGrowth(true);
-            else
-                plotStockMetrics.PlotEbitdaGrowth(false);
+            if (this.DataContext is EarningsVM earningsVM)
+            {
+                if (cbxEbitdaGrowth.IsChecked == true)
+                {
+                    plotEarnings.PlotEbitdaGrowth(true);
+                    earningsVM.CbxEbitdaGrwthChecked = true;
+                }
+                else
+                {
+                    plotEarnings.PlotEbitdaGrowth(false);
+                    earningsVM.CbxEbitdaGrwthChecked = false;
+                }
+            }
         }
 
         private void cbxEbitGrowth_Checked(object sender, RoutedEventArgs e)
         {
-            if (cbxEbitGrowth.IsChecked == true)
-                plotStockMetrics.PlotEbitGrowth(true);
-            else
-                plotStockMetrics.PlotEbitGrowth(false);
+            if (this.DataContext is EarningsVM earningsVM)
+            {
+                if (cbxEbitGrowth.IsChecked == true)
+                {
+                    plotEarnings.PlotEbitGrowth(true);           
+                    earningsVM.CbxEbitGrwthChecked= true;
+                }
+                else
+                {
+                    plotEarnings.PlotEbitGrowth(false);
+                    earningsVM.CbxEbitGrwthChecked = false;
+                }
+            }
         }
 
         private void cbxRevGrowth_Checked(object sender, RoutedEventArgs e)
         {
-            if (cbxRevGrowth.IsChecked == true)
-                plotStockMetrics.PlotRevenueGrowth(true);
-            else
-                plotStockMetrics.PlotRevenueGrowth(false);
+            if (this.DataContext is EarningsVM earningsVM)
+            {
+                if (cbxRevGrowth.IsChecked == true)
+                {
+                    plotEarnings.PlotRevenueGrowth(true);
+                    earningsVM.CbxRevGrwthChecked = true;
+                }                   
+                else
+                {
+                    plotEarnings.PlotRevenueGrowth(false);
+                    earningsVM.CbxRevGrwthChecked=false;
+                }                
+            }
         }
 
         private void cbxNetIncGrowth_Checked(object sender, RoutedEventArgs e)
         {
-            if (cbxNetIncGrowth.IsChecked == true)
-                plotStockMetrics.PlotNetIncomeGrowth(true);
-            else
-                plotStockMetrics.PlotNetIncomeGrowth(false);
+            if (this.DataContext is EarningsVM earningsVM)
+            {
+                if (cbxNetIncGrowth.IsChecked == true)
+                {
+                    plotEarnings.PlotNetIncomeGrowth(true);
+                    earningsVM.CbxNetIncGrwthChecked = true;
+                }
+                else
+                {
+                    plotEarnings.PlotNetIncomeGrowth(false);
+                    earningsVM.CbxNetIncGrwthChecked= false;
+                }
+            }
         }
     }
 }
