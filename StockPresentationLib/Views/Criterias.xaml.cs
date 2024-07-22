@@ -1,4 +1,7 @@
-﻿using System;
+﻿using StockPresentationLib.Plot;
+using StockPresentationLib.ViewModel;
+using StockValuationApp.Entities.Stocks;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -20,9 +23,28 @@ namespace StockPresentationLib.Views
     /// </summary>
     public partial class Criterias : UserControl
     {
+        private PlotCriterias plotCriterias;
         public Criterias()
         {
             InitializeComponent();
+
+            this.DataContextChanged += Returns_Changed;
+        }
+
+        private void Returns_Changed(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            Stock stock = null;
+
+            if (this.DataContext is CriteriasVM criteriasVM)
+            {
+                if (criteriasVM.Stock != null)
+                {
+                    stock = criteriasVM.Stock;
+                    plotCriterias = new PlotCriterias(stock);
+
+                    plotCriterias.PlotValuation(WpfPlotValuation);
+                }
+            }
         }
     }
 }

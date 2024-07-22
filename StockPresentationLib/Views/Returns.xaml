@@ -13,13 +13,12 @@
     <Grid Margin="15">
         <Border CornerRadius="0,20,20,0"
                 Background="#212529">
-
         </Border>
         <Grid>
-            <ScottPlot:WpfPlot x:Name="WpfPlot2" Margin="0,0,0,50"/>
-            <CheckBox x:Name="cbxRoeGrowth" Content="Return on Equity" HorizontalAlignment="Left" Margin="104,529,0,0" VerticalAlignment="Top" Checked="cbxRoeGrowth_Checked" Unchecked="cbxRoeGrowth_Checked" IsChecked="{Binding CbxRoeGrwthChecked}"/>
-            <CheckBox x:Name="cbxRoicGrowth" Content="Return on Invested Capital" HorizontalAlignment="Left" Margin="256,529,0,0" VerticalAlignment="Top" Checked="cbxRoicGrowth_Checked" Unchecked="cbxRoicGrowth_Checked" IsChecked="{Binding CbxRoicGrwthChecked}"/>
-            <CheckBox x:Name="cbxFcfGrowth" Content="Free Cashflow" HorizontalAlignment="Left" Margin="469,529,0,0" VerticalAlignment="Top" Checked="cbxFcfGrowth_Checked" Unchecked="cbxFcfGrowth_Checked" IsChecked="{Binding CbxFcfGrwthChecked}"/>
+            <ScottPlot:WpfPlot x:Name="WpfPlot2" Margin="0,0,0,50" FontFamily = "/StockPresentationLib;component/Fonts/#Rubik"/>
+            <CheckBox x:Name="cbxRoeGrowth" Style = "{StaticResource RoundedCheckBoxStyle}" Content="Return on Equity Growth (%)" HorizontalAlignment="Left" Margin="28,529,0,0" VerticalAlignment="Top" Checked="cbxRoeGrowth_Checked" Unchecked="cbxRoeGrowth_Checked" IsChecked="{Binding CbxRoeGrwthChecked}"/>
+            <CheckBox x:Name="cbxRoicGrowth" Style = "{StaticResource RoundedCheckBoxStyle}" Content="Return on Invested Capital Growth (%)" HorizontalAlignment="Center" Margin="0,529,0,0" VerticalAlignment="Top" Checked="cbxRoicGrowth_Checked" Unchecked="cbxRoicGrowth_Checked" IsChecked="{Binding CbxRoicGrwthChecked}"/>
+            <CheckBox x:Name="cbxFcfGrowth" Style = "{StaticResource RoundedCheckBoxStyle}" Content="EV/Free Cashflow Growth (%)" HorizontalAlignment="Left" Margin="493,529,0,0" VerticalAlignment="Top" Checked="cbxFcfGrowth_Checked" Unchecked="cbxFcfGrowth_Checked" IsChecked="{Binding CbxFcfGrwthChecked}"/>
         </Grid>
     </Grid>
 </UserControl>

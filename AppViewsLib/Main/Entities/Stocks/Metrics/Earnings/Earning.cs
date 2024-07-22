@@ -11,6 +11,10 @@ namespace StockValuationApp.Entities.Stocks.Metrics.Earnings
     {
         public virtual double NetIncomeValue { get; set; } = 0;
         public virtual double EbitValue { get; set; } = 0;
-        public virtual double EbitdaValue { get; set; } = 0; 
+        public virtual double EbitdaValue { get; set; } = 0;
+
+        public decimal EbitdaMargin { get; set; }
+        public decimal EbitMargin { get; set; }
+        public decimal NetIncomeMargin { get; set; }
     }
 }

@@ -92,7 +92,7 @@ namespace StockValuationApp.Entities.Stocks
         {
             Stock stock = e.Stock;
             int year = e.Year;
-            double keyFigureVal = 0.0;
+            decimal keyFigureVal = default;
 
             List<KeyFigureTypes> keyFigureTypes = Enum.GetValues(typeof(KeyFigureTypes)).Cast<KeyFigureTypes>().ToList();
             var evTuple = (e.MarketValue, e.ShortTermDebt, e.LongTermDebt, e.CashAndEquivalents);
@@ -107,11 +107,18 @@ namespace StockValuationApp.Entities.Stocks
             }
 
             yf.Year = year;
+            if (year > DateTime.Now.Year)
+            {
+                yf.IsEstimate = true;
+            }
             yf.Earnings = new Earning();
             yf.Earnings.EbitValue = e.Ebit;
             yf.Earnings.EbitdaValue = e.Ebitda;
             yf.Earnings.NetIncomeValue = e.NetIncome;
             yf.Revenue = e.Revenue;
+            yf.Earnings.EbitdaMargin = (decimal)Math.Round(100 * (e.Ebitda/e.Revenue), 1);
+            yf.Earnings.EbitMargin = (decimal)Math.Round(100 * (e.Ebit/e.Revenue), 1);
+            yf.Earnings.NetIncomeMargin = (decimal)Math.Round(100 * (e.NetIncome/e.Revenue), 1);
 
             yf.EnterpriseVal = new EnterpriseValue();
             yf.EnterpriseVal.MarketValue = e.MarketValue;
@@ -154,7 +161,7 @@ namespace StockValuationApp.Entities.Stocks
                         if (!CheckIntsValidity([e.OperationalCashflow, e.CapitalExpenditures]))
                             continue;
 
-                        keyFigureVal = e.OperationalCashflow - e.CapitalExpenditures;
+                        keyFigureVal = (decimal)(e.OperationalCashflow - e.CapitalExpenditures);
                         break;
 
                     case KeyFigureTypes.ReturnOnEquity:
@@ -214,14 +221,14 @@ namespace StockValuationApp.Entities.Stocks
         /// <param name="yf"></param>
         /// <param name="keyFigure"></param>
         /// <param name="result"></param>
-        private void UpdateOrCreateKeyFigure(Stock stock, YearlyFinancials yf, KeyFigureTypes keyFigure, double result)
+        private void UpdateOrCreateKeyFigure(Stock stock, YearlyFinancials yf, KeyFigureTypes keyFigure, decimal result)
         {
             int index = stock.Financials.IndexOf(yf);
 
             //if keyfigure dictionary doesnt exist, create dictionary and keyfigure
             if(stock.Financials[index].KeyFiguresDict == null)
             {
-                Dictionary<KeyFigureTypes, double> metricDict = new Dictionary<KeyFigureTypes, double>();
+                Dictionary<KeyFigureTypes, decimal> metricDict = new Dictionary<KeyFigureTypes, decimal>();
                 metricDict[keyFigure] = result;
 
                 stock.Financials[index].KeyFiguresDict = metricDict;
@@ -300,8 +307,10 @@ namespace StockValuationApp.Entities.Stocks
             List<JObject> jObjs = null;
             MetricEventArgs args = null;
             const int maxApiYearIndex = 5;
+            const int maxNoRes = 5;
             List<int> indexYears = Enumerable.Range(0, maxApiYearIndex).ToList();
             double metricVal = 0.0;
+            int noResCounter = 0;
 
             if (metricTemplate == null)
             {
@@ -337,6 +346,7 @@ namespace StockValuationApp.Entities.Stocks
                                 else
                                 {
                                     Console.WriteLine("No result from API query");
+                                    noResCounter++;
                                     continue;
                                 }
 
@@ -368,6 +378,7 @@ namespace StockValuationApp.Entities.Stocks
                                 else
                                 {
                                     Console.WriteLine("No result from API query");
+                                    noResCounter++;
                                     continue;
                                 }
 
@@ -414,6 +425,7 @@ namespace StockValuationApp.Entities.Stocks
                                 else
                                 {
                                     Console.WriteLine("No result from API query");
+                                    noResCounter++;
                                     continue;
                                 }
 
@@ -448,6 +460,7 @@ namespace StockValuationApp.Entities.Stocks
                                 else
                                 {
                                     Console.WriteLine("No result from API query");
+                                    noResCounter++;
                                     continue;
                                 }
 
@@ -474,7 +487,9 @@ namespace StockValuationApp.Entities.Stocks
                     }                 
                 }
                 args.Year = DateTime.Now.Year - 1 - i;
-                stock.MetricsGiven?.Invoke(this, args);
+
+                if(noResCounter < 5)
+                    stock.MetricsGiven?.Invoke(this, args);
             }
         }
 

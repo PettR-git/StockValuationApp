@@ -18,6 +18,7 @@
                 <ResourceDictionary Source="Styles/ListView.xaml" />
                 <ResourceDictionary Source="Styles/TextBox.xaml" />
                 <ResourceDictionary Source="Styles/CheckBox.xaml" />
+                <ResourceDictionary Source="Styles/TabControl.xaml" />
 
             </ResourceDictionary.MergedDictionaries>
 

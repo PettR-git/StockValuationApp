@@ -14,16 +14,21 @@ namespace StockValuationApp.Entities.Stocks
     [Serializable]
     public class Stock
     {
+        public EventHandler<MetricEventArgs> MetricsGiven;
         public Stock() {
             Financials = new List<YearlyFinancials>();
         }
+
         public string Name {  get; set; }
         public string Ticker { get; set; }
 
         //Financials for a specific year
         public List<YearlyFinancials> Financials { get; set; }
 
-        public EventHandler<MetricEventArgs> MetricsGiven;
+        //Score
+        public decimal ValuationScore { get; set; }
+        public decimal MoatScore { get; set; }
+        public decimal UnderParamScore { get; set; }
 
         public override string ToString()
         {

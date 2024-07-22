@@ -9,7 +9,8 @@
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="ScottPlot.WPF" Version="5.0.35" />
+    <PackageReference Include="ScottPlot.WPF" Version="5.0.36" />
+    <PackageReference Include="Syncfusion.SfGrid.WPF" Version="26.1.42" />
   </ItemGroup>
 
 </Project>

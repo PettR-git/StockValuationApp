@@ -1,7 +1,9 @@
 ﻿using StockPresentationLib.Plot;
 using StockPresentationLib.ViewModel;
+using StockValuationApp.Entities.Enums;
 using StockValuationApp.Entities.Stocks;
 using StockValuationApp.Entities.Stocks.Metrics;
+using StockValuationApp.Entities.Stocks.Metrics.Earnings;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,38 +36,105 @@ namespace StockPresentationLib.Views
 
         private void Earnings_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
+            if(this.DataContext is EarningsVM earningsVM)
+            {
+                if (earningsVM.Stock != null)
+                {
+                    var financials = earningsVM.Stock.Financials;
+
+                    if (financials.Count() > 0 && earningsVM.PrevPlotEarnings?.StockStr != earningsVM.Stock.ToString())
+                    {
+                        double ebit = 0, ebitda = 0, netInc = 0, revenue = 0;
+
+                        earningsVM.YearlyFinancials.Clear();
+
+                        //Populate viewmodel with financial data, such as financial margins for datagrid
+                        foreach (var financial in financials)
+                        {
+                            //To round numbers to increase readability
+                            revenue = financial.Revenue / Math.Pow(10, 6);
+                            ebit = financial.Earnings.EbitValue / Math.Pow(10, 6);
+                            ebitda = financial.Earnings.EbitdaValue / Math.Pow(10, 6);
+                            netInc = financial.Earnings.NetIncomeValue / Math.Pow(10, 6);
+
+                            //Insert those values
+                            financial.Revenue = revenue;
+                            financial.Earnings.EbitValue = ebit;
+                            financial.Earnings.EbitdaValue = ebitda;
+                            financial.Earnings.NetIncomeValue = netInc;
+
+                            earningsVM.YearlyFinancials.Add(financial);
+                        }
+                    }
+                }   
+
+                EarningsPlot();
+            }
+        }
+
+        private void EarningsPlot()
+        {
             if (this.DataContext is EarningsVM earningsVM)
             {
                 if (earningsVM.Stock != null)
                 {
-                    if(earningsVM.PlotEarnings == null || earningsVM.Stock != earningsVM.PlotEarnings.PlotStock)
+                    if (earningsVM.PrevPlotEarnings == null || earningsVM.Stock.ToString() != earningsVM.PrevPlotEarnings.StockStr)
                     {
                         bool newPlot = true;
 
-                        if(earningsVM.PlotEarnings?.PlotStock != null)
+                        if (earningsVM.PrevPlotEarnings?.StockStr != null)
                             newPlot = false;
 
-                        plotEarnings = new PlotEarnings(WpfPlot1, earningsVM.Stock);
-                        earningsVM.PlotEarnings = plotEarnings;
+                        plotEarnings = new PlotEarnings(WpfPlot1, earningsVM.Stock.ToString(), earningsVM.YearlyFinancials.ToList());
+
+                        earningsVM.PrevPlotEarnings = plotEarnings;
                         PlotRevenueAndEarnings();
 
-                        if(newPlot)
+                        if (newPlot)
+                        {
                             SetInitialCbxValues();
+                        }
                     }
                     else
                     {
-                        plotEarnings = earningsVM.PlotEarnings;
-                        plotEarnings.UpdatePlotAndStock(WpfPlot1, earningsVM.Stock);
-                        PlotRevenueAndEarnings();
+                        plotEarnings = earningsVM.PrevPlotEarnings;
+                        plotEarnings.UpdatePlotAndStock(WpfPlot1, earningsVM.Stock.ToString());
+                        PlotRevenueAndEarnings(); 
                     }
                 }
             }
         }
 
+        private void TabControl_Changed(object sender, RoutedEventArgs e)
+        {
+            if(e.Source is TabControl)
+            {               
+                TabItem selectedTab = (TabItem)tabControl.SelectedItem;
+
+                if (selectedTab == tabGraph)
+                {                      
+                    //EarningsPlot();
+                }
+                else if(selectedTab == tabEarnings)
+                {
+
+                }
+                else if(selectedTab == tabKeyMetrics)
+                {
+                    //dgKeyMetrics.
+                    
+                }
+
+            }
+        
+        }
+
         private void SetInitialCbxValues()
         {
+            cbxRevGrowth.IsChecked = true;
+            cbxEbitdaGrowth.IsChecked = false;
             cbxEbitGrowth.IsChecked = true;
-            cbxNetIncGrowth.IsChecked = true;
+            cbxNetIncGrowth.IsChecked = false;
         }
 
         private void PlotRevenueAndEarnings()

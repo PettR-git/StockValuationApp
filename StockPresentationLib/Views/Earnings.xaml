@@ -5,24 +5,109 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:StockPresentationLib.Views" xmlns:vm="clr-namespace:StockPresentationLib.ViewModel"
              xmlns:ScottPlot="clr-namespace:ScottPlot.WPF;assembly=ScottPlot.WPF"
+             xmlns:Enums="clr-namespace:StockValuationApp.Main.Enums;assembly=StockLib"
+             xmlns:financials="clr-namespace:StockValuationApp.Entities.Stocks.Metrics;assembly=StockLib"
+             xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
              mc:Ignorable="d" 
              d:DesignHeight="600"
              d:DesignWidth="730"
              Style="{StaticResource Page_Style}">
 
     <Grid Margin="15">
+
         <Border CornerRadius="0,20,20,0"
-                Background="#212529">
+                 Background="#212529">
         </Border>
-        <Grid>
-            <ScottPlot:WpfPlot x:Name="WpfPlot1" Margin="0,0,0,70" />
-            <CheckBox x:Name="cbxRevGrowth" Style = "{StaticResource RoundedCheckBoxStyle}" Content="Revenue Growth (% YoY)" HorizontalAlignment="Left" Margin="44,540,0,0" VerticalAlignment="Top" Checked="cbxRevGrowth_Checked" Unchecked="cbxRevGrowth_Checked" IsChecked="{Binding CbxRevGrwthChecked}"/>
-            <CheckBox x:Name="cbxEbitdaGrowth" Style = "{StaticResource RoundedCheckBoxStyle}" Content="EBITDA Growth (% YoY)" HorizontalAlignment="Left" Margin="373,540,0,0" VerticalAlignment="Top" Checked="cbxEbitdaGrowth_Checked" Unchecked="cbxEbitdaGrowth_Checked" IsChecked="{Binding CbxEbitdaGrwthChecked}"/>
-            <CheckBox x:Name="cbxEbitGrowth" Style = "{StaticResource RoundedCheckBoxStyle}" Content="EBIT Growth (% YoY)" HorizontalAlignment="Left" Margin="214,540,0,0" VerticalAlignment="Top" Checked="cbxEbitGrowth_Checked" Unchecked="cbxEbitGrowth_Checked" IsChecked="{Binding CbxEbitGrwthChecked}"/>
-            <CheckBox x:Name="cbxNetIncGrowth" Style = "{StaticResource RoundedCheckBoxStyle}" Content="Net Income Growth (% YoY)" HorizontalAlignment="Left" Margin="527,540,0,0" VerticalAlignment="Top" Checked="cbxNetIncGrowth_Checked" Unchecked="cbxNetIncGrowth_Checked" IsChecked="{Binding CbxNetIncGrwthChecked}"/>
-            <ComboBox x:Name="cmbRetPlot" Margin="44,508,577,45">
-                <ComboBox Width="120"/>
-            </ComboBox>
-        </Grid>
+        <TabControl x:Name="tabControl" SelectionChanged="TabControl_Changed" Style = "{StaticResource Tab_Style}">
+            <TabItem x:Name="tabGraph" Header="Graph" FontFamily="/Fonts/#Rubik" Background="#212529" Foreground="#FFA5CAAF" Style="{StaticResource TabItem_Style}">
+                <Grid Background="#212529">
+                    <ScottPlot:WpfPlot x:Name="WpfPlot1" Margin="10,10,10,54" FontFamily= "/StockPresentationLib;component/Fonts/#Rubik"/>
+                    <CheckBox x:Name="cbxRevGrowth" Style = "{StaticResource RoundedCheckBoxStyle}" Content="Revenue Growth (% YoY)" HorizontalAlignment="Left" Margin="10,495,0,0" VerticalAlignment="Top" Checked="cbxRevGrowth_Checked" Unchecked="cbxRevGrowth_Checked" IsChecked="{Binding CbxRevGrwthChecked}"/>
+                    <CheckBox x:Name="cbxEbitdaGrowth" Style = "{StaticResource RoundedCheckBoxStyle}" Content="EBITDA Growth (% YoY)" HorizontalAlignment="Left" Margin="334,495,0,0" VerticalAlignment="Top" Checked="cbxEbitdaGrowth_Checked" Unchecked="cbxEbitdaGrowth_Checked" IsChecked="{Binding CbxEbitdaGrwthChecked}"/>
+                    <CheckBox x:Name="cbxEbitGrowth" Style = "{StaticResource RoundedCheckBoxStyle}" Content="EBIT Growth (% YoY)" HorizontalAlignment="Left" Margin="184,495,0,0" VerticalAlignment="Top" Checked="cbxEbitGrowth_Checked" Unchecked="cbxEbitGrowth_Checked" IsChecked="{Binding CbxEbitGrwthChecked}"/>
+                    <CheckBox x:Name="cbxNetIncGrowth" Style = "{StaticResource RoundedCheckBoxStyle}" Content="Net Income Growth (% YoY)" HorizontalAlignment="Left" Margin="504,495,0,0" VerticalAlignment="Top" Checked="cbxNetIncGrowth_Checked" Unchecked="cbxNetIncGrowth_Checked" IsChecked="{Binding CbxNetIncGrwthChecked}"/>
+                </Grid>
+            </TabItem>
+            <TabItem x:Name="tabEarnings" Style="{StaticResource TabItem_Style}" Header="Numbers ($MM)" FontFamily="/Fonts/#Rubik" Background="#212529" Foreground="#FFA5CAAF" >
+                <Grid Background="#212529">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="79*"/>
+                        <ColumnDefinition Width="268*"/>
+                    </Grid.ColumnDefinitions>
+                    <DataGrid x:Name="dgNumbers" HeadersVisibility="Column" Background="#212529"
+                              CanUserAddRows="False" AlternatingRowBackground="#272B2F" RowBackground="#212529" 
+                              Foreground="#FFA5CAAF" FontFamily="/Fonts/#Rubik" HorizontalAlignment="Left" AutoGenerateColumns="False" VerticalAlignment="Top" 
+                              ItemsSource="{Binding YearlyFinancials}" Margin="20,20,0,0" Grid.ColumnSpan="2" Width="644">
+                        <DataGrid.Resources>
+                            <Style TargetType="DataGridRow">
+                                <Setter Property="Background" Value="#212529"/>
+                                <Setter Property="Foreground" Value="#FFA5CAAF"/>
+                            </Style>
+                            <Style TargetType="DataGridCell">
+                                <Setter Property="Background" Value="#212529"/>
+                                <Setter Property="Foreground" Value="#FFA5CAAF"/>
+                            </Style>
+                            <Style TargetType="DataGridColumnHeader">
+                                <Setter Property="Background" Value="#212529"/>
+                                <Setter Property="Foreground" Value="#FFA5CAAF"/>
+                                <Setter Property="FontWeight" Value="Bold"/>
+                                <Setter Property="Padding" Value="5"/>
+                            </Style>
+                            <Style TargetType="DataGrid">
+                                <Setter Property="BorderBrush" Value="#FFA5CAAF" />
+                            </Style>
+                        </DataGrid.Resources>
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Year" Binding = "{Binding Year}"/>
+                            <DataGridTextColumn Header="Revenue" Binding = "{Binding Revenue}" />
+                            <DataGridTextColumn Header="EBITDA" Binding = "{Binding Earnings.EbitdaValue}" />
+                            <DataGridTextColumn Header="EBIT" Binding = "{Binding Earnings.EbitValue}"/>
+                            <DataGridTextColumn Header="Net Income" Binding = "{Binding Earnings.NetIncomeValue}" />
+                            <DataGridTextColumn Header="EBITDA Margin(%)" Binding = "{Binding Earnings.EbitdaMargin}" />
+                            <DataGridTextColumn Header="EBIT Margin(%)" Binding = "{Binding Earnings.EbitMargin}"/>
+                            <DataGridTextColumn Header="Net Income Margin(%)" Binding = "{Binding Earnings.NetIncomeMargin}" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </TabItem>
+            <TabItem x:Name="tabKeyMetrics" FontFamily="/Fonts/#Rubik" Header="Key Metrics" Background="#212529" Foreground="#FFA5CAAF" Style="{StaticResource TabItem_Style}">
+                <Grid Background="#212529">
+                    <DataGrid x:Name="dgKeyMetrics" HeadersVisibility="Column" HorizontalAlignment="Left" Background="#212529" EnableRowVirtualization="false" EnableColumnVirtualization="false"
+                              CanUserAddRows="False" AlternatingRowBackground="#272B2F" RowBackground="#212529" 
+                              Foreground="#FFA5CAAF" FontFamily="/Fonts/#Rubik" AutoGenerateColumns="False" VerticalAlignment="Top" 
+                              ItemsSource="{Binding YearlyFinancials}" Margin="20,20,0,0" Width="455">
+                        <DataGrid.Resources>
+                            <Style TargetType="DataGridRow">
+                                <Setter Property="Background" Value="#212529"/>
+                                <Setter Property="Foreground" Value="#FFA5CAAF"/>
+                            </Style>
+                            <Style TargetType="DataGridCell">
+                                <Setter Property="Background" Value="#212529"/>
+                                <Setter Property="Foreground" Value="#FFA5CAAF"/>
+                            </Style>
+                            <Style TargetType="DataGridColumnHeader">
+                                <Setter Property="Background" Value="#212529"/>
+                                <Setter Property="Foreground" Value="#FFA5CAAF"/>
+                                <Setter Property="FontWeight" Value="Bold"/>
+                                <Setter Property="Padding" Value="5"/>
+                            </Style>
+                            <Style TargetType="DataGrid">
+                                <Setter Property="BorderBrush" Value="#FFA5CAAF" />
+                            </Style>
+                        </DataGrid.Resources>
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Year" Binding="{Binding Year}"/>
+                            <DataGridTextColumn Header="P/E" Binding="{Binding Path=KeyFiguresDict[PriceToEarnings]}"/>
+                            <DataGridTextColumn Header="EV/EBITDA" Binding="{Binding Path=KeyFiguresDict[EvEbitda]}"/>
+                            <DataGridTextColumn Header="EV/EBIT" Binding="{Binding Path=KeyFiguresDict[EvEbit]}"/>
+                            <DataGridTextColumn Header="EV/FCF" Binding="{Binding Path=KeyFiguresDict[EvFreecashflow]}"/>
+                            <DataGridTextColumn Header="Net Debt/EBITDA" Binding="{Binding Path=KeyFiguresDict[NetDebtToEbitda]}"/>
+                            <DataGridTextColumn Header="ROE" Binding="{Binding Path=KeyFiguresDict[ReturnOnEquity]}"/>
+                            <DataGridTextColumn Header="ROIC" Binding="{Binding Path=KeyFiguresDict[ReturnOnInvCap]}"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </TabItem>
+        </TabControl>
     </Grid>
 </UserControl>

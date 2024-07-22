@@ -46,7 +46,8 @@ namespace StockPresentationLib.Views
         {
             InitializeGUI();
 
-            if(DataContext is HomeVM homeDataContext){
+            if (DataContext is HomeVM homeDataContext)
+            {
                 homeVM = homeDataContext;
                 List<Stock> stocks = homeVM.Stocks.ToList();
 
@@ -66,69 +67,7 @@ namespace StockPresentationLib.Views
                     lvwAllStocks.SelectedIndex = index;
                 }
             }
-           /* else
-            {              
-                if(stockManager == null)
-                {
-                    stockManager = new StockManager();
-                }
-
-                if(stockManager.Count() > 0)
-                {
-
-                    for (int i = 0; i < stockManager.Count(); i++)
-                    {
-                        Stock stock = stockManager.getListItemAt(i);
-
-                        if (!homeVM.Stocks.Contains(stock))
-                        {
-                            homeVM.Stocks.Add(stock);
-                        }
-                    }
-                }
-            }*/
         }
-
-       /* private void Home_Loaded(object sender, RoutedEventArgs e)
-        {
-            InitializeGUI();
-
-            if (DataContext is HomeVM homeDataContext)
-            {
-                homeVM = homeDataContext;
-                List<Stock> stocks = homeVM.Stocks;
-
-                if (stocks.Count > 0)
-                {
-                    int index = 0;
-
-                    foreach (Stock stock in stocks)
-                    {
-                        if(stock == homeVM.GetCurrentStock)
-                        {
-                            index = stocks.IndexOf(stock);
-                        }
-
-                        stockManager.addItem(stock);
-                    }
-                    UpdateStockUI();
-                    lvwAllStocks.SelectedIndex = index;
-                }
-            }
-        }*/
-
-        /*private void Home_Unloaded(object sender, RoutedEventArgs e)
-        {
-            if(homeVM != null)
-            {
-                homeVM.Stocks = new List<Stock>();
-
-                for (int i = 0; i < stockManager.Count(); i++)
-                {
-                    homeVM.Stocks.Add(stockManager.getListItemAt(i));
-                }
-            }
-        }*/
 
         //Initialize UI
         private void InitializeGUI()

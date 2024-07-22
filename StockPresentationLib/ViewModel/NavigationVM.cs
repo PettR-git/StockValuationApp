@@ -68,7 +68,7 @@ namespace StockPresentationLib.ViewModel
         {
             if (_criteriasVM == null)
             {
-                _criteriasVM = new CriteriasVM();
+                _criteriasVM = new CriteriasVM(_currentStock);
             }
             CurrentView = _criteriasVM;
         }

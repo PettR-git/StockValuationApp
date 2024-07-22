@@ -17,7 +17,7 @@ namespace StockPresentationLib.Plot
     {
         private List<Tick> xAxesYears;
         private List<YearlyFinancials> yearlyFinancials;
-        private Stock stock;
+        private string stockStr;
         private WpfPlot finPlot;
         private Bar[] barArr;
         private Scatter scatterEbitdaGrowth;
@@ -25,20 +25,20 @@ namespace StockPresentationLib.Plot
         private Scatter scatterNetIncGrowth;
         private Scatter scatterRevGrowth;
         private ScottPlot.Palettes.Category10 palette;
-        public PlotEarnings(WpfPlot finPlot, Stock stock)
+        public PlotEarnings(WpfPlot finPlot, string stockToStr, List<YearlyFinancials> yearlyFinancials)
         {
-            UpdatePlotAndStock(finPlot, stock);
-            yearlyFinancials = stock.Financials;
+            UpdatePlotAndStock(finPlot, stockToStr);
+            this.yearlyFinancials = yearlyFinancials;
             palette = new ScottPlot.Palettes.Category10();
         }
 
-        public void UpdatePlotAndStock(WpfPlot finPlot, Stock stock)
+        public void UpdatePlotAndStock(WpfPlot finPlot, string stockStr)
         {
             this.finPlot = finPlot;
-            this.stock = stock;
+            this.stockStr = stockStr;
         }
 
-        public Stock PlotStock {  get { return stock; } }
+        public string StockStr {  get { return stockStr; } }
 
         public void PlotRevenueAndEarnings()
         {
@@ -55,18 +55,31 @@ namespace StockPresentationLib.Plot
                         double ebit = 0, ebitda = 0, netIncome = 0;
                         double revenue = yearlyFinancials.ElementAt(i).Revenue;
 
-                        bars.Add(new Bar { Position = indexPos, Value = revenue, FillColor = palette.GetColor(0) });
+                        ScottPlot.Color revColor = palette.GetColor(0);
+                        ScottPlot.Color ebitdaColor = palette.GetColor(1);
+                        ScottPlot.Color ebitColor = ScottPlot.Color.FromHex("#EAE552");
+                        ScottPlot.Color netIncColor = palette.GetColor(2);
+
+                        if (yearlyFinancials[i].IsEstimate == true)
+                        {
+                            revColor = revColor.WithAlpha(40);
+                            ebitdaColor = ebitdaColor.WithAlpha(40);
+                            ebitColor = ebitColor.WithAlpha(40);
+                            netIncColor = netIncColor.WithAlpha(40);
+                        }
+
+                        bars.Add(new Bar { Position = indexPos, Value = revenue, FillColor = revColor });
 
                         if (yearlyFinancials.ElementAt(i).Earnings != null)
                         {
                             ebitda = yearlyFinancials.ElementAt(i).Earnings.EbitdaValue;
-                            bars.Add(new Bar { Position = ++indexPos, Value = ebitda, FillColor = palette.GetColor(1) });
+                            bars.Add(new Bar { Position = ++indexPos, Value = ebitda, FillColor = ebitdaColor });
 
                             ebit = yearlyFinancials.ElementAt(i).Earnings.EbitValue;
-                            bars.Add(new Bar { Position = ++indexPos, Value = ebit, FillColor = ScottPlot.Color.FromHex("#EAE552")});
+                            bars.Add(new Bar { Position = ++indexPos, Value = ebit, FillColor = ebitColor });
 
                             netIncome = yearlyFinancials.ElementAt(i).Earnings.NetIncomeValue;
-                            bars.Add(new Bar { Position = ++indexPos, Value = netIncome, FillColor = palette.GetColor(2) });
+                            bars.Add(new Bar { Position = ++indexPos, Value = netIncome, FillColor = netIncColor });
                         }
                         xAxesYears.Add(new Tick(posTick, yearlyFinancials.ElementAt(i).Year.ToString()));
                     }
@@ -79,6 +92,8 @@ namespace StockPresentationLib.Plot
 
             barArr = bars.ToArray();    
             finPlot.Plot.Add.Bars(barArr);
+            finPlot.Plot.Legend.FontName = ScottPlot.Fonts.Serif;
+            finPlot.Plot.Legend.FontSize = 16;
 
             //Configure extras
             finPlot.Plot.Legend.ManualItems.Add(new LegendItem
@@ -88,7 +103,7 @@ namespace StockPresentationLib.Plot
             });
             finPlot.Plot.Legend.ManualItems.Add(new LegendItem
             {
-                LabelText = MetricTypes.ebitda.ToString().ToUpper(),
+                LabelText = "EBITDA",
                 FillColor = palette.GetColor(1)
             });
             finPlot.Plot.Legend.ManualItems.Add(new LegendItem
@@ -114,10 +129,18 @@ namespace StockPresentationLib.Plot
 
             finPlot.Plot.Axes.Color(ScottPlot.Color.FromHex("#A5CAAF"));
             finPlot.Plot.Axes.Bottom.Label.Text = "Year";
+            finPlot.Plot.Axes.Bottom.Label.FontSize = 16;
+            finPlot.Plot.Axes.Bottom.Label.FontName = "/StockPresentationLib;component/Fonts/#Rubik";
+            finPlot.Plot.Axes.Right.Label.FontSize = 16;
             finPlot.Plot.Axes.Right.Label.Text = "Growth (%)";
-            finPlot.Plot.Axes.Left.Label.Text = "USD ($)";
-            finPlot.Plot.Axes.Title.Label.FontSize = 18;
-            finPlot.Plot.Axes.Title.Label.Text = stock.ToString();
+            finPlot.Plot.Axes.Right.Label.FontName = "/StockPresentationLib;component/Fonts/#Rubik";
+            finPlot.Plot.Axes.Left.Label.FontSize = 16;
+            finPlot.Plot.Axes.Left.Label.Text = "USD ($MM)";
+            finPlot.Plot.Axes.Left.Label.FontName = "/StockPresentationLib;component/Fonts/#Rubik";
+            finPlot.Plot.Axes.Title.Label.Bold = true;
+            finPlot.Plot.Axes.Title.Label.FontSize = 24;
+            finPlot.Plot.Axes.Title.Label.FontName = "/StockPresentationLib;component/Fonts/#Rubik";
+            finPlot.Plot.Axes.Title.Label.Text = stockStr;
             finPlot.Plot.Axes.Bottom.TickGenerator = new ScottPlot.TickGenerators.NumericManual(xAxesYears.ToArray());
             finPlot.Plot.Axes.Bottom.MajorTickStyle.Length = 0;
             finPlot.Plot.Axes.Margins(bottom: 0, left: 0.7, right: 0.7);
@@ -132,7 +155,7 @@ namespace StockPresentationLib.Plot
                 List<double> ebitdaGrowth = new List<double>() { 0.0 };
                 List<double> positions = new List<double>();
 
-                if (yearlyFinancials != null && yearlyFinancials.Where(x => x.Earnings != null).Sum(x => x.Earnings.EbitdaValue) > 0)
+                if (yearlyFinancials != null)
                 {
                     for (int i = 0; i < yearlyFinancials.Count() - 1; i++)
                     {
@@ -142,7 +165,7 @@ namespace StockPresentationLib.Plot
                             if (ebitdaPrev != 0)
                             {
                                 double ebitdaCurr = yearlyFinancials.ElementAt(i + 1).Earnings.EbitdaValue;
-                                ebitdaGrowth.Add(100 * ((double)(ebitdaCurr - ebitdaPrev) / ebitdaPrev));
+                                ebitdaGrowth.Add(100 * ((double)(Math.Abs(ebitdaCurr) - Math.Abs(ebitdaPrev)) / ebitdaPrev));
                             }
                             else
                             {
@@ -157,7 +180,6 @@ namespace StockPresentationLib.Plot
                     scatterEbitdaGrowth = finPlot.Plot.Add.Scatter(positions, ebitdaGrowth);
                     scatterEbitdaGrowth.Color = palette.GetColor(1);
                     scatterEbitdaGrowth.Axes.YAxis = finPlot.Plot.Axes.Right;
-                    finPlot.Plot.Axes.Right.RegenerateTicks(2);
                 }
             }
             else
@@ -175,7 +197,7 @@ namespace StockPresentationLib.Plot
                 List<double> revenueGrowth = new List<double>() { 0.0 };
                 List<double> positions = new List<double>();
 
-                if (yearlyFinancials != null && yearlyFinancials.Sum(x => x.Revenue) > 0)
+                if (yearlyFinancials != null)
                 {
                     for (int i = 0; i < yearlyFinancials.Count() - 1; i++)
                     {
@@ -183,7 +205,7 @@ namespace StockPresentationLib.Plot
                         if (revPrev != 0)
                         {
                             double revCurr = yearlyFinancials.ElementAt(i + 1).Revenue;
-                            revenueGrowth.Add(100 * ((double)(revCurr - revPrev) / revPrev));
+                            revenueGrowth.Add(100 * ((double)(Math.Abs(revCurr) - Math.Abs(revPrev)) / revPrev));
                         }
                         else
                         {
@@ -198,7 +220,6 @@ namespace StockPresentationLib.Plot
                 scatterRevGrowth = finPlot.Plot.Add.Scatter(positions, revenueGrowth);
                 scatterRevGrowth.Color = palette.GetColor(0);
                 scatterRevGrowth.Axes.YAxis = finPlot.Plot.Axes.Right;
-                finPlot.Plot.Axes.Right.RegenerateTicks(2);
             }
             else
             { 
@@ -215,7 +236,7 @@ namespace StockPresentationLib.Plot
                 List<double> ebitGrowth = new List<double>() { 0.0 };
                 List<double> positions = new List<double>();
 
-                if (yearlyFinancials != null && yearlyFinancials.Where(x => x.Earnings != null).Sum(x => x.Earnings.EbitValue) > 0)
+                if (yearlyFinancials != null)
                 {
                     for (int i = 0; i < yearlyFinancials.Count() - 1; i++)
                     {
@@ -223,7 +244,7 @@ namespace StockPresentationLib.Plot
                         if (ebitPrev != 0)
                         {
                             double ebitCurr = yearlyFinancials.ElementAt(i + 1).Earnings.EbitValue;
-                            ebitGrowth.Add(100 * ((double)(ebitCurr - ebitPrev) / ebitPrev));
+                            ebitGrowth.Add(100 * ((double)(Math.Abs(ebitCurr) - Math.Abs(ebitPrev)) / ebitPrev));
                         }
                         else
                         {
@@ -255,7 +276,7 @@ namespace StockPresentationLib.Plot
                 List<double> nIncomeGrowth = new List<double>() { 0.0 };
                 List<double> positions = new List<double>();
 
-                if (yearlyFinancials != null && yearlyFinancials.Where(x => x.Earnings != null).Sum(x => x.Earnings.NetIncomeValue) > 0)
+                if (yearlyFinancials != null)
                 {
                     for (int i = 0; i < yearlyFinancials.Count() - 1; i++)
                     {
@@ -263,7 +284,7 @@ namespace StockPresentationLib.Plot
                         if (nIncPrev != 0)
                         {
                             double incCurr = yearlyFinancials.ElementAt(i + 1).Earnings.NetIncomeValue;
-                            nIncomeGrowth.Add(100 * ((double)(incCurr - nIncPrev) / nIncPrev));
+                            nIncomeGrowth.Add(100 * ((double)(Math.Abs(incCurr) - Math.Abs(nIncPrev)) / nIncPrev));
                         }
                         else
                         {

@@ -15,24 +15,6 @@
         </Border>
 
         <Grid>
-            <Rectangle HorizontalAlignment="Center" Height="35" Stroke="Black" VerticalAlignment="Top" Width="396" ></Rectangle>
-            <Rectangle HorizontalAlignment="Left" Height="481" Stroke="Black" VerticalAlignment="Center" Width="345">
-                <Rectangle.Fill>
-                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                        <GradientStop Color="White" Offset="1"/>
-                        <GradientStop Color="#FF1E3224"/>
-                    </LinearGradientBrush>
-                </Rectangle.Fill>
-            </Rectangle>
-            <Rectangle HorizontalAlignment="Left" Height="481" Stroke="Black" VerticalAlignment="Center" Width="396">
-                <Rectangle.Fill>
-                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                        <GradientStop Color="#FF1E3224"/>
-                        <GradientStop Color="#FF1E3224"/>
-                        <GradientStop Color="White" Offset="1"/>
-                    </LinearGradientBrush>
-                </Rectangle.Fill>
-            </Rectangle>
             <Menu>
                 <Menu.Background>
                     <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">

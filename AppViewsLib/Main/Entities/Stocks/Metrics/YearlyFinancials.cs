@@ -15,16 +15,22 @@ namespace StockValuationApp.Entities.Stocks.Metrics
     [Serializable]
     public class YearlyFinancials
     {
+        public YearlyFinancials() 
+        { 
+
+        }
         //Metric and its value
-        public Dictionary <KeyFigureTypes, double> KeyFiguresDict { get; set; }
+        public Dictionary <KeyFigureTypes, decimal> KeyFiguresDict { get; set; }
 
         /// Properties for year and components of a metric
         public int Year { get; set; }
+        public bool IsEstimate { get; set; } = false;
         public double Revenue { get; set; } = 0;
         public double NmbrOfShares { get; set; } = 0;
         public double StockPrice {  get; set; } = 0;
         public Earning Earnings { get; set; }
         public EnterpriseValue EnterpriseVal { get; set; }
+
 
         public override string ToString()
         {

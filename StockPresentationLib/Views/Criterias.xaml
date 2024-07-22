@@ -4,18 +4,24 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:StockPresentationLib.Views" xmlns:vm="clr-namespace:StockPresentationLib.ViewModel"
+             xmlns:ScottPlot="clr-namespace:ScottPlot.WPF;assembly=ScottPlot.WPF"
              mc:Ignorable="d" 
              d:DesignHeight="600"
              d:DesignWidth="730"
              Style="{StaticResource Page_Style}">
-    
-    <UserControl.DataContext>
-        <vm:CriteriasVM />
-    </UserControl.DataContext>
-    
+
     <Grid Margin="15">
+        <Border CornerRadius="0,20,20,0"
+                Background="#212529">
+        </Border>
         <Grid>
-            <TextBlock Text="Hej"/>
+            <ScottPlot:WpfPlot x:Name="WpfPlotValuation" Margin="0,0,480,350" FontFamily = "/StockPresentationLib;component/Fonts/#Rubik"/>
+        </Grid>
+        <Grid>
+            <ScottPlot:WpfPlot x:Name="WpfPlotMoat" Margin="240,0,240,350" FontFamily = "/StockPresentationLib;component/Fonts/#Rubik"/>
+        </Grid>
+        <Grid>
+            <ScottPlot:WpfPlot x:Name="WpfPlotUnderParam" Margin="480,0,0,350" FontFamily = "/StockPresentationLib;component/Fonts/#Rubik"/>
         </Grid>
     </Grid>
 </UserControl>
