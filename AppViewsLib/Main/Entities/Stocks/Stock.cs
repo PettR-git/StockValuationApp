@@ -1,4 +1,5 @@
-﻿using StockValuationApp.Entities.Stocks.Metrics;
+﻿using StockLib.Main.Entities.Stocks;
+using StockValuationApp.Entities.Stocks.Metrics;
 using StockValuationApp.Entities.Stocks.Metrics.Earnings;
 using System;
 using System.Collections.Generic;
@@ -26,9 +27,7 @@ namespace StockValuationApp.Entities.Stocks
         public List<YearlyFinancials> Financials { get; set; }
 
         //Score
-        public decimal ValuationScore { get; set; }
-        public decimal MoatScore { get; set; }
-        public decimal UnderParamScore { get; set; }
+        public StockScore StockScore { get; set; }
 
         public override string ToString()
         {

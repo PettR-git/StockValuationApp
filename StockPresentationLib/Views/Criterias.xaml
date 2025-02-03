@@ -11,17 +11,28 @@
              Style="{StaticResource Page_Style}">
 
     <Grid Margin="15">
-        <Border CornerRadius="0,20,20,0"
+        <Border CornerRadius="0,20,20,0"  
                 Background="#212529">
         </Border>
+        <Border CornerRadius="10,10,20,20" BorderThickness="1" BorderBrush="#FFA5CAAF" Margin="0,0,0,220">
+            <Grid>
+                <TextBlock x:Name="tbValScore" Margin="-187,250,288,0" HorizontalAlignment="Stretch" TextAlignment="Center" TextWrapping="Wrap" Text="Valuation Score: NaN" VerticalAlignment="Top" Style = "{StaticResource Text_Style}"/>
+                <TextBlock x:Name="tbMoatScore" TextAlignment="Center" HorizontalAlignment="Center" Margin="0,250,0,0" TextWrapping="Wrap" Text="Moat Score: NaN" VerticalAlignment="Top" Style = "{StaticResource Text_Style}"/>
+                <TextBlock x:Name="tbMarketScore" TextAlignment="Center" HorizontalAlignment="Stretch" Margin="486,250,24,0" TextWrapping="Wrap" Text="Market Score: NaN" VerticalAlignment="Top" Style = "{StaticResource Text_Style}"/>
+                <Button x:Name="btnAddMoat" Style="{StaticResource NormalButton}" HorizontalAlignment="Center" Content="Add Moats" VerticalAlignment="Top" Click="btnAddMoats_Click" Margin="0,300,0,0" Height="28" Width="136"/>
+                <Button x:Name="btnAddMarketData" Style="{StaticResource NormalButton}" HorizontalAlignment="Left" Content="Add Market Data" VerticalAlignment="Top" Click="btnAddMarketData_Click" Margin="510,300,0,0" Height="28" Width="136"/>
+
+            </Grid>
+        </Border>
+
         <Grid>
-            <ScottPlot:WpfPlot x:Name="WpfPlotValuation" Margin="0,0,480,350" FontFamily = "/StockPresentationLib;component/Fonts/#Rubik"/>
+            <ScottPlot:WpfPlot x:Name="WpfPlotValuation" Margin="10,10,470,330" FontFamily = "/StockPresentationLib;component/Fonts/#Rubik"/>
         </Grid>
         <Grid>
-            <ScottPlot:WpfPlot x:Name="WpfPlotMoat" Margin="240,0,240,350" FontFamily = "/StockPresentationLib;component/Fonts/#Rubik"/>
+            <ScottPlot:WpfPlot x:Name="WpfPlotMoat" Margin="235,10,235,330" FontFamily = "/StockPresentationLib;component/Fonts/#Rubik"/>
         </Grid>
         <Grid>
-            <ScottPlot:WpfPlot x:Name="WpfPlotUnderParam" Margin="480,0,0,350" FontFamily = "/StockPresentationLib;component/Fonts/#Rubik"/>
+            <ScottPlot:WpfPlot x:Name="WpfPlotUnderParam" Margin="470,10,10,330" FontFamily = "/StockPresentationLib;component/Fonts/#Rubik"/>
         </Grid>
     </Grid>
 </UserControl>

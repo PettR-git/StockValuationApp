@@ -1,4 +1,5 @@
-﻿using System;
+﻿using StockValuationApp.Entities.Stocks.Metrics.Earnings;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -10,95 +11,201 @@ namespace StockLib.Main.Calculations
 {
     public static class CalculateStockScore
     {
-        public static decimal CalcRevenueGrowthScore(double[] revenue)
+        public static double CalcRevenueGrowthScore(double[] revenue)
         {
-            double prevRev = 0, currRev = 0, addedGrowth = 0, cagr = 0;
-            double[] intervals = {0, 8, 12, 17, 22, 100};
-            decimal result = 0;
+            double[] intervals = {0, 7, 14, 18, 25, 100};
+            double result = 0;
 
-            foreach(var rev in revenue)
-            {
-                currRev = rev;
-                addedGrowth = 100 * ((currRev - prevRev) / prevRev);
-            }
+            double cagr = CalcAverageGrowth(revenue);
+            result = AscendingGradientScore(intervals, cagr);
 
-            cagr = (double)(addedGrowth / revenue.Length);
+            return result;
+        }
 
-            if (cagr < intervals[1])
+        private static double CalcAscGradientScore(double gradedVal, double startScore, double startVal, double endVal)
+        {
+            return Math.Round(startScore + Math.Abs((gradedVal - startVal) / (endVal - startVal)), 1);
+        }
+
+        private static double CalcDescGradientScore(double gradedVal, double startScore, double startVal, double endVal)
+        {
+            return Math.Round(startScore + Math.Abs((endVal - gradedVal) / (endVal - startVal)), 1);
+        }
+
+        //Scoring 0 to 5, higher values higher score
+        private static double AscendingGradientScore(double[] intervals, double compVal)
+        {
+            double result = 0;
+
+            if (compVal <= intervals[1])
             {
-                result = GradientScore(cagr, 1, intervals[0], intervals[1]);
+                if (compVal <= intervals[0])
+                {
+                    result = 0;
+                }
+                else
+                {
+                    result = CalcAscGradientScore(compVal, 0, intervals[0], intervals[1]);
+                }
             }
-            else if (cagr <= intervals[2])
+            else if (compVal <= intervals[2])
             {
-                result = GradientScore(cagr, 2, intervals[1], intervals[2]);
+                result = CalcAscGradientScore(compVal, 1, intervals[1], intervals[2]);
             }
-            else if (cagr <= intervals[3])
+            else if (compVal <= intervals[3])
             {
-                result = GradientScore(cagr, 3, intervals[2], intervals[3]);
+                result = CalcAscGradientScore(compVal, 2, intervals[2], intervals[3]);
             }
-            else if (cagr <= intervals[4])
+            else if (compVal <= intervals[4])
             {
-                result = GradientScore(cagr, 4, intervals[3], intervals[4]);
+                result = CalcAscGradientScore(compVal, 3, intervals[3], intervals[4]);
             }
-            else if (cagr <= intervals[5])
+            else
             {
-                result = GradientScore(cagr, 5, intervals[4], intervals[5]);
+                if(compVal >= intervals[5])
+                {
+                    result = 5;
+                }
+                else
+                {
+                    result = CalcAscGradientScore(compVal, 4, intervals[4], intervals[5]);
+                }
             }
 
             return result;
         }
 
-        private static decimal GradientScore(double gradedVal, double startScore, double startVal, double endVal)
+        //Scoring 0 to 5, lower values higher score
+        private static double DescendingGradientScore(double[] intervals, double compVal)
         {
-            return (decimal)Math.Round(startScore + (gradedVal - startVal) / (endVal - startVal), 1);
+            double result = 0;
+
+            if (compVal <= intervals[1])
+            {
+                if(compVal < intervals[0])
+                {
+                    result = 0.0001;
+                }
+                else
+                {
+                    result = CalcDescGradientScore(compVal, 4, intervals[0], intervals[1]);
+                }
+            }
+            else if (compVal <= intervals[2])
+            {
+                result = CalcDescGradientScore(compVal, 3, intervals[1], intervals[2]);
+            }
+            else if (compVal <= intervals[3])
+            {
+                result = CalcDescGradientScore(compVal, 2, intervals[2], intervals[3]);
+            }
+            else if (compVal <= intervals[4])
+            {
+                result = CalcDescGradientScore(compVal, 1, intervals[3], intervals[4]);
+            }
+            else
+            {
+                if (compVal >= intervals[5])
+                {
+                    result = 0;
+                }
+                else
+                {
+                    result = CalcDescGradientScore(compVal, 0, intervals[4], intervals[5]);
+                }
+            }
+
+            return result;
         }
 
-        public static decimal CalcEarningsGrowthScore(double[] netIncome)
+        private static double CalcAverageGrowth(double[] growthVals)
         {
-            double prevInc = 0, currInc = 0, addedGrowth = 0, cagr = 0;
+            double averageGrowth = 0;
+            double initialVal = growthVals[0];
+            double lastVal = growthVals[growthVals.Length - 1];
+
+            if(initialVal == 0 || lastVal == 0)
+            {
+                averageGrowth = 0;
+            }
+            else if (initialVal < 0)
+            {
+                averageGrowth = 100 * ((lastVal - initialVal) / -initialVal);
+            }
+            else
+            {
+                averageGrowth = 100 * ((lastVal - initialVal) / initialVal);
+            }
+
+            return averageGrowth;
+        }
+
+        public static double CalcEpsGrowthScore(double[] netIncome, double[] numberOfShares)
+        {
             double[] intervals = { 0, 7, 12, 17, 24, 100 };
-            decimal result = 0;
+            double[] eps = new double[netIncome.Length];
+            double result = 0;
 
-            foreach (var netInc in netIncome)
+            if(netIncome.Length != numberOfShares.Length)
             {
-                currInc = netInc;
-                addedGrowth = 100 * ((currInc - prevInc) / prevInc);
+                return 0;
+            }
+            else
+            {
+                for(int i = 0; i < netIncome.Length; i++)
+                {
+                    eps[i] = netIncome[i]/numberOfShares[i];
+                }
             }
 
-            cagr = (double)(addedGrowth / netIncome.Length);
-
-            if (cagr < intervals[1])
-            {
-                result = GradientScore(cagr, 1, intervals[0], intervals[1]);
-            }
-            else if (cagr <= intervals[2])
-            {
-                result = GradientScore(cagr, 2, intervals[1], intervals[2]);
-            }
-            else if (cagr <= intervals[3])
-            {
-                result = GradientScore(cagr, 3, intervals[2], intervals[3]);
-            }
-            else if (cagr <= intervals[4])
-            {
-                result = GradientScore(cagr, 4, intervals[3], intervals[4]);
-            }
-            else if (cagr <= intervals[5])
-            {
-                result = GradientScore(cagr, 5, intervals[4], intervals[5]);
-            }
+            double cagr = CalcAverageGrowth(eps);
+            result = AscendingGradientScore(intervals, cagr);
 
             return result;
         }
 
-        public static decimal CalcEvEbitFfcScore(decimal[] evEbit, decimal[] evFcf)
+        public static double CalcEvFcfScore(double evFcf)
         {
-            return default;
+            double evFcfScore = 0;
+            double[] interEvFcf = {0, 12, 16, 24, 30, 50 };
+
+            evFcfScore = DescendingGradientScore(interEvFcf, evFcf);
+
+            return evFcfScore;
         }
 
-        public static decimal CalcRoeRoicScore(decimal[] roe, decimal[] roic)
+        public static double CalcRoeRoicScore(double[] roe, double[] roic)
         {
-            return default;
+            double[] interRoeGrowth = { -30, -15, 0, 5, 10, 20 };
+            double[] interRoicGrowth = { -30, -15, 0, 5, 10, 20 };
+            double[] growthIntervals = { -30, -15, 0, 5, 10, 20 };
+            double[] roeIntervals = { 0, 5, 10, 15, 20, 40 };
+            double[] roicIntervals = { 0, 5, 10, 15, 20, 40 };
+
+            double averReturnGrowth = 0, averRoeGrowth = 0, averRoicGrowth;
+            double growthResult = 0, roeScore = 0, roicScore = 0, totScore;
+
+            averRoeGrowth = CalcAverageGrowth(roe);
+            averRoicGrowth = CalcAverageGrowth(roic);
+            averReturnGrowth = (averRoeGrowth + averRoicGrowth)/2;
+            growthResult = AscendingGradientScore(growthIntervals, averReturnGrowth);
+
+            roeScore = AscendingGradientScore(roeIntervals, roe[roe.Length-1]);
+            roicScore = AscendingGradientScore(roicIntervals, roic[roic.Length-1]);
+
+            totScore = (((roeScore + roicScore) / 2) + growthResult)/ 2;
+
+            return totScore;
+        }
+
+        public static double CalcEvEbitScore(double evEbit)
+        {
+            double evEbitScore = 0;
+            double[] interEvEbit = { 0, 8, 15, 21, 26, 50 };
+
+            evEbitScore = DescendingGradientScore(interEvEbit, evEbit);
+
+            return evEbitScore;
         }
     }
 }

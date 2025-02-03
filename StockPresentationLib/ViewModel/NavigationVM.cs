@@ -70,6 +70,13 @@ namespace StockPresentationLib.ViewModel
             {
                 _criteriasVM = new CriteriasVM(_currentStock);
             }
+            else
+            {
+                if(_criteriasVM.Stock != _currentStock)
+                {
+                    _criteriasVM.Stock = _currentStock;
+                }
+            }
             CurrentView = _criteriasVM;
         }
 

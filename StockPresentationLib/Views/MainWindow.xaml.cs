@@ -28,5 +28,10 @@ namespace StockPresentationLib.Views
         public MainWindow()
         {
         }
+
+        private void CloseApp_Click(object sender, RoutedEventArgs e)
+        {
+            Close();
+        }
     }
 }

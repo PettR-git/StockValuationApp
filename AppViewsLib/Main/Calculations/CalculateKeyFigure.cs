@@ -14,27 +14,53 @@ namespace StockValuationApp.Entities.Calculations
     {
         public static decimal CalcRoe(double netIncome, double totAssets, double totLiabilities)
         {
-            decimal result = (decimal)Math.Round(100*(netIncome/(totAssets-totLiabilities)),1);
+            double divisor = totAssets - totLiabilities;
+
+            if(divisor == 0)
+            {
+                divisor = Math.Pow(1, -8);
+            }
+
+            decimal result = (decimal)Math.Round(100*(netIncome/(divisor)),1);
 
             return result;
         }
 
         public static decimal CalcRoic(double netIncome, double dividends, double longTermDebt, double shortTermDebt, double totAssets, double totLiabilities)
         {
-            decimal result = (decimal)Math.Round(100*((netIncome - dividends)/(longTermDebt + shortTermDebt + totAssets - totLiabilities)),1);
+            double divisor = longTermDebt + shortTermDebt + totAssets - totLiabilities;
+
+            if(divisor == 0)
+            {
+                divisor = Math.Pow(1, -8);
+            }
+
+            decimal result = (decimal)Math.Round(100*((netIncome - dividends)/(divisor)),1);
 
             return result;
         }
 
         public static decimal CalcEvFreeCashflow((double marketVal, double shortTermDebt, double longTermDebt, double cash) ev, double operCF, double capExp)
         {
-            decimal result = (decimal)Math.Round(((ev.marketVal + ev.shortTermDebt + ev.longTermDebt - ev.cash) / (operCF - capExp)), 1);
+            double divisor = operCF - capExp;
+
+            if (divisor == 0)
+            {
+                divisor = Math.Pow(1, -8);
+            }
+
+            decimal result = (decimal)Math.Round(((ev.marketVal + ev.shortTermDebt + ev.longTermDebt - ev.cash) / (divisor)), 1);
 
             return result;
         }
 
         public static decimal CalcEvEarnings((double marketVal, double shortTermDebt, double longTermDebt, double cash)ev, double earnings)
         {
+            if (earnings == 0)
+            {
+                earnings = Math.Pow(1, -8);
+            }
+
             decimal result = (decimal)Math.Round(((ev.marketVal + ev.shortTermDebt + ev.longTermDebt - ev.cash) / earnings), 1);
 
             return result;
@@ -48,8 +74,13 @@ namespace StockValuationApp.Entities.Calculations
         }
 
         public static decimal CalcNetDebtToEbitda((double shortTermDebt, double longTermDebt, double cash)netDebt, double ebitda)
-        {
-            decimal result = (decimal)Math.Round(((netDebt.longTermDebt + netDebt.shortTermDebt - netDebt.cash) / ebitda), 1);
+        { 
+            if (ebitda == 0)
+            {
+                ebitda = Math.Pow(1, -8);
+            }
+
+            decimal result = (decimal)Math.Round((netDebt.longTermDebt + netDebt.shortTermDebt - netDebt.cash) / ebitda, 1);
 
             return result;
         }

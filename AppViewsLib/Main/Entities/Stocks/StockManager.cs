@@ -70,17 +70,6 @@ namespace StockValuationApp.Entities.Stocks
             return(yearExist, yearlyFinancials);
         }
 
-        private bool CheckIntsValidity(double[] vals)
-        {
-            foreach (var val in vals)
-            {
-                if(val == 0)
-                    return false;
-            }
-
-            return true;
-        }
-
         /// <summary>
         /// Retrieve event args and create financial object
         /// for a stock, given the metric type.
@@ -141,64 +130,41 @@ namespace StockValuationApp.Entities.Stocks
                 switch (keyFigureType)
                 {
                     case KeyFigureTypes.ReturnOnInvCap:
-                        if (!CheckIntsValidity([e.NetIncome, e.Dividends, e.TotalAssets, e.TotalLiabilities, e.LongTermDebt, e.ShortTermDebt]))
-                            continue;
 
                         keyFigureVal = CalculateKeyFigure.CalcRoic(e.NetIncome, e.Dividends, e.LongTermDebt, e.ShortTermDebt, e.TotalAssets, e.TotalLiabilities);
                         break;
 
                     case KeyFigureTypes.EvFreecashflow:
-                        if (!CheckIntsValidity([ evTuple.ShortTermDebt, evTuple.LongTermDebt, evTuple.MarketValue,
-                            evTuple.CashAndEquivalents, e.OperationalCashflow, e.CapitalExpenditures ]))
-                        {
-                            continue;
-                        }
 
                         keyFigureVal = CalculateKeyFigure.CalcEvFreeCashflow(evTuple, e.OperationalCashflow, e.CapitalExpenditures);
                         break;
 
                     case KeyFigureTypes.FreeCashflow:
-                        if (!CheckIntsValidity([e.OperationalCashflow, e.CapitalExpenditures]))
-                            continue;
 
                         keyFigureVal = (decimal)(e.OperationalCashflow - e.CapitalExpenditures);
                         break;
 
                     case KeyFigureTypes.ReturnOnEquity:
-                        if (!CheckIntsValidity([e.NetIncome, e.TotalAssets, e.TotalLiabilities]))
-                            continue;
 
                         keyFigureVal = CalculateKeyFigure.CalcRoe(e.NetIncome, e.TotalAssets, e.TotalLiabilities);
                         break;
 
                     case KeyFigureTypes.EvEbitda:
 
-                        if (!CheckIntsValidity(new double[] { evTuple.ShortTermDebt, evTuple.LongTermDebt, evTuple.MarketValue, evTuple.CashAndEquivalents, e.Ebitda }))
-                            continue;
-
                         keyFigureVal = CalculateKeyFigure.CalcEvEarnings(evTuple, e.Ebitda);
                         break;
 
                     case KeyFigureTypes.EvEbit:
-
-                        if (!CheckIntsValidity(new double[] { evTuple.ShortTermDebt, evTuple.LongTermDebt, evTuple.MarketValue, evTuple.CashAndEquivalents, e.Ebit}))
-                            continue;
 
                         keyFigureVal = CalculateKeyFigure.CalcEvEarnings(evTuple, e.Ebit);
                         break;
 
                     case KeyFigureTypes.PriceToEarnings:
 
-                        if(!CheckIntsValidity(new double[] {e.NetIncome, e.NumberOfShares, e.Price}))
-                            continue;
-
                         keyFigureVal = CalculateKeyFigure.CalcPriceToEarnings((e.NetIncome, e.NumberOfShares), e.Price);
                         break;
 
                     case KeyFigureTypes.NetDebtToEbitda:
-
-                        if (!CheckIntsValidity(new double[] { evTuple.ShortTermDebt, evTuple.LongTermDebt, evTuple.CashAndEquivalents, e.Ebitda }))
-                            continue;
 
                         keyFigureVal = CalculateKeyFigure.CalcNetDebtToEbitda(netDebtTuple, e.Ebitda);
                         break;
@@ -488,7 +454,7 @@ namespace StockValuationApp.Entities.Stocks
                 }
                 args.Year = DateTime.Now.Year - 1 - i;
 
-                if(noResCounter < 5)
+                if(noResCounter < maxNoRes)
                     stock.MetricsGiven?.Invoke(this, args);
             }
         }

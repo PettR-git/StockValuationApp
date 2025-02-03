@@ -8,10 +8,14 @@
              xmlns:Enums="clr-namespace:StockValuationApp.Main.Enums;assembly=StockLib"
              xmlns:financials="clr-namespace:StockValuationApp.Entities.Stocks.Metrics;assembly=StockLib"
              xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
+             xmlns:conv="clr-namespace:StockLib.Main.Utilities;assembly=StockLib"
              mc:Ignorable="d" 
              d:DesignHeight="600"
              d:DesignWidth="730"
              Style="{StaticResource Page_Style}">
+    <UserControl.Resources>
+        <conv:MillionConverter x:Key="MillionConverter"/>
+    </UserControl.Resources>
 
     <Grid Margin="15">
 
@@ -37,7 +41,7 @@
                     <DataGrid x:Name="dgNumbers" HeadersVisibility="Column" Background="#212529"
                               CanUserAddRows="False" AlternatingRowBackground="#272B2F" RowBackground="#212529" 
                               Foreground="#FFA5CAAF" FontFamily="/Fonts/#Rubik" HorizontalAlignment="Left" AutoGenerateColumns="False" VerticalAlignment="Top" 
-                              ItemsSource="{Binding YearlyFinancials}" Margin="20,20,0,0" Grid.ColumnSpan="2" Width="644">
+                              ItemsSource="{Binding YearlyFinancials, Mode=OneWay}" Margin="20,20,0,0" Grid.ColumnSpan="2" Width="652">
                         <DataGrid.Resources>
                             <Style TargetType="DataGridRow">
                                 <Setter Property="Background" Value="#212529"/>
@@ -59,10 +63,10 @@
                         </DataGrid.Resources>
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Year" Binding = "{Binding Year}"/>
-                            <DataGridTextColumn Header="Revenue" Binding = "{Binding Revenue}" />
-                            <DataGridTextColumn Header="EBITDA" Binding = "{Binding Earnings.EbitdaValue}" />
-                            <DataGridTextColumn Header="EBIT" Binding = "{Binding Earnings.EbitValue}"/>
-                            <DataGridTextColumn Header="Net Income" Binding = "{Binding Earnings.NetIncomeValue}" />
+                            <DataGridTextColumn Header="Revenue" Binding = "{Binding Revenue, Converter={StaticResource MillionConverter}}" />
+                            <DataGridTextColumn Header="EBITDA" Binding = "{Binding Earnings.EbitdaValue, Converter={StaticResource MillionConverter}}" />
+                            <DataGridTextColumn Header="EBIT" Binding = "{Binding Earnings.EbitValue, Converter={StaticResource MillionConverter}}"/>
+                            <DataGridTextColumn Header="Net Income" Binding = "{Binding Earnings.NetIncomeValue, Converter={StaticResource MillionConverter}}" />
                             <DataGridTextColumn Header="EBITDA Margin(%)" Binding = "{Binding Earnings.EbitdaMargin}" />
                             <DataGridTextColumn Header="EBIT Margin(%)" Binding = "{Binding Earnings.EbitMargin}"/>
                             <DataGridTextColumn Header="Net Income Margin(%)" Binding = "{Binding Earnings.NetIncomeMargin}" />
@@ -75,7 +79,7 @@
                     <DataGrid x:Name="dgKeyMetrics" HeadersVisibility="Column" HorizontalAlignment="Left" Background="#212529" EnableRowVirtualization="false" EnableColumnVirtualization="false"
                               CanUserAddRows="False" AlternatingRowBackground="#272B2F" RowBackground="#212529" 
                               Foreground="#FFA5CAAF" FontFamily="/Fonts/#Rubik" AutoGenerateColumns="False" VerticalAlignment="Top" 
-                              ItemsSource="{Binding YearlyFinancials}" Margin="20,20,0,0" Width="455">
+                              ItemsSource="{Binding YearlyFinancials, Mode=OneWay}" Margin="20,20,0,0" Width="463">
                         <DataGrid.Resources>
                             <Style TargetType="DataGridRow">
                                 <Setter Property="Background" Value="#212529"/>

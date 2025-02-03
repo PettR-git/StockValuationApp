@@ -29,6 +29,10 @@ namespace StockPresentationLib.Plot
         private Scatter scatterRoicGrowth;
         private Scatter scatterFcfGrowth;
         private ScottPlot.Palettes.Category10 palette;
+        private const int scatterLineWidth = 4;
+        private const int scatterMarkerSize = 10;
+        private const double scatterLineOpacity = 0.55;
+
         public PlotReturns(WpfPlot finPlot, Stock stock)
         {
             this.finPlot = finPlot;
@@ -64,21 +68,21 @@ namespace StockPresentationLib.Plot
                                 roe = (double)returnOnEquity;
                                 roeVals.Add(roe);
                             }
-                            bars.Add(new Bar { Position = indexPos++, Value = roe, FillColor = palette.GetColor(0) });
+                            bars.Add(new Bar { Position = indexPos++, Value = roe, FillColor = ScottPlot.Color.FromHex("#513691") });
 
                             if (keyFigureDict.TryGetValue(KeyFigureTypes.ReturnOnInvCap, out decimal returnOnInvCap))
                             {
                                 roic = (double)returnOnInvCap;
                                 roicVals.Add(roic);
                             }
-                            bars.Add(new Bar { Position = indexPos++, Value = roic, FillColor = palette.GetColor(1) });
+                            bars.Add(new Bar { Position = indexPos++, Value = roic, FillColor = ScottPlot.Color.FromHex("#157a68") });
 
                              if(keyFigureDict.TryGetValue(KeyFigureTypes.EvFreecashflow, out decimal returnEvFreecashflow))
                              {
                                  fcf = (double)returnEvFreecashflow;
                                  fcfVals.Add(fcf);
                              }
-                            bars.Add(new Bar { Position = indexPos++, Value = fcf, FillColor = palette.GetColor(2) });
+                            bars.Add(new Bar { Position = indexPos++, Value = fcf, FillColor = ScottPlot.Color.FromHex("#007002") });
                         }
                         xAxesYears.Add(new Tick(posTick, yearlyFinancials[i].Year.ToString()));
                     }
@@ -96,17 +100,17 @@ namespace StockPresentationLib.Plot
             finPlot.Plot.Legend.ManualItems.Add(new LegendItem
             {
                 LabelText = "ROE",
-                FillColor = palette.GetColor(0)
+                FillColor = ScottPlot.Color.FromHex("#513691")
             });
             finPlot.Plot.Legend.ManualItems.Add(new LegendItem
             {
                 LabelText = "ROIC",
-                FillColor = palette.GetColor(1),
+                FillColor = ScottPlot.Color.FromHex("#157a68"),
             });
             finPlot.Plot.Legend.ManualItems.Add(new LegendItem
             {
                 LabelText = "EV/FCF",
-                FillColor = palette.GetColor(2),
+                FillColor = ScottPlot.Color.FromHex("#007002"),
             });
 
             finPlot.Plot.Legend.IsVisible = true;
@@ -172,8 +176,10 @@ namespace StockPresentationLib.Plot
                     positions.Add(xAxesYears.Last().Position);
 
                     scatterRoeGrowth = finPlot.Plot.Add.Scatter(positions, roeGrowth);
-                    scatterRoeGrowth.Color = palette.GetColor(0);
+                    scatterRoeGrowth.Color = ScottPlot.Color.FromHex("#513691").WithAlpha(scatterLineOpacity);
                     scatterRoeGrowth.Axes.YAxis = finPlot.Plot.Axes.Right;
+                    scatterRoeGrowth.LineWidth = scatterLineWidth;
+                    scatterRoeGrowth.MarkerSize = scatterMarkerSize;
                 }
             }
             else
@@ -215,8 +221,10 @@ namespace StockPresentationLib.Plot
                     positions.Add(xAxesYears.Last().Position);
 
                     scatterRoicGrowth = finPlot.Plot.Add.Scatter(positions, roicGrowth);
-                    scatterRoicGrowth.Color = palette.GetColor(1);
+                    scatterRoicGrowth.Color = ScottPlot.Color.FromHex("#157a68").WithAlpha(scatterLineOpacity);
                     scatterRoicGrowth.Axes.YAxis = finPlot.Plot.Axes.Right;
+                    scatterRoicGrowth.LineWidth = scatterLineWidth;
+                    scatterRoicGrowth.MarkerSize = scatterMarkerSize;
                 }
             }
             else
@@ -258,8 +266,10 @@ namespace StockPresentationLib.Plot
                     positions.Add(xAxesYears.Last().Position);
 
                     scatterFcfGrowth = finPlot.Plot.Add.Scatter(positions, fcfGrowth);
-                    scatterFcfGrowth.Color = palette.GetColor(2);
+                    scatterFcfGrowth.Color = ScottPlot.Color.FromHex("#007002").WithAlpha(scatterLineOpacity);
                     scatterFcfGrowth.Axes.YAxis = finPlot.Plot.Axes.Right;
+                    scatterFcfGrowth.LineWidth = scatterLineWidth;
+                    scatterFcfGrowth.MarkerSize = scatterMarkerSize;
                 }
             }
             else

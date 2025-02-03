@@ -40,11 +40,27 @@ namespace StockPresentationLib.Views
                 if (criteriasVM.Stock != null)
                 {
                     stock = criteriasVM.Stock;
-                    plotCriterias = new PlotCriterias(stock);
+                    plotCriterias = new PlotCriterias(criteriasVM.Stock);
 
                     plotCriterias.PlotValuation(WpfPlotValuation);
+                    plotCriterias.PlotMoat(WpfPlotMoat);
+                    plotCriterias.PlotUnderParam(WpfPlotUnderParam);
+
+                    tbValScore.Text = "Score: " + stock.StockScore?.GetValuationScore.ToString() + "/10";
+                    tbMoatScore.Text = "Score: " + stock.StockScore?.GetMoatScore.ToString() + "/10";
+                    tbMarketScore.Text = "Score: " + stock.StockScore?.GetMarketScore.ToString() + "/10";
                 }
             }
+        }
+
+        private void btnAddMoats_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void btnAddMarketData_Click(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }

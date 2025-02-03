@@ -38,15 +38,18 @@ namespace StockPresentationLib.Views
             if (this.DataContext is ReturnsVM returnsVM)
             {
                 if (returnsVM.Stock != null)
-                {              
-                    stock = returnsVM.Stock;
-                    plotReturns = new PlotReturns(WpfPlot2, stock);
-                    PlotAllReturns();
-
-                    if (returnsVM.FirstPlot == true)
+                {
+                    if (returnsVM.Stock.Financials.Count > 0)
                     {
-                        returnsVM.FirstPlot = false;
-                        SetInitialCbxValues();
+                        stock = returnsVM.Stock;
+                        plotReturns = new PlotReturns(WpfPlot2, stock);
+                        PlotAllReturns();
+
+                        if (returnsVM.FirstPlot == true)
+                        {
+                            returnsVM.FirstPlot = false;
+                            SetInitialCbxValues();
+                        }
                     }
                 }            
             }
@@ -54,7 +57,7 @@ namespace StockPresentationLib.Views
 
         private void SetInitialCbxValues()
         {
-            cbxFcfGrowth.IsChecked = true;
+            cbxFcfGrowth.IsChecked = false;
             cbxRoicGrowth.IsChecked = true;
             cbxRoeGrowth.IsChecked = true;    
         }

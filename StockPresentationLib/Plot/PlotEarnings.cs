@@ -25,6 +25,9 @@ namespace StockPresentationLib.Plot
         private Scatter scatterNetIncGrowth;
         private Scatter scatterRevGrowth;
         private ScottPlot.Palettes.Category10 palette;
+        private const int scatterLineWidth = 4;
+        private const int scatterMarkerSize = 10;
+        private const double scatterLineOpacity = 0.55;
         public PlotEarnings(WpfPlot finPlot, string stockToStr, List<YearlyFinancials> yearlyFinancials)
         {
             UpdatePlotAndStock(finPlot, stockToStr);
@@ -53,7 +56,6 @@ namespace StockPresentationLib.Plot
                     if (i < yearlyFinancials.Count())
                     {
                         double ebit = 0, ebitda = 0, netIncome = 0;
-                        double revenue = yearlyFinancials.ElementAt(i).Revenue;
 
                         ScottPlot.Color revColor = palette.GetColor(0);
                         ScottPlot.Color ebitdaColor = palette.GetColor(1);
@@ -68,17 +70,19 @@ namespace StockPresentationLib.Plot
                             netIncColor = netIncColor.WithAlpha(40);
                         }
 
+                        double revenue = yearlyFinancials.ElementAt(i).Revenue/Math.Pow(10,6);
+
                         bars.Add(new Bar { Position = indexPos, Value = revenue, FillColor = revColor });
 
                         if (yearlyFinancials.ElementAt(i).Earnings != null)
                         {
-                            ebitda = yearlyFinancials.ElementAt(i).Earnings.EbitdaValue;
+                            ebitda = yearlyFinancials.ElementAt(i).Earnings.EbitdaValue/Math.Pow(10, 6);
                             bars.Add(new Bar { Position = ++indexPos, Value = ebitda, FillColor = ebitdaColor });
 
-                            ebit = yearlyFinancials.ElementAt(i).Earnings.EbitValue;
+                            ebit = yearlyFinancials.ElementAt(i).Earnings.EbitValue/Math.Pow(10, 6);
                             bars.Add(new Bar { Position = ++indexPos, Value = ebit, FillColor = ebitColor });
 
-                            netIncome = yearlyFinancials.ElementAt(i).Earnings.NetIncomeValue;
+                            netIncome = yearlyFinancials.ElementAt(i).Earnings.NetIncomeValue/Math.Pow(10, 6);
                             bars.Add(new Bar { Position = ++indexPos, Value = netIncome, FillColor = netIncColor });
                         }
                         xAxesYears.Add(new Tick(posTick, yearlyFinancials.ElementAt(i).Year.ToString()));
@@ -178,8 +182,10 @@ namespace StockPresentationLib.Plot
                     positions.Add(xAxesYears.Last().Position);
 
                     scatterEbitdaGrowth = finPlot.Plot.Add.Scatter(positions, ebitdaGrowth);
-                    scatterEbitdaGrowth.Color = palette.GetColor(1);
+                    scatterEbitdaGrowth.Color = palette.GetColor(1).WithAlpha(scatterLineOpacity);
                     scatterEbitdaGrowth.Axes.YAxis = finPlot.Plot.Axes.Right;
+                    scatterEbitdaGrowth.LineWidth = scatterLineWidth;
+                    scatterEbitdaGrowth.MarkerSize = scatterMarkerSize;
                 }
             }
             else
@@ -218,8 +224,10 @@ namespace StockPresentationLib.Plot
                 positions.Add(xAxesYears.Last().Position);
 
                 scatterRevGrowth = finPlot.Plot.Add.Scatter(positions, revenueGrowth);
-                scatterRevGrowth.Color = palette.GetColor(0);
+                scatterRevGrowth.Color = palette.GetColor(0).WithAlpha(scatterLineOpacity);
                 scatterRevGrowth.Axes.YAxis = finPlot.Plot.Axes.Right;
+                scatterRevGrowth.LineWidth = scatterLineWidth;
+                scatterRevGrowth.MarkerSize = scatterMarkerSize;
             }
             else
             { 
@@ -257,8 +265,10 @@ namespace StockPresentationLib.Plot
                 positions.Add(xAxesYears.Last().Position);
 
                 scatterEbitGrowth = finPlot.Plot.Add.Scatter(positions, ebitGrowth);
-                scatterEbitGrowth.Color = ScottPlot.Color.FromHex("#EAE552");
+                scatterEbitGrowth.Color = ScottPlot.Color.FromHex("#EAE552").WithAlpha(scatterLineOpacity);
                 scatterEbitGrowth.Axes.YAxis = finPlot.Plot.Axes.Right;
+                scatterEbitGrowth.LineWidth = scatterLineWidth;
+                scatterEbitGrowth.MarkerSize = scatterMarkerSize;
             }
             else
             {
@@ -296,8 +306,10 @@ namespace StockPresentationLib.Plot
                     positions.Add(xAxesYears.Last().Position);
 
                     scatterNetIncGrowth = finPlot.Plot.Add.Scatter(positions, nIncomeGrowth);
-                    scatterNetIncGrowth.Color = palette.GetColor(2);
+                    scatterNetIncGrowth.Color = palette.GetColor(2).WithAlpha(scatterLineOpacity);
                     scatterNetIncGrowth.Axes.YAxis = finPlot.Plot.Axes.Right;
+                    scatterNetIncGrowth.LineWidth = scatterLineWidth;
+                    scatterNetIncGrowth.MarkerSize = scatterMarkerSize;
                 }
             }
             else
