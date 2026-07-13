@@ -4,12 +4,8 @@ using StockValuationApp.Entities.Enums;
 using StockValuationApp.Entities.Stocks;
 using StockValuationApp.Entities.Stocks.Metrics;
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace StockPresentationLib.ViewModel
 {
@@ -26,9 +22,20 @@ namespace StockPresentationLib.ViewModel
         private decimal netIncMargin;
         private Dictionary<int, Dictionary<KeyFigureTypes, double>> keyFigureDict;
 
-        public EarningsVM(Stock stock) 
-        { 
+        // Parameterless ctor for DI
+        public EarningsVM()
+        {
+            Initialize();
+        }
+
+        public EarningsVM(Stock stock)
+        {
+            Initialize();
             Stock = stock;
+        }
+
+        private void Initialize()
+        {
             YearlyFinancials = new ObservableCollection<YearlyFinancials>();
             keyFigureDict = new Dictionary<int, Dictionary<KeyFigureTypes, double>>();
         }

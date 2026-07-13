@@ -1,23 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml;
-using System.Xml.Serialization;
-using Newtonsoft.Json;
-using Formatting = Newtonsoft.Json.Formatting;
+﻿using Newtonsoft.Json;
+using System;
+using System.Collections;
 using WTS.Entities;
 using WTS.Utilities.Serializer;
-using System.Runtime;
-using System.Windows.Documents;
+using Formatting = Newtonsoft.Json.Formatting;
 
 
 namespace WTS.Entities.Main
 {
-    public class ListManager<T>
+    public class ListManager<T> : IEnumerable<T>
     {
         private List<T> list;
         public ListManager()
@@ -25,10 +16,12 @@ namespace WTS.Entities.Main
             list = new List<T>();
         }
 
+        // Existing API (preserved)
         public bool addItem(T item)
         {
             bool ok = false;
-            if (item != null) {
+            if (item != null)
+            {
                 list.Add(item);
                 ok = true;
             }
@@ -120,16 +113,16 @@ namespace WTS.Entities.Main
             return false;
         }
 
-        public int Count() {  return list.Count; }
+        public int Count() { return list.Count; }
 
         public void binarySerialize(string fileName)
         {
-            BinarySerialize<T>.SerializeList(fileName, list);      
+            BinarySerialize<T>.SerializeList(fileName, list);
         }
 
         public void jsonSerialize(string fileName, JsonSerializerSettings options = null)
         {
-           JsonSerialize<T>.SerializeList(fileName, list, options);
+            JsonSerialize<T>.SerializeList(fileName, list, options);
         }
 
         public bool jsonDeSerialize(string fileName, JsonSerializerSettings options)
@@ -157,5 +150,25 @@ namespace WTS.Entities.Main
             return false;
         }
 
+        // Added list-like surface so consumers (like StockManager) can call Clear/AddRange/etc.
+        public void Clear() => list.Clear();
+
+        public void AddRange(IEnumerable<T> items)
+        {
+            if (items == null) return;
+            list.AddRange(items);
+        }
+
+        public void Add(T item) => list.Add(item);
+
+        public bool Remove(T item) => list.Remove(item);
+
+        // Enumeration support so extension methods like ToList() work on 'this'
+        public IEnumerator<T> GetEnumerator() => list.GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable)list).GetEnumerator();
+
+        // Convenience accessor
+        public IEnumerable<T> AsEnumerable() => list.AsEnumerable();
     }
 }

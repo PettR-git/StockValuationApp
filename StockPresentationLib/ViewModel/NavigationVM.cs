@@ -1,20 +1,16 @@
 ﻿using StockPresentationLib.Utilities;
 using StockValuationApp.Entities.Stocks;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Transactions;
 using System.Windows.Input;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace StockPresentationLib.ViewModel
 {
     public class NavigationVM : ViewModelBase
     {
+        private readonly IServiceProvider _provider;
         private object _currentView;
         private Stock _currentStock;
-        //public PageModel PersistPageM { get; set; }
 
         private HomeVM _homeVM;
         private EarningsVM _earningsVM;
@@ -32,7 +28,7 @@ namespace StockPresentationLib.ViewModel
         {
             if (_homeVM == null)
             {
-                _homeVM = new HomeVM();
+                _homeVM = _provider.GetRequiredService<HomeVM>();
                 _homeVM.UpdateStockEvent += OnUpdateCurrentStock;
             }
             CurrentView = _homeVM;
@@ -42,12 +38,10 @@ namespace StockPresentationLib.ViewModel
         {
             if (_earningsVM == null)
             {
-                _earningsVM = new EarningsVM(_currentStock);
+                _earningsVM = _provider.GetRequiredService<EarningsVM>();
             }
-            else
-            {
-                _earningsVM.Stock = _currentStock;
-            }
+
+            _earningsVM.Stock = _currentStock;
             CurrentView = _earningsVM;
         }
 
@@ -55,12 +49,10 @@ namespace StockPresentationLib.ViewModel
         {
             if (_returnsVM == null)
             {
-                _returnsVM = new ReturnsVM(_currentStock);
+                _returnsVM = _provider.GetRequiredService<ReturnsVM>();
             }
-            else
-            {
-                _returnsVM.Stock = _currentStock;
-            }
+
+            _returnsVM.Stock = _currentStock;
             CurrentView = _returnsVM;
         }
 
@@ -68,14 +60,12 @@ namespace StockPresentationLib.ViewModel
         {
             if (_criteriasVM == null)
             {
-                _criteriasVM = new CriteriasVM(_currentStock);
+                _criteriasVM = _provider.GetRequiredService<CriteriasVM>();
             }
-            else
+
+            if (_criteriasVM.Stock != _currentStock)
             {
-                if(_criteriasVM.Stock != _currentStock)
-                {
-                    _criteriasVM.Stock = _currentStock;
-                }
+                _criteriasVM.Stock = _currentStock;
             }
             CurrentView = _criteriasVM;
         }
@@ -84,7 +74,7 @@ namespace StockPresentationLib.ViewModel
         {
             if (_consensusVM == null)
             {
-                _consensusVM = new ConsensusVM();
+                _consensusVM = _provider.GetRequiredService<ConsensusVM>();
             }
             CurrentView = _consensusVM;
         }
@@ -101,18 +91,21 @@ namespace StockPresentationLib.ViewModel
             OnPropertyChanged(nameof(stock));
         }
 
-        public NavigationVM()
+        // DI-friendly constructor: accept IServiceProvider to resolve transient VMs on demand
+        public NavigationVM(IServiceProvider provider)
         {
+            _provider = provider ?? throw new ArgumentNullException(nameof(provider));
+
             HomeCommand = new RelayCommand(Home);
             EarningsCommand = new RelayCommand(Earnings);
             ReturnsCommand = new RelayCommand(Returns);
             CriteriasCommand = new RelayCommand(Criterias);
             ConsesusCommand = new RelayCommand(Consensus);
 
-            _homeVM = new HomeVM();
+            // Initialize home VM from the provider and subscribe to its update event
+            _homeVM = _provider.GetRequiredService<HomeVM>();
             _homeVM.UpdateStockEvent += OnUpdateCurrentStock;
             CurrentView = _homeVM;
         }
     }
-
 }

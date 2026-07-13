@@ -30,7 +30,6 @@ namespace StockPresentationLib.Views
         private void InitializeGUI()
         {
             lblRevenue.Text = "Revenue:";
-            lblMarketValue.Text = "Market Cap:";
             lblYear.Text = "Year:";
             lblEbitda.Text = "EBITDA:";
             lblEbit.Text = "EBIT:";
@@ -63,9 +62,8 @@ namespace StockPresentationLib.Views
             args.Stock = stock;
             args.Year = ValidateAndParseToInt(tbxYear.Text);
             args.Revenue = ValidateAndParseToDouble(tbxRevenue.Text);
-            args.MarketValue = ValidateAndParseToDouble(tbxMarketValue.Text);
             args.CapitalExpenditures = ValidateAndParseToDouble(tbxCapitalExpenditures.Text);
-            args.NumberOfShares = ValidateAndParseToDouble(tbxNmbrOfShares.Text);
+            args.SharesOutstanding = ValidateAndParseToDouble(tbxNmbrOfShares.Text);
             args.OperationalCashflow = ValidateAndParseToDouble(tbxOperCashflow.Text);
             args.TotalAssets = ValidateAndParseToDouble(tbxTotalAssets.Text);
             args.TotalLiabilities = ValidateAndParseToDouble(tbxTotalLiabilities.Text);
@@ -76,7 +74,7 @@ namespace StockPresentationLib.Views
             args.LongTermDebt = ValidateAndParseToDouble(tbxLongTermDebt.Text);
             args.ShortTermDebt = ValidateAndParseToDouble(tbxShortTermDebt.Text);
             args.NetIncome = ValidateAndParseToDouble(tbxNetIncome.Text);
-            args.Price = ValidateAndParseToDouble(tbxStockPrice.Text);
+            args.YearEndClosePrice = ValidateAndParseToDouble(tbxStockPrice.Text);
 
             foreach (var property in metricProperties)
             {

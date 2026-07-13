@@ -39,7 +39,7 @@ namespace StockLib.Main.Entities.Stocks
         public double MarginExpScore { get; set; } = 1.5;
         public double MarketVolatilityScore { get; set; } = 2.5;
 
-        //Total score
+        //Get total score
         public double GetValuationScore
         {
             get 

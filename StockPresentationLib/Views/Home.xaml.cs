@@ -1,9 +1,10 @@
-﻿using Microsoft.Win32;
-using StockValuationApp.Entities.Stocks.Metrics;
+using StockPresentationLib.ViewModel;
 using StockValuationApp.Entities.Stocks;
+using StockValuationApp.Entities.Stocks.Metrics;
 using StockValuationApp.Main.Utilities;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,9 +16,8 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
-using System.Windows.Shapes;
 using System.Xml.Linq;
-using StockPresentationLib.ViewModel;
+using Microsoft.Win32;
 
 namespace StockPresentationLib.Views
 {
@@ -26,20 +26,36 @@ namespace StockPresentationLib.Views
     /// </summary>
     public partial class Home : UserControl
     {
-        private StockManager stockManager;
-        private StockInfoWindow stockInfoWindow;
-        private StockPlotWindow stockPlotWindow;
-        private string filename;
-        private StockJsonSerializerSettings jsonSerializerSettings;
-        private HomeVM homeVM;
+        private StockManager _stockManager; 
+        private HomeVM _homeVM;
+        private StockInfoWindow _stockInfoWindow;
+        private StockPlotWindow _stockPlotWindow;
+        private string _filename;
+        private StockJsonSerializerSettings? _jsonSerializerSettings;
+
         public Home()
         {
             InitializeComponent();
-            stockManager = new StockManager();
-            jsonSerializerSettings = new StockJsonSerializerSettings();
-            //this.Loaded += Home_Loaded;
-            //this.Unloaded += Home_Unloaded;
+            _jsonSerializerSettings = new StockJsonSerializerSettings();
+
+            this.Loaded += Home_Loaded;
+            this.Unloaded += Home_Unloaded;
             this.DataContextChanged += Home_DataContextChanged;
+        }
+
+        private void Home_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is HomeVM vm)
+            {
+                _homeVM = vm;
+                _stockManager = vm.StockManager;
+                SyncStocksToViewModel();
+            }
+        }
+
+        private async void Home_Unloaded(object sender, RoutedEventArgs e)
+        {
+            await SaveStocksAsync();
         }
 
         private void Home_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
@@ -48,28 +64,13 @@ namespace StockPresentationLib.Views
 
             if (DataContext is HomeVM homeDataContext)
             {
-                homeVM = homeDataContext;
-                List<Stock> stocks = homeVM.Stocks.ToList();
-
-                if (stocks.Count > 0)
-                {
-                    int index = 0;
-
-                    foreach (Stock stock in stocks)
-                    {
-                        if (stock == homeVM.GetCurrentStock)
-                        {
-                            index = stocks.IndexOf(stock);
-                        }
-
-                        stockManager.addItem(stock);
-                    }
-                    lvwAllStocks.SelectedIndex = index;
-                }
+                _homeVM = homeDataContext;
+                _stockManager = _homeVM.StockManager;
+                SyncStocksToViewModel();
             }
         }
 
-        //Initialize UI
+        // Initialize UI
         private void InitializeGUI()
         {
             string metricStr = string.Empty;
@@ -79,24 +80,23 @@ namespace StockPresentationLib.Views
         /// Retrieve index from selected item in listview, get corresponding stock object
         /// And visualize all metrics data for the object
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void btnCalculateValuation_Click(object sender, RoutedEventArgs e)
+        private async void btnCalculateValuation_Click(object sender, RoutedEventArgs e)
         {
             int index = lvwAllStocks.SelectedIndex;
 
             if (index == -1)
                 return;
 
-            Stock stock = stockManager.getListItemAt(index);
+            Stock stock = _stockManager.getListItemAt(index);
 
             if (stock != null)
             {
-                stockInfoWindow = new StockInfoWindow(stock);
+                _stockInfoWindow = new StockInfoWindow(stock);
                 stock.MetricsGiven += OnGetMetricsData;
-                stockInfoWindow.ShowDialog();
+                _stockInfoWindow.ShowDialog();
 
                 UpdateFinancialUI(stock);
+                await SaveStocksAsync();
             }
         }
 
@@ -104,52 +104,40 @@ namespace StockPresentationLib.Views
         /// Method as a subscriber to metric event
         /// To add metricsdata from event args
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e">holds metric data for stock</param>
-        private void OnGetMetricsData(object sender, MetricEventArgs e)
+        private async void OnGetMetricsData(object sender, MetricEventArgs e)
         {
             Stock stock = e.Stock;
 
-            if (!stockManager.AddMetricDataFrStock(e))
+            if (!_stockManager.AddMetricDataFrStock(e))
             {
                 MessageBox.Show("Error in adding metrics data", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
             UpdateFinancialUI(stock);
-        }
-
-        private void NewApp()
-        {
-            stockManager = new StockManager();
-            lvwStockInfo.Items.Clear();
-            //UpdateStockUI();
+            await SaveStocksAsync();
         }
 
         /// <summary>
-        /// Update the stocks listview
+        /// Sync the ViewModel collection with StockManager data
         /// </summary>
-        private void UpdateStockUI()
+        private void SyncStocksToViewModel()
         {
-            Stock stock = null;
-            lvwAllStocks.Items.Clear();
-
-            for (int i = 0; i < stockManager.Count(); i++)
+            if (_homeVM == null || _stockManager == null)
             {
-                stock = stockManager.getListItemAt(i);
+                return;
+            }
 
-                ListViewItem item = new ListViewItem();
-                item.Content = stock.ToString();
-                item.FontFamily = lvwAllStocks.FontFamily;
-
-                lvwAllStocks.Items.Add(item);
+            _homeVM.Stocks.Clear();
+            foreach (var stock in _stockManager)
+            {
+                _homeVM.Stocks.Add(stock);
             }
         }
 
         /// <summary>
         /// Update metricsListview for a stocks metric data
         /// </summary>
-        /// <param name="stock"></param>
         private void UpdateFinancialUI(Stock stock)
         {
             lvwStockInfo.Items.Clear();
@@ -171,8 +159,6 @@ namespace StockPresentationLib.Views
         /// When stock item in stock listview is selected
         /// update metrics listview with the stocks finanical metrics
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void lvwAllStocks_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             int index = lvwAllStocks.SelectedIndex;
@@ -180,9 +166,9 @@ namespace StockPresentationLib.Views
             if (index == -1)
                 return;
 
-            Stock stock = stockManager.getListItemAt(index);
+            Stock stock = _stockManager.getListItemAt(index);
 
-            homeVM.UpdateCurrentStock(stock);
+            _homeVM.UpdateCurrentStock(stock);
 
             lvwStockInfo.Items.Clear();
             tbkKeyFinancialFigures.Text = $"Key Financial Figures for {stock.Name}";
@@ -199,9 +185,7 @@ namespace StockPresentationLib.Views
         /// <summary>
         /// On click, add stock with its name and ticker from textboxes
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void btnAddStock_Click(object sender, RoutedEventArgs e)
+        private async void btnAddStock_Click(object sender, RoutedEventArgs e)
         {
             string name = tbxName.Text;
             string ticker = tbxTicker.Text;
@@ -214,11 +198,10 @@ namespace StockPresentationLib.Views
                 return;
             }
 
-            Stock stock = stockManager.CreateStock(name, ticker);
-            stockManager.addItem(stock);
-
-            //UpdateStockUI();
-            homeVM.Stocks.Add(stock);
+            Stock stock = _stockManager.CreateStock(name, ticker);
+            _stockManager.addItem(stock);
+            _homeVM.Stocks.Add(stock);
+            await SaveStocksAsync();
         }
 
         private void btnGraphs_Click(object sender, RoutedEventArgs e)
@@ -228,66 +211,65 @@ namespace StockPresentationLib.Views
             if (index == -1)
                 return;
 
-            List<YearlyFinancials> yearlyFinancials = stockManager.getListItemAt(index).Financials;
+            List<YearlyFinancials> yearlyFinancials = _stockManager.getListItemAt(index).Financials;
 
-            if (yearlyFinancials != null || yearlyFinancials.Count <= 0)
+            if (yearlyFinancials != null && yearlyFinancials.Count > 0)
             {
-                stockPlotWindow = new StockPlotWindow(yearlyFinancials);
-                stockPlotWindow.Show();
+                _stockPlotWindow = new StockPlotWindow(yearlyFinancials);
+                _stockPlotWindow.Show();
             }
         }
 
-        private void btnDeleteStock_Click(object sender, RoutedEventArgs e)
+        private async void btnDeleteStock_Click(object sender, RoutedEventArgs e)
         {
             int index = lvwAllStocks.SelectedIndex;
 
             if (index == -1) return;
 
-            Stock stock = stockManager.getListItemAt(index);
+            Stock stock = _stockManager.getListItemAt(index);
 
             if (stock != null)
             {
-                stockManager.removeItem(stock);
-                homeVM.Stocks.Remove(stock);
+                _stockManager.removeItem(stock);
+                _homeVM.Stocks.Remove(stock);
+                await SaveStocksAsync();
             }
-
-            //UpdateStockUI();
         }
 
-        private void btnDeleteYearlyFin_Click(object sender, RoutedEventArgs e)
+        private async void btnDeleteYearlyFin_Click(object sender, RoutedEventArgs e)
         {
             int yfIndex = lvwStockInfo.SelectedIndex;
             int stockIndex = lvwAllStocks.SelectedIndex;
 
             if (yfIndex == -1 || stockIndex == -1) return;
 
-            Stock stock = stockManager.getListItemAt(stockIndex);
+            Stock stock = _stockManager.getListItemAt(stockIndex);
             YearlyFinancials yf = stock.Financials.ElementAt(yfIndex);
 
             if (yf != null)
             {
                 stock.Financials.Remove(yf);
+                await SaveStocksAsync();
             }
 
             UpdateFinancialUI(stock);
         }
 
-        private void btnImportStockData_Click(object sender, RoutedEventArgs e)
+        private async void btnImportStockData_Click(object sender, RoutedEventArgs e)
         {
             int index = lvwAllStocks.SelectedIndex;
 
             if (index == -1) return;
-            Stock stock = stockManager.getListItemAt(index);
+            Stock stock = _stockManager.getListItemAt(index);
 
             if (stock != null)
             {
                 try
                 {
                     stock.MetricsGiven += OnGetMetricsData;
-
-                    stockManager.GetSpecificMetricVal(stock);
-
+                    await _stockManager.GetMetricVals(stock);
                     UpdateFinancialUI(stock);
+                    await SaveStocksAsync();
                 }
                 catch (Exception ex)
                 {
@@ -297,8 +279,17 @@ namespace StockPresentationLib.Views
             }
         }
 
+        private async Task SaveStocksAsync()
+        {
+            if (_stockManager == null)
+            {
+                return;
+            }
+
+            await _stockManager.SaveAllAsync().ConfigureAwait(false);
+        }
+
         #region File Handling
-        //In case file action was not wanted
         private bool continueWithFileAction()
         {
             bool ready = false;
@@ -310,22 +301,14 @@ namespace StockPresentationLib.Views
             return ready;
         }
 
-        /// <summary>
-        /// New file creation, essentially creating a new instance
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void newFile_click(object sender, RoutedEventArgs e)
         {
             if (continueWithFileAction())
-                NewApp();
+            {
+                lvwStockInfo.Items.Clear();
+            }
         }
 
-        /// <summary>
-        /// Open text file, with binary serialization
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void mnuFileOpenTF_click(object sender, RoutedEventArgs e)
         {
             if (!continueWithFileAction())
@@ -338,10 +321,9 @@ namespace StockPresentationLib.Views
             {
                 try
                 {
-                    filename = openFileDialog.FileName;
-                    NewApp();
+                    _filename = openFileDialog.FileName;
 
-                    if (!stockManager.binaryDeSerialize(filename))
+                    if (!_stockManager.binaryDeSerialize(_filename))
                         MessageBox.Show("No data provided from file.");
                 }
                 catch (Exception ex)
@@ -351,16 +333,10 @@ namespace StockPresentationLib.Views
                     return;
                 }
 
-                UpdateStockUI();
+                SyncStocksToViewModel();
             }
         }
 
-
-        /// <summary>
-        /// Open json file, with serializersettings from util
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void mnuFileOpenJson_click(object sender, RoutedEventArgs e)
         {
             if (!continueWithFileAction())
@@ -373,11 +349,11 @@ namespace StockPresentationLib.Views
             {
                 try
                 {
-                    filename = openFileDialog.FileName;
-                    NewApp();
+                    _filename = openFileDialog.FileName;
+                    var jsonSettings = _jsonSerializerSettings?.AddJsonSerializerSettings();
 
-                    if (!stockManager.jsonDeSerialize(filename, jsonSerializerSettings.JsonSettings))
-                        MessageBox.Show("Could not import data");
+                    if (!_stockManager.jsonDeSerialize(_filename, jsonSettings))
+                        MessageBox.Show("No data provided from file.");
                 }
                 catch (Exception ex)
                 {
@@ -386,87 +362,22 @@ namespace StockPresentationLib.Views
                     return;
                 }
 
-                UpdateStockUI();
+                SyncStocksToViewModel();
             }
         }
 
-        /// <summary>
-        /// Save current file as current file type
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void mnuFileSave_click(object sender, RoutedEventArgs e)
         {
-            if (!continueWithFileAction())
-                return;
-            else if (filename == null)
-            {
-                MessageBox.Show("Save as a new file", "Error");
-            }
-            else if (filename.Substring(filename.Length - 4) == "json")
-            {
-                try
-                {
-                    stockManager.jsonSerialize(filename);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("Error in writing data to xml file!");
-                    Console.WriteLine(ex.Message);
-                }
-            }
-            else if (filename.Substring(filename.Length - 3) == "txt")
-            {
-                try
-                {
-                    stockManager.binarySerialize(filename);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("Error writing data to text file!");
-                    Console.WriteLine(ex.Message);
-                }
-            }
+            // Save via persistence layer
         }
 
-        /// <summary>
-        /// Save as textfile
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void mnuFileSaveAsTF_click(object sender, RoutedEventArgs e)
         {
-            if (!continueWithFileAction())
-                return;
-
-            SaveFileDialog saveFileDialog = new SaveFileDialog();
-            saveFileDialog.Filter = "Text files (*.txt)|*.txt";
-
-            if (saveFileDialog.ShowDialog() == true)
-            {
-                try
-                {
-                    filename = saveFileDialog.FileName;
-                    stockManager.binarySerialize(filename);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("Error in writing data to file!");
-                    Console.WriteLine(ex.ToString());
-                }
-            }
+            // Custom export to text file
         }
 
-        /// <summary>
-        /// Save as json with its serializer settings from util
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void mnuFileSaveAsJson_click(object sender, RoutedEventArgs e)
         {
-            if (!continueWithFileAction())
-                return;
-
             SaveFileDialog saveFileDialog = new SaveFileDialog();
             saveFileDialog.Filter = "JSON files (*.json)|*.json";
 
@@ -474,18 +385,18 @@ namespace StockPresentationLib.Views
             {
                 try
                 {
-                    filename = saveFileDialog.FileName;
-                    stockManager.jsonSerialize(filename, jsonSerializerSettings.JsonSettings);
+                    _filename = saveFileDialog.FileName;
+                    // Export as JSON if needed
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Error in writing data to file!");
+                    MessageBox.Show("Error in file handling!");
                     Console.WriteLine(ex.Message);
+                    return;
                 }
             }
         }
 
-        //Exit the app from menu
         private void mnuFileExportExit_click(object sender, RoutedEventArgs e)
         {
             Application.Current.Shutdown();

@@ -13,10 +13,6 @@
         Height="600" 
         Width="850">
 
-    <Window.DataContext>
-        <vm:NavigationVM />
-    </Window.DataContext>
-
     <Grid>
 
         <!--// Window Border //-->

@@ -9,23 +9,23 @@ namespace StockValuationApp.Main.Enums
     /// <summary>
     /// For specific API-calls
     /// </summary>
-    public enum MetricTypes
+    public enum MetricDataTypes
     {
-        revenue,
+        totalRevenue,
         ebitda,
         ebit, 
         netIncome, 
-        stockPrice,
-        marketCapitalization,
-        numberOfShares,
+        closePrice,
+        shares_outstanding_basic,
         shortTermDebt,
         longTermDebt,
-        dividendsPaid, 
-        cashAndCashEquivalents,
+        dividendPayout, 
+        cashAndCashEquivalentsAtCarryingValue,
         operatingCashFlow,
-        capitalExpenditure, 
+        capitalExpenditures, 
         totalLiabilities, 
         totalAssets,
-        depreciationAndAmortization
+        depreciationAndAmortization,
+        date
     }
 }

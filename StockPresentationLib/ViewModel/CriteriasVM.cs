@@ -4,16 +4,18 @@ using StockPresentationLib.Utilities;
 using StockValuationApp.Entities.Enums;
 using StockValuationApp.Entities.Stocks;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace StockPresentationLib.ViewModel
 {
     public class CriteriasVM : ViewModelBase
     {
         private Stock _stock;
+
+        // Parameterless ctor for DI
+        public CriteriasVM()
+        {
+        }
 
         public CriteriasVM(Stock stock)
         {
@@ -77,14 +79,13 @@ namespace StockPresentationLib.ViewModel
             }
         }
 
-
         public Stock Stock
         {
             get { return _stock; }
-            set { 
-                _stock = value; 
+            set {
+                _stock = value;
                 SetValuationScore(_stock);
-                OnPropertyChanged();         
+                OnPropertyChanged();
             }
         }
     }

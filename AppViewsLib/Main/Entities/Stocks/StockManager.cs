@@ -1,19 +1,12 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
+using StockLib.Abstraction;
+using StockLib.Main.Entities.Stocks;
 using StockValuationApp.Entities.Calculations;
 using StockValuationApp.Entities.Enums;
 using StockValuationApp.Entities.Stocks.Metrics;
 using StockValuationApp.Entities.Stocks.Metrics.Earnings;
 using StockValuationApp.Main.Enums;
 using StockValuationApp.Main.Uri;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
 using WTS.Entities.Main;
 
 namespace StockValuationApp.Entities.Stocks
@@ -21,11 +14,28 @@ namespace StockValuationApp.Entities.Stocks
     public class StockManager : ListManager<Stock>
     {
         private UriFinanceManager uriManager;
-        private Dictionary<FinanceCategory, List<MetricTypes>> metricTemplate;
+        private Dictionary<FinanceCategory, List<MetricDataTypes>> metricTemplate;
 
-        public StockManager()
+        private readonly IStockRepository _repo;
+
+        public StockManager(IStockRepository repo)
         {
+            _repo = repo;
             uriManager = new UriFinanceManager();
+            metricTemplate = BuildMetricTemplate();
+        }
+
+        // load/save using _repo
+        public async Task LoadAllAsync()
+        {
+            var list = await _repo.LoadAllAsync();
+            Clear();
+            AddRange(list);
+        }
+
+        public async Task SaveAllAsync()
+        {
+            await _repo.SaveAllAsync(this.ToList());
         }
 
         /// <summary>
@@ -42,6 +52,7 @@ namespace StockValuationApp.Entities.Stocks
             Stock stock = new Stock();
             stock.Name = name;
             stock.Ticker = ticker;
+            stock.StockScore = new StockScore();
 
             return stock;
         }
@@ -100,6 +111,7 @@ namespace StockValuationApp.Entities.Stocks
             {
                 yf.IsEstimate = true;
             }
+            //Earnings
             yf.Earnings = new Earning();
             yf.Earnings.EbitValue = e.Ebit;
             yf.Earnings.EbitdaValue = e.Ebitda;
@@ -109,16 +121,23 @@ namespace StockValuationApp.Entities.Stocks
             yf.Earnings.EbitMargin = (decimal)Math.Round(100 * (e.Ebit/e.Revenue), 1);
             yf.Earnings.NetIncomeMargin = (decimal)Math.Round(100 * (e.NetIncome/e.Revenue), 1);
 
+            //Enterprise value
             yf.EnterpriseVal = new EnterpriseValue();
             yf.EnterpriseVal.MarketValue = e.MarketValue;
             yf.EnterpriseVal.LongTermDebt = e.LongTermDebt;
             yf.EnterpriseVal.ShortTermDebt = e.ShortTermDebt;
             yf.EnterpriseVal.CashAndEquivalents = e.CashAndEquivalents;
-            yf.NmbrOfShares = e.NumberOfShares;
-            yf.StockPrice = e.Price;
+
+            //Other financials
+            yf.NmbrOfShares = e.SharesOutstanding;
+            yf.StockPrice = e.YearEndClosePrice;
+            yf.Dividends = e.Dividends;
+            yf.OperatingCashFlow = e.OperationalCashflow;
+            yf.CapitalExpenditures = e.CapitalExpenditures;
+
             //@TODO Add more stock financials
 
-            if(yfExist == false)
+            if (yfExist == false)
             {
                 stock.Financials.Add(yf);
             }
@@ -161,7 +180,7 @@ namespace StockValuationApp.Entities.Stocks
 
                     case KeyFigureTypes.PriceToEarnings:
 
-                        keyFigureVal = CalculateKeyFigure.CalcPriceToEarnings((e.NetIncome, e.NumberOfShares), e.Price);
+                        keyFigureVal = CalculateKeyFigure.CalcPriceToEarnings((e.NetIncome, e.SharesOutstanding), e.YearEndClosePrice);
                         break;
 
                     case KeyFigureTypes.NetDebtToEbitda:
@@ -219,243 +238,179 @@ namespace StockValuationApp.Entities.Stocks
         /// <summary>
         /// Categorize metrics depending on category that the Api is using
         /// </summary>
-        private void InitializeMetricTemplate()
+        /// <summary>
+        /// Build a single, reusable metric template mapping finance category -> metrics.
+        /// </summary>
+        private static Dictionary<FinanceCategory, List<MetricDataTypes>> BuildMetricTemplate()
         {
-            List<FinanceCategory> finCategories = Enum.GetValues(typeof(FinanceCategory)).Cast<FinanceCategory>().ToList();
-            List<MetricTypes> metrics = Enum.GetValues(typeof(MetricTypes)).Cast<MetricTypes>().ToList();
-
-            for(int i = 0; i<finCategories.Count(); i++)
+            return new Dictionary<FinanceCategory, List<MetricDataTypes>>
             {
-                FinanceCategory finCate = finCategories[i];
-                
-                switch (finCate)
+                [FinanceCategory.Income] = new List<MetricDataTypes>
                 {
-                    case FinanceCategory.Income:
-                        metricTemplate.Add(FinanceCategory.Income, new List<MetricTypes> {
-                            MetricTypes.netIncome,
-                            MetricTypes.ebitda,
-                            MetricTypes.revenue,
-                            MetricTypes.ebit,
-                        });
-                        break;
-                    case FinanceCategory.BalanceSheet:
-                        metricTemplate.Add(FinanceCategory.BalanceSheet, new List<MetricTypes>
+                    MetricDataTypes.netIncome,
+                    MetricDataTypes.ebitda,
+                    MetricDataTypes.totalRevenue,
+                    MetricDataTypes.ebit,                  
+                },
+                [FinanceCategory.BalanceSheet] = new List<MetricDataTypes>
+                {
+                    MetricDataTypes.cashAndCashEquivalentsAtCarryingValue,
+                    MetricDataTypes.totalAssets,
+                    MetricDataTypes.totalLiabilities,
+                    MetricDataTypes.longTermDebt,
+                    MetricDataTypes.shortTermDebt,
+                },
+                [FinanceCategory.Cashflow] = new List<MetricDataTypes>
+                {
+                    MetricDataTypes.operatingCashFlow,
+                    MetricDataTypes.capitalExpenditures,
+                    MetricDataTypes.dividendPayout,
+                },
+                [FinanceCategory.StockPrice] = new List<MetricDataTypes>
+                {
+                    MetricDataTypes.closePrice
+                },
+                [FinanceCategory.SharesOutstanding] = new List<MetricDataTypes>
+                {
+                    MetricDataTypes.shares_outstanding_basic
+                }
+            };
+        }
+
+        /// <summary>
+        /// Retrieve metrics for a stock. Fetches all finance categories, 
+        /// then assembles yearly MetricEventArgs.
+        /// </summary>
+        public async Task GetMetricVals(Stock stock)
+        {
+            if (stock == null) throw new ArgumentNullException(nameof(stock));
+
+            const int maxYearIndex = 5;
+            const int maxNoRes = 5;
+
+            // Cache the current year 
+            int currentYear = DateTime.Now.Year;
+
+            for (int i = 0; i < maxYearIndex; i++)
+            {
+                var args = new MetricEventArgs { Stock = stock };
+                int noResCounter = 0;
+
+                int targetYear = currentYear - i - 1;
+                string targetYearStr = targetYear.ToString();
+
+                foreach (var kv in metricTemplate)
+                {
+                    var category = kv.Key;
+                    var metrics = kv.Value;
+                    List<JObject> jObjs = null;
+
+                    try
+                    {
+                        var data = await uriManager.GetFinanceData(stock.Ticker, category, PeriodTypes.annual) ?? new List<JObject>();
+
+                        jObjs = data;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error fetching data for category {category}: {ex.Message}");
+                    }
+
+                    // Match by year 
+                    var jObj = jObjs?.FirstOrDefault(x => x["date"]?.ToString().StartsWith(targetYearStr) == true);
+
+                    if (jObj == null)
+                    {
+                        noResCounter++;
+                        continue;
+                    }
+
+                    foreach (var met in metrics)
+                    {
+                        try
+                        {                          
+                            var token = jObj[met.ToString()];
+                            if (token == null || !double.TryParse(token.ToString(), out double metricVal))
+                            {
+                                Console.WriteLine($"Metric none or invalid: {met} at year {targetYear}");
+                                metricVal = 0;
+                            }
+
+                            AssignMetric(args, met, metricVal);
+                        }
+                        catch (Exception ex)
                         {
-                            MetricTypes.cashAndCashEquivalents,
-                            MetricTypes.totalAssets,
-                            MetricTypes.totalLiabilities,
-                            MetricTypes.longTermDebt,
-                            MetricTypes.shortTermDebt,                        
-                        });
-                        break;
-                    case FinanceCategory.Cashflow:
-                        metricTemplate.Add(FinanceCategory.Cashflow, new List<MetricTypes>
-                        {
-                            MetricTypes.operatingCashFlow,
-                            MetricTypes.capitalExpenditure,
-                            MetricTypes.dividendsPaid,
-                        });
-                        break;
-                    case FinanceCategory.StatementAnalysis:
-                        metricTemplate.Add(FinanceCategory.StatementAnalysis, new List<MetricTypes>
-                        {
-                            MetricTypes.stockPrice,
-                            MetricTypes.numberOfShares,
-                            MetricTypes.marketCapitalization
-                        });
-                        break;
+                            Console.WriteLine($"Error parsing metric {met} for category {category} at year {targetYear}: {ex.Message}");
+                        }
+                    }
+                }
+
+                args.Year = targetYear;
+
+                if (noResCounter < maxNoRes)
+                {
+                    stock.MetricsGiven?.Invoke(this, args);
                 }
             }
         }
 
-        public async void GetSpecificMetricVal(Stock stock)
+        /// <summary>
+        /// Assign parsed metric value to the appropriate MetricEventArgs property.
+        /// Keep assignments centralized to avoid duplication.
+        /// </summary>
+        private static void AssignMetric(MetricEventArgs args, MetricDataTypes met, double metricVal)
         {
-            List<JObject> jObjs = null;
-            MetricEventArgs args = null;
-            const int maxApiYearIndex = 5;
-            const int maxNoRes = 5;
-            List<int> indexYears = Enumerable.Range(0, maxApiYearIndex).ToList();
-            double metricVal = 0.0;
-            int noResCounter = 0;
-
-            if (metricTemplate == null)
+            switch (met)
             {
-                metricTemplate = new Dictionary<FinanceCategory, List<MetricTypes>>();
-                InitializeMetricTemplate();
-            }
+                case MetricDataTypes.operatingCashFlow:
+                    args.OperationalCashflow = metricVal;
+                    break;
+                case MetricDataTypes.dividendPayout:
+                    args.Dividends = -metricVal;
+                    break;
+                case MetricDataTypes.capitalExpenditures:
+                    args.CapitalExpenditures = -metricVal;
+                    break;
 
-            foreach (int i in indexYears)
-            {
-                args = new MetricEventArgs();
-                args.Stock = stock;               
+                case MetricDataTypes.shares_outstanding_basic:
+                    args.SharesOutstanding = metricVal;
+                    break;
+                case MetricDataTypes.closePrice:
+                    args.YearEndClosePrice = metricVal;
+                    break;
 
-                foreach (var metPair in metricTemplate)
-                {
-                    FinanceCategory category = metPair.Key;
-                    List<MetricTypes> metrics = metPair.Value;
+                case MetricDataTypes.totalRevenue:
+                    args.Revenue = metricVal;
+                    break;
+                case MetricDataTypes.ebitda:
+                    args.Ebitda = metricVal;
+                    break;
+                case MetricDataTypes.ebit:
+                    args.Ebit = metricVal;
+                    break;
+                case MetricDataTypes.netIncome:
+                    args.NetIncome = metricVal;
+                    break;
 
-                    foreach (var met in metrics)
-                    {
-                        switch (category)
-                        {
-                            case FinanceCategory.Cashflow:
-                                jObjs = await uriManager.GetFinanceData(stock.Ticker, FinanceCategory.Cashflow, PeriodTypes.annual);
+                case MetricDataTypes.cashAndCashEquivalentsAtCarryingValue:
+                    args.CashAndEquivalents = metricVal;
+                    break;
+                case MetricDataTypes.totalAssets:
+                    args.TotalAssets = metricVal;
+                    break;
+                case MetricDataTypes.totalLiabilities:
+                    args.TotalLiabilities = metricVal;
+                    break;
+                case MetricDataTypes.longTermDebt:
+                    args.LongTermDebt = metricVal;
+                    break;
+                case MetricDataTypes.shortTermDebt:
+                    args.ShortTermDebt = metricVal;
+                    break;
 
-                                if(jObjs.Count > 0)
-                                {
-                                    if (!double.TryParse(jObjs[i][met.ToString()]?.ToString(), out metricVal))
-                                    {
-                                        Console.WriteLine($"Invalid parsing of JObject to double with metric: {met}");
-                                        continue;
-                                    }                 
-                                }
-                                else
-                                {
-                                    Console.WriteLine("No result from API query");
-                                    noResCounter++;
-                                    continue;
-                                }
-
-                                switch (met)
-                                {
-                                    case MetricTypes.operatingCashFlow:
-                                        args.OperationalCashflow = metricVal;
-                                        break;
-                                    case MetricTypes.dividendsPaid:
-                                        args.Dividends = -metricVal;
-                                        break;
-                                    case MetricTypes.capitalExpenditure:
-                                        args.CapitalExpenditures = -metricVal;
-                                        break;
-                                }
-                                continue;
-
-                            case FinanceCategory.StatementAnalysis:
-                                jObjs = await uriManager.GetFinanceData(stock.Ticker, FinanceCategory.StatementAnalysis, PeriodTypes.annual);
-
-                                if (jObjs.Count > 0)
-                                {
-                                    if (!double.TryParse(jObjs[i][met.ToString()]?.ToString(), out metricVal))
-                                    {
-                                        Console.WriteLine($"Invalid parsing of JObject to double with metric: {met}");
-                                        continue;
-                                    }
-                                }
-                                else
-                                {
-                                    Console.WriteLine("No result from API query");
-                                    noResCounter++;
-                                    continue;
-                                }
-
-                                switch (met)
-                                {
-                                    case MetricTypes.stockPrice:
-                                        args.Price = metricVal;
-                                        break;
-                                    case MetricTypes.numberOfShares:
-                                        args.NumberOfShares = metricVal;
-                                        break;
-                                    case MetricTypes.marketCapitalization:
-                                        args.MarketValue = metricVal;
-                                        break;
-                                }
-                                continue;
-
-                            case FinanceCategory.Income:
-                                jObjs = await uriManager.GetFinanceData(stock.Ticker, FinanceCategory.Income, PeriodTypes.annual);
-
-                                if (jObjs.Count > 0)
-                                {
-                                    if(met == MetricTypes.ebit)
-                                    {
-                                        bool ebitdaValid = double.TryParse(jObjs[i][MetricTypes.ebitda.ToString()]?.ToString(), out double ebitda);
-                                        bool amorAndDepValid = double.TryParse(jObjs[i][MetricTypes.depreciationAndAmortization.ToString()]?.ToString(), out double amortAndDepric);
-
-                                        if (ebitdaValid && amorAndDepValid)
-                                        {
-                                            metricVal = ebitda - amortAndDepric;
-                                        }
-                                        else
-                                        {
-                                            Console.WriteLine($"Invalid parsing of JObject to double with metric: {met}");
-                                            continue;
-                                        }
-                                    }
-                                    else if (!double.TryParse(jObjs[i][met.ToString()]?.ToString(), out metricVal))
-                                    {
-                                        Console.WriteLine($"Invalid parsing of JObject to double with metric: {met}");
-                                        continue;
-                                    }
-                                }
-                                else
-                                {
-                                    Console.WriteLine("No result from API query");
-                                    noResCounter++;
-                                    continue;
-                                }
-
-                                switch (met)
-                                {
-                                    case MetricTypes.revenue:
-                                        args.Revenue = metricVal;
-                                        break;
-                                    case MetricTypes.ebitda:
-                                        args.Ebitda = metricVal;
-                                        break;
-                                    case MetricTypes.ebit:
-                                        args.Ebit = metricVal;
-                                        break;
-                                    case MetricTypes.netIncome:
-                                        args.NetIncome = metricVal;
-                                        break;
-                                }
-                                continue;
-
-                            case FinanceCategory.BalanceSheet:
-                                jObjs = await uriManager.GetFinanceData(stock.Ticker, FinanceCategory.BalanceSheet, PeriodTypes.annual);
-
-                                if (jObjs.Count > 0)
-                                {
-                                    if (!double.TryParse(jObjs[i][met.ToString()]?.ToString(), out metricVal))
-                                    {
-                                        Console.WriteLine($"Invalid parsing of JObject to double with metric: {met}");
-                                        continue;
-                                    }
-                                }
-                                else
-                                {
-                                    Console.WriteLine("No result from API query");
-                                    noResCounter++;
-                                    continue;
-                                }
-
-                                switch (met)
-                                {
-                                    case MetricTypes.cashAndCashEquivalents:
-                                        args.CashAndEquivalents = metricVal;
-                                        break;
-                                    case MetricTypes.totalAssets:
-                                        args.TotalAssets = metricVal;
-                                        break;
-                                    case MetricTypes.totalLiabilities:
-                                        args.TotalLiabilities = metricVal;
-                                        break;
-                                    case MetricTypes.longTermDebt:
-                                        args.LongTermDebt = metricVal;
-                                        break;
-                                    case MetricTypes.shortTermDebt:
-                                        args.ShortTermDebt = metricVal;
-                                        break;
-                                }
-                                continue;
-                        }
-                    }                 
-                }
-                args.Year = DateTime.Now.Year - 1 - i;
-
-                if(noResCounter < maxNoRes)
-                    stock.MetricsGiven?.Invoke(this, args);
+                default:
+                    // Unknown metric -> no-op
+                    break;
             }
         }
 

@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using StockValuationApp.Entities.Stocks;
 using StockValuationApp.Entities.Stocks.Metrics;
 using StockValuationApp.Main.Utilities;
+using StockPresentationLib.ViewModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,6 +28,13 @@ namespace StockPresentationLib.Views
     {
         public MainWindow()
         {
+            InitializeComponent();
+        }
+
+        // DI-friendly constructor: container will inject NavigationVM
+        public MainWindow(NavigationVM navigationVM) : this()
+        {
+            DataContext = navigationVM;
         }
 
         private void CloseApp_Click(object sender, RoutedEventArgs e)

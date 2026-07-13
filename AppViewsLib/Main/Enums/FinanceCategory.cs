@@ -11,6 +11,7 @@ namespace StockValuationApp.Main.Enums
         Income,
         BalanceSheet,
         Cashflow,
-        StatementAnalysis
+        StockPrice,
+        SharesOutstanding
     }
 }

@@ -10,29 +10,35 @@ using System.Threading.Tasks;
 namespace StockValuationApp.Entities.Stocks
 {
     /// <summary>
-    /// A stocks metric and financial data
+    /// A stock's metric and financial data.
     /// </summary>
     [Serializable]
     public class Stock
     {
         public EventHandler<MetricEventArgs> MetricsGiven;
-        public Stock() {
+
+        public Stock()
+        {
             Financials = new List<YearlyFinancials>();
+            StockScore = new StockScore();
+            LastUpdated = DateTime.UtcNow;
         }
 
-        public string Name {  get; set; }
-        public string Ticker { get; set; }
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Ticker { get; set; } = string.Empty;
+        public decimal LastPrice { get; set; }
+        public DateTime LastUpdated { get; set; }
 
-        //Financials for a specific year
+        // Financials for a specific year
         public List<YearlyFinancials> Financials { get; set; }
 
-        //Score
-        public StockScore StockScore { get; set; }
+        // Score
+        public StockScore? StockScore { get; set; }
 
         public override string ToString()
         {
-            string outStr = string.Format("Stock: {0}, ${1}", Name, Ticker.ToUpper());
-            return outStr;
+            return $"Stock: {Name}, ${Ticker.ToUpperInvariant()}";
         }
     }
 }

@@ -4,6 +4,7 @@ using StockValuationApp.Entities.Stocks;
 using StockValuationApp.Main.Enums;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -16,20 +17,24 @@ namespace StockValuationApp.Main.Uri
         //Given a ticker (string) store jsonobjects (metric data) for a specific period (Annual, Q1, Q2..)
         private Dictionary<string, Dictionary<PeriodTypes, Dictionary<FinanceCategory, List<JObject>>>> metricDict;
         private List<string> apiKeys;
+        private int keyNmbr;
+        private int apiCallTries;
 
         public UriFinanceManager()
         {
-            apiKeys = ["W0AadtpHwD1pPPne46jMsPw6usX9lFcL","wYAeK4VcdGgjyULYbg6kXxwlRQwqJlOM"];
+            apiKeys = ["MHDCCRC0NHNSOO5C","DFD8Y3IB61SDY637","BEM6HGW60QG982T7"];
             metricDict = new Dictionary<string, Dictionary <PeriodTypes, Dictionary<FinanceCategory, List<JObject>>>>();
+            keyNmbr = 0;
+            apiCallTries = 0;
         }
 
-        public async Task<List<JObject>> GetFinanceData(string ticker, FinanceCategory finance, PeriodTypes period)
+        public async Task<List<JObject>?> GetFinanceData(string ticker, FinanceCategory category, PeriodTypes period)
         {
             List<JObject> jObjs = null;
 
             if (metricDict.TryGetValue(ticker, out var periodDict) &&
                 periodDict.TryGetValue(period, out var financeDict) &&
-                financeDict.TryGetValue(finance, out var oldJObj) && oldJObj != null)
+                financeDict.TryGetValue(category, out var oldJObj) && oldJObj != null)
             {
                 jObjs = oldJObj;
             }
@@ -49,9 +54,9 @@ namespace StockValuationApp.Main.Uri
 
                 financeDict = periodDict[period];
 
-                if (!financeDict.ContainsKey(finance))
+                if (!financeDict.ContainsKey(category))
                 {
-                    financeDict[finance] = new List<JObject>();
+                    financeDict[category] = new List<JObject>();
                 }
 
                 int faultyTries = 0, maxTries = 1;
@@ -61,30 +66,33 @@ namespace StockValuationApp.Main.Uri
                 {
                     try
                     {
-                        switch (finance)
-                        {
-                            case FinanceCategory.Income:
-                                jObjs = await HttpStockMetrics.ImportIncomeMetricData(ticker, period.ToString(), apiKeys[0]);
-                                break;
-                            case FinanceCategory.BalanceSheet:
-                                jObjs = await HttpStockMetrics.ImportBalanceSheetMetricData(ticker, period.ToString(), apiKeys[0]);
-                                break;
-                            case FinanceCategory.Cashflow:
-                                jObjs = await HttpStockMetrics.ImportCashFlowMetricData(ticker, period.ToString(), apiKeys[0]);
-                                break;
-                            case FinanceCategory.StatementAnalysis:
-                                jObjs = await HttpStockMetrics.ImportStatementAnalysisData(ticker, period.ToString(), apiKeys[0]);
-                                break;
-                            default:
-                                Console.WriteLine("Finance Category is null or does not exist");
-                                return default;
-                        }
-                        metricDict[ticker][period][finance].AddRange(jObjs);
+                        jObjs = await HttpStockMetrics.ImportMetricData(ticker, category, period.ToString().ToLower(), apiKeys[keyNmbr]);
+                        Debug.WriteLine("Number of total tried API-calls: " + ++apiCallTries);
+                        
+                        metricDict[ticker][period][category].AddRange(jObjs);
+                        // Rate limit: wait 1 second between requests
+                        await Task.Delay(TimeSpan.FromSeconds(1));
                     }
                     catch (HttpRequestException hrex)
                     {
-                        Console.WriteLine(hrex.Message);
-                        apiKeys.Reverse();
+                        Console.WriteLine("Faulty HTTP request" + hrex.Message);
+                        
+                        if(keyNmbr < apiKeys.Count - 1)
+                        {
+                            keyNmbr++;
+                            Console.WriteLine("Switching to next API key: " + apiKeys[keyNmbr]);
+                        }
+                        else
+                        {
+                            Console.WriteLine("All API keys exhausted. Please try again later.");
+                            return default;
+                        }
+                        faultyTries++;
+                        success = false;
+                    }
+                    catch(ArgumentNullException anex)
+                    {
+                        Console.WriteLine("Argument is null, likely JObjs" + anex.Message);
                         faultyTries++;
                         success = false;
                     }

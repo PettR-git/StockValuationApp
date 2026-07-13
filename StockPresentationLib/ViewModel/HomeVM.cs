@@ -1,35 +1,41 @@
 ﻿using StockValuationApp.Entities.Stocks;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace StockPresentationLib.ViewModel
 {
     public class HomeVM : Utilities.ViewModelBase
     {
-        private ObservableCollection<Stock> stocks;
+        private ObservableCollection<Stock> _stocks;
         public EventHandler<Stock> UpdateStockEvent;
-        private Stock currStock;
+        private Stock _currStock;
+        private readonly StockManager _stockManager;
 
-        public HomeVM()
+        public HomeVM(StockManager stockManager)
         {
-            Stocks = new ObservableCollection<Stock>();       
+            _stockManager = stockManager ?? throw new ArgumentNullException(nameof(stockManager));
+            _stocks = new ObservableCollection<Stock>();
+
+            // Populate stocks from StockManager (already loaded at app startup)
+            foreach (var stock in _stockManager)
+            {
+                _stocks.Add(stock);
+            }
         }
 
-        public Stock GetCurrentStock { get { return currStock; }}
+        public StockManager StockManager => _stockManager;
+
+        public Stock GetCurrentStock { get { return _currStock; }}
 
         public ObservableCollection<Stock> Stocks
         {
-            get{ return stocks;}
-            set { stocks = value; OnPropertyChanged();}
+            get { return _stocks; }
+            set { _stocks = value; OnPropertyChanged(); }
         }
 
         public void UpdateCurrentStock(Stock stock)
         {
-            currStock = stock;
+            _currStock = stock;
             UpdateStockEvent?.Invoke(this, stock);
         }
     }

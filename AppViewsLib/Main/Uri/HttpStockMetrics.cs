@@ -1,11 +1,14 @@
 ﻿using Newtonsoft.Json.Linq;
+using StockValuationApp.Main.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using System.Windows;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace StockValuationApp.Main.Uri
 {
@@ -16,98 +19,179 @@ namespace StockValuationApp.Main.Uri
     {
         private static readonly HttpClient client = new HttpClient();
 
-        public static async Task<List<JObject>> ImportIncomeMetricData(string ticker, string period, string apiKey)
+        public static async Task<List<JObject>> ImportMetricData(string ticker, FinanceCategory finance, string period, string apiKey)
         {
-            string url = $"https://financialmodelingprep.com/api/v3/income-statement/{ticker}?period={period}&apikey={apiKey}";
-            List<JObject> jObjs = new List<JObject>();
+            string url = string.Empty;
 
+            switch (finance)
+            {
+                case FinanceCategory.Income:
+                    url = $"https://www.alphavantage.co/query?function=INCOME_STATEMENT&symbol={ticker}&apikey={apiKey}";
+                    break;
+                case FinanceCategory.BalanceSheet:
+                    url = $"https://www.alphavantage.co/query?function=BALANCE_SHEET&symbol={ticker}&apikey={apiKey}";
+                    break;
+                case FinanceCategory.Cashflow:
+                    url = $"https://www.alphavantage.co/query?function=CASH_FLOW&symbol={ticker}&apikey={apiKey}";
+                    break;
+                case FinanceCategory.StockPrice:
+
+                    //Special case for stock price data, as it requires a different API endpoint and processing
+                    return await ImportPriceData(ticker, period, apiKey);
+
+                case FinanceCategory.SharesOutstanding:
+
+                    //Special case for shares outstanding data, as it requires a different API endpoint and processing
+                    return await ImportSharesOutstandingData(ticker, period, apiKey);
+
+                default:
+                    throw new ArgumentException("Invalid finance category");
+            }
+
+            //Standard Yearly financial data API call
             string response = await FetchDataFromApiAsync(url);
-            JArray jArray = JArray.Parse(response); 
+            JObject jObj = JObject.Parse(response);
+            string filterStr = string.Empty;
 
-            foreach(var item in jArray)
+            if(period == "annual")
             {
-                if(item is JObject jObject)
-                {
-                    jObjs.Add(jObject);
-                }
+                filterStr = "annualReports";
             }
+            var jsonObjs = CleanJsonObjects(jObj, period, filterStr);
 
-            return jObjs;
-        }      
-
-        public static async Task<List<JObject>> ImportBalanceSheetMetricData(string ticker, string period, string apiKey)
-        {
-            string url = $"https://financialmodelingprep.com/api/v3/balance-sheet-statement/{ticker}?period={period}&apikey={apiKey}";
-            List<JObject> jObjs = new List<JObject>();
-
-            try
-            {
-                string response = await FetchDataFromApiAsync(url);
-                JArray jArray = JArray.Parse(response);
-
-                foreach (var item in jArray)
-                {
-                    if (item is JObject jObject)
-                    {
-                        jObjs.Add(jObject);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
-
-            return jObjs;
+            return jsonObjs;
         }
 
-        public static async Task<List<JObject>> ImportCashFlowMetricData(string ticker, string period, string apiKey)
+        public static async Task<List<JObject>> ImportPriceData(string ticker, string period, string apiKey)
         {
-            string url = $"https://financialmodelingprep.com/api/v3/cash-flow-statement/{ticker}?period={period}&apikey={apiKey}";
-            List<JObject> jObjs = new List<JObject>();
+            // Close stock price for each year
+            string urlPrice = $"https://www.alphavantage.co/query?function=TIME_SERIES_WEEKLY&symbol={ticker}&apikey={apiKey}";
 
-            try
-            {
-                string response = await FetchDataFromApiAsync(url);
-                JArray jArray = JArray.Parse(response);
+            string priceResponse = await FetchDataFromApiAsync(urlPrice);
+            JObject priceObj = JObject.Parse(priceResponse);
+            var priceData = CleanPriceObjs(priceObj, period);
 
-                foreach (var item in jArray)
-                {
-                    if (item is JObject jObject)
-                    {
-                        jObjs.Add(jObject);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
-
-            return jObjs;
+            return priceData;
         }
 
-        public static async Task<List<JObject>> ImportStatementAnalysisData(string ticker, string period, string apiKey)
+        public static async Task<List<JObject>> ImportSharesOutstandingData(string ticker, string period, string apiKey)
         {
-            string url = $"https://financialmodelingprep.com/api/v3/enterprise-values/{ticker}?period={period}&apikey={apiKey}";
-            List<JObject> jObjs = new List<JObject>();
+            // Shares outstanding for each year
+            string urlShares = $"https://www.alphavantage.co/query?function=SHARES_OUTSTANDING&symbol={ticker}&apikey={apiKey}";
 
-            try
+            string response = await FetchDataFromApiAsync(urlShares);
+            JObject shareObj = JObject.Parse(response);
+            var shareData = CleanJsonObjects(shareObj, period, "data");
+
+            return shareData;
+        }
+
+        private static List<JObject> CleanPriceObjs(JObject jsonObj, string period)
+        {
+            var result = new List<JObject>();
+            if (period != "annual")
             {
-                string response = await FetchDataFromApiAsync(url);
-                JArray jArray = JArray.Parse(response);
+                return result;
+            }
 
-                foreach (var item in jArray)
+            // Find the property that contains "Time Series" (covers Weekly/Monthly variants)
+            var seriesProp = jsonObj.Properties()
+                .FirstOrDefault(p => p.Name.IndexOf("Time Series", StringComparison.OrdinalIgnoreCase) >= 0);
+
+            if (seriesProp?.Value is not JObject seriesObj)
+            {
+                return result;
+            }
+
+            var seenYears = new HashSet<int>();
+
+            // Iterate properties (date keys). Order descending so the first seen item for a year is the most recent.
+            foreach (var prop in seriesObj.Properties().OrderByDescending(p => p.Name))
+            {
+                if (!DateTime.TryParse(prop.Name, out var date))
                 {
-                    if (item is JObject jObject)
+                    continue;
+                }
+
+                int year = date.Year;
+                if (!seenYears.Add(year))
+                {
+                    continue;
+                }
+
+                if (prop.Value is JObject valueObj)
+                {
+                    // Build a normalized object with desired keys
+                    var normalized = new JObject
                     {
-                        jObjs.Add(jObject);
+                        ["date"] = date.ToString("yyyy-MM-dd")
+                    };
+
+                    foreach (var childProp in valueObj.Properties())
+                    {
+                        var nameLower = childProp.Name.Trim().ToLowerInvariant();
+
+                        if (nameLower.EndsWith("open", StringComparison.OrdinalIgnoreCase))
+                        {
+                            normalized["openPrice"] = childProp.Value;
+                        }
+                        else if (nameLower.EndsWith("high", StringComparison.OrdinalIgnoreCase))
+                        {
+                            normalized["highPrice"] = childProp.Value;
+                        }
+                        else if (nameLower.EndsWith("low", StringComparison.OrdinalIgnoreCase))
+                        {
+                            normalized["lowPrice"] = childProp.Value;
+                        }
+                        else if (nameLower.EndsWith("close", StringComparison.OrdinalIgnoreCase))
+                        {
+                            normalized["closePrice"] = childProp.Value;
+                        }
+                        else if (nameLower.EndsWith("volume", StringComparison.OrdinalIgnoreCase))
+                        {
+                            normalized["volume"] = childProp.Value;
+                        }
+                        else
+                        {
+                            // If there are unexpected keys, preserve them under their original names
+                            if (!normalized.ContainsKey(childProp.Name))
+                            {
+                                normalized[childProp.Name] = childProp.Value;
+                            }
+                        }
                     }
+
+                    result.Add(normalized);
                 }
             }
-            catch (Exception ex)
+
+            return result;
+        }
+
+        private static List<JObject> CleanJsonObjects(JObject jsonObj, string period, string filterStr)
+        {
+            JArray? jArray = null;
+            List<JObject> jObjs = new List<JObject>();
+
+            if (period == "annual")
             {
-                Console.WriteLine(ex.Message);
+                jArray = (JArray?)jsonObj[filterStr];
+
+                if (jArray != null)
+                {
+                    foreach (var item in jArray)
+                    {
+                        if (item is JObject jObject)
+                        {
+                            if (jObject.TryGetValue("fiscalDateEnding", out JToken? dateValue))
+                            {
+                                jObject["date"] = dateValue;
+                                jObject.Remove("fiscalDateEnding");
+                            }
+                            jObjs.Add(jObject);
+                        }
+                    }
+                }
             }
 
             return jObjs;

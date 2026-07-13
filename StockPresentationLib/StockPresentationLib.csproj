@@ -21,13 +21,20 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.*" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.*">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.*" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.9" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="ScottPlot.WPF" Version="5.0.36" />
-    <PackageReference Include="Syncfusion.SfGrid.WPF" Version="26.1.42" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\AppViewsLib\StockLib.csproj" />
+    <ProjectReference Include="..\StockPersistanceLib\StockPersistanceLib.csproj" />
   </ItemGroup>
 
   <ItemGroup>
