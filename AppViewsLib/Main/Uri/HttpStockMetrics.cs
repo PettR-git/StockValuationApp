@@ -37,7 +37,7 @@ namespace StockValuationApp.Main.Uri
                 case FinanceCategory.StockPrice:
 
                     //Special case for stock price data, as it requires a different API endpoint and processing
-                    return await ImportPriceData(ticker, period, apiKey);
+                    return await ImportWeeklyPriceData(ticker, period, apiKey);
 
                 case FinanceCategory.SharesOutstanding:
 
@@ -62,14 +62,14 @@ namespace StockValuationApp.Main.Uri
             return jsonObjs;
         }
 
-        public static async Task<List<JObject>> ImportPriceData(string ticker, string period, string apiKey)
+        public static async Task<List<JObject>> ImportWeeklyPriceData(string ticker, string period, string apiKey)
         {
             // Close stock price for each year
             string urlPrice = $"https://www.alphavantage.co/query?function=TIME_SERIES_WEEKLY&symbol={ticker}&apikey={apiKey}";
 
             string priceResponse = await FetchDataFromApiAsync(urlPrice);
             JObject priceObj = JObject.Parse(priceResponse);
-            var priceData = CleanPriceObjs(priceObj, period);
+            var priceData = CleanPriceObjs(priceObj);
 
             return priceData;
         }
@@ -86,15 +86,11 @@ namespace StockValuationApp.Main.Uri
             return shareData;
         }
 
-        private static List<JObject> CleanPriceObjs(JObject jsonObj, string period)
+        private static List<JObject> CleanPriceObjs(JObject jsonObj)
         {
             var result = new List<JObject>();
-            if (period != "annual")
-            {
-                return result;
-            }
 
-            // Find the property that contains "Time Series" (covers Weekly/Monthly variants)
+            // Find the property that contains "Time Series" (covers Daily/Weekly/Monthly variants)
             var seriesProp = jsonObj.Properties()
                 .FirstOrDefault(p => p.Name.IndexOf("Time Series", StringComparison.OrdinalIgnoreCase) >= 0);
 
@@ -103,18 +99,10 @@ namespace StockValuationApp.Main.Uri
                 return result;
             }
 
-            var seenYears = new HashSet<int>();
-
-            // Iterate properties (date keys). Order descending so the first seen item for a year is the most recent.
+            // Iterate properties (date keys) in descending order
             foreach (var prop in seriesObj.Properties().OrderByDescending(p => p.Name))
             {
                 if (!DateTime.TryParse(prop.Name, out var date))
-                {
-                    continue;
-                }
-
-                int year = date.Year;
-                if (!seenYears.Add(year))
                 {
                     continue;
                 }
@@ -153,7 +141,7 @@ namespace StockValuationApp.Main.Uri
                         }
                         else
                         {
-                            // If there are unexpected keys, preserve them under their original names
+                            // Preserve unexpected keys under their original names
                             if (!normalized.ContainsKey(childProp.Name))
                             {
                                 normalized[childProp.Name] = childProp.Value;

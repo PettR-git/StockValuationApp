@@ -1,9 +1,12 @@
+using Microsoft.Win32;
+using StockLib.Main.Entities.Stocks.Metrics;
 using StockPresentationLib.ViewModel;
 using StockValuationApp.Entities.Stocks;
 using StockValuationApp.Entities.Stocks.Metrics;
 using StockValuationApp.Main.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -17,7 +20,6 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Xml.Linq;
-using Microsoft.Win32;
 
 namespace StockPresentationLib.Views
 {
@@ -39,7 +41,6 @@ namespace StockPresentationLib.Views
             _jsonSerializerSettings = new StockJsonSerializerSettings();
 
             this.Loaded += Home_Loaded;
-            this.Unloaded += Home_Unloaded;
             this.DataContextChanged += Home_DataContextChanged;
         }
 
@@ -49,13 +50,29 @@ namespace StockPresentationLib.Views
             {
                 _homeVM = vm;
                 _stockManager = vm.StockManager;
-                SyncStocksToViewModel();
-            }
-        }
 
-        private async void Home_Unloaded(object sender, RoutedEventArgs e)
-        {
-            await SaveStocksAsync();
+                // Preserve current stock ticker before Sync clears the list
+                string? activeTicker = _homeVM.CurrentStock?.Ticker;
+
+                SyncStocksToViewModel();
+
+                // Restore active stock after repopulating Stocks
+                if (!string.IsNullOrEmpty(activeTicker))
+                {
+                    var matchedStock = _homeVM.Stocks.FirstOrDefault(s => s.Ticker == activeTicker);
+                    if (matchedStock != null)
+                    {
+                        // Assign to VM and UI using Dispatcher so layout container generation completes
+                        Dispatcher.BeginInvoke(new Action(() =>
+                        {
+                            _homeVM.CurrentStock = matchedStock;
+                            lvwAllStocks.SelectedItem = matchedStock;
+                            lvwAllStocks.ScrollIntoView(matchedStock);
+                            UpdateStockDetailsUI(matchedStock);
+                        }), System.Windows.Threading.DispatcherPriority.Loaded);
+                    }
+                }
+            }
         }
 
         private void Home_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
@@ -106,7 +123,7 @@ namespace StockPresentationLib.Views
         /// </summary>
         private async void OnGetMetricsData(object sender, MetricEventArgs e)
         {
-            Stock stock = e.Stock;
+            Stock? stock = e.Stock;
 
             if (!_stockManager.AddMetricDataFrStock(e))
             {
@@ -114,8 +131,22 @@ namespace StockPresentationLib.Views
                 return;
             }
 
-            UpdateFinancialUI(stock);
-            await SaveStocksAsync();
+            if (stock != null)
+            {
+                UpdateFinancialUI(stock);
+                await SaveStocksAsync();
+            }
+        }
+
+        private async void OnGetWeeklyStockPricesData(object sender, WeeklyStockPricesEventArgs e)
+        {
+            if (!_stockManager.AddWeeklyPriceDataFrStock(e))
+            {
+                MessageBox.Show("Error in adding price data", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            await SaveStocksAsync();         
         }
 
         /// <summary>
@@ -142,7 +173,7 @@ namespace StockPresentationLib.Views
         {
             lvwStockInfo.Items.Clear();
 
-            foreach (var fin in stock.Financials)
+            foreach (var fin in stock.YearlyFinancials)
             {
                 if (fin != null)
                 {
@@ -161,23 +192,26 @@ namespace StockPresentationLib.Views
         /// </summary>
         private void lvwAllStocks_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            int index = lvwAllStocks.SelectedIndex;
+            if (lvwAllStocks.SelectedItem is Stock selectedStock)
+            {
+                _homeVM.CurrentStock = selectedStock;
+                UpdateStockDetailsUI(selectedStock);
+            }
+        }
 
-            if (index == -1)
-                return;
-
-            Stock stock = _stockManager.getListItemAt(index);
-
-            _homeVM.UpdateCurrentStock(stock);
-
+        private void UpdateStockDetailsUI(Stock stock)
+        {
             lvwStockInfo.Items.Clear();
             tbkKeyFinancialFigures.Text = $"Key Financial Figures for {stock.Name}";
 
-            foreach (var fin in stock.Financials)
+            if (stock.YearlyFinancials != null)
             {
-                if (fin != null)
+                foreach (var fin in stock.YearlyFinancials)
                 {
-                    lvwStockInfo.Items.Add(fin.ToString());
+                    if (fin != null)
+                    {
+                        lvwStockInfo.Items.Add(fin.ToString());
+                    }
                 }
             }
         }
@@ -211,7 +245,7 @@ namespace StockPresentationLib.Views
             if (index == -1)
                 return;
 
-            List<YearlyFinancials> yearlyFinancials = _stockManager.getListItemAt(index).Financials;
+            List<YearlyFinancials> yearlyFinancials = _stockManager.getListItemAt(index).YearlyFinancials;
 
             if (yearlyFinancials != null && yearlyFinancials.Count > 0)
             {
@@ -244,11 +278,11 @@ namespace StockPresentationLib.Views
             if (yfIndex == -1 || stockIndex == -1) return;
 
             Stock stock = _stockManager.getListItemAt(stockIndex);
-            YearlyFinancials yf = stock.Financials.ElementAt(yfIndex);
+            YearlyFinancials yf = stock.YearlyFinancials.ElementAt(yfIndex);
 
             if (yf != null)
             {
-                stock.Financials.Remove(yf);
+                stock.YearlyFinancials.Remove(yf);
                 await SaveStocksAsync();
             }
 
@@ -267,6 +301,7 @@ namespace StockPresentationLib.Views
                 try
                 {
                     stock.MetricsGiven += OnGetMetricsData;
+                    stock.WeeklyStockPricesGiven += OnGetWeeklyStockPricesData;
                     await _stockManager.GetMetricVals(stock);
                     UpdateFinancialUI(stock);
                     await SaveStocksAsync();
@@ -287,6 +322,33 @@ namespace StockPresentationLib.Views
             }
 
             await _stockManager.SaveAllAsync().ConfigureAwait(false);
+        }
+
+        private async void btnAiAnalysis_Click(object sender, RoutedEventArgs e)
+        {
+            btnAiAnalysis.IsEnabled = false;
+
+            try
+            {
+                Debug.WriteLine("[UI] Starting AI stock analysis...");
+                await _homeVM.AnalyzeStockWithAgentAsync();
+                Debug.WriteLine("[UI] AI stock analysis complete.");
+                await SaveStocksAsync();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[UI Error] Analysis failed: {ex.Message}");
+
+                MessageBox.Show(
+                    $"Failed to run AI analysis:\n\n{ex.Message}",
+                    "Analysis Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+            finally
+            {
+                btnAiAnalysis.IsEnabled = true;
+            }
         }
 
         #region File Handling
@@ -403,5 +465,6 @@ namespace StockPresentationLib.Views
         }
 
         #endregion
+
     }
 }

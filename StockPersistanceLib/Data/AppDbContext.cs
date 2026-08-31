@@ -1,8 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using StockLib.Main.Entities.Stocks;
+using StockLib.Main.Entities.Stocks.Metrics;
 using StockValuationApp.Entities.Enums;
 using StockValuationApp.Entities.Stocks;
 using StockValuationApp.Entities.Stocks.Metrics;
+using System.Text.Json;
 
 namespace StockPersistanceLib.Data
 {
@@ -23,13 +25,25 @@ namespace StockPersistanceLib.Data
                 entity.HasKey(s => s.Id);
                 entity.Property(s => s.Name).HasMaxLength(200).IsRequired();
                 entity.Property(s => s.Ticker).HasMaxLength(50).IsRequired();
+                entity.Property(s => s.AgentAnalysisJson)
+                      .HasColumnType("TEXT")
+                      .IsRequired(false);
                 entity.Property(s => s.LastPrice).HasColumnType("TEXT");
                 entity.Property(s => s.LastUpdated).HasColumnType("TEXT");
 
-                entity.HasMany(s => s.Financials)
+                entity.HasMany(s => s.YearlyFinancials)
                     .WithOne()
                     .HasForeignKey(y => y.StockId)
                     .OnDelete(DeleteBehavior.Cascade);
+                entity.Property(s => s.WeeklyPrices)
+                    .HasColumnName("WeeklyPricesJson")
+                    .HasColumnType("TEXT")
+                    .HasConversion(
+                        v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+                        v => string.IsNullOrWhiteSpace(v)
+                            ? Array.Empty<StockBar>()
+                            : JsonSerializer.Deserialize<StockBar[]>(v, (JsonSerializerOptions?)null) ?? Array.Empty<StockBar>()
+                    );
 
                 entity.OwnsOne(s => s.StockScore, owned =>
                 {

@@ -45,48 +45,71 @@ namespace StockPresentationLib.Plot
 
         public void PlotRevenueAndEarnings()
         {
-            //Bar graph and Scatter line growth            
+            // Clear old data to prevent overlapping when called multiple times
+            finPlot.Plot.Clear();
+
             List<Bar> bars = new List<Bar>();
             xAxesYears = new List<Tick>();
 
-            for (int i = 0, indexPos = 0, indexBar = 0, posTick = 0; i < yearlyFinancials.Count(); i++, indexPos += 2, indexBar++, posTick += 5)
+            double currentX = 0; // Tracks precise horizontal placement
+            double barSpacing = 0.1; // Small gap between bars within the same year
+            double yearSpacing = 1.5; // Gap between year groups
+
+            for (int i = 0; i < yearlyFinancials.Count; i++)
             {
                 try
                 {
-                    if (i < yearlyFinancials.Count())
+                    var financial = yearlyFinancials[i];
+                    double ebit = 0, ebitda = 0, netIncome = 0;
+
+                    ScottPlot.Color revColor = palette.GetColor(0);
+                    ScottPlot.Color ebitdaColor = palette.GetColor(1);
+                    ScottPlot.Color ebitColor = ScottPlot.Color.FromHex("#EAE552");
+                    ScottPlot.Color netIncColor = palette.GetColor(2);
+
+                    if (financial.IsEstimate)
                     {
-                        double ebit = 0, ebitda = 0, netIncome = 0;
-
-                        ScottPlot.Color revColor = palette.GetColor(0);
-                        ScottPlot.Color ebitdaColor = palette.GetColor(1);
-                        ScottPlot.Color ebitColor = ScottPlot.Color.FromHex("#EAE552");
-                        ScottPlot.Color netIncColor = palette.GetColor(2);
-
-                        if (yearlyFinancials[i].IsEstimate == true)
-                        {
-                            revColor = revColor.WithAlpha(40);
-                            ebitdaColor = ebitdaColor.WithAlpha(40);
-                            ebitColor = ebitColor.WithAlpha(40);
-                            netIncColor = netIncColor.WithAlpha(40);
-                        }
-
-                        double revenue = yearlyFinancials.ElementAt(i).Revenue/Math.Pow(10,6);
-
-                        bars.Add(new Bar { Position = indexPos, Value = revenue, FillColor = revColor });
-
-                        if (yearlyFinancials.ElementAt(i).Earnings != null)
-                        {
-                            ebitda = yearlyFinancials.ElementAt(i).Earnings.EbitdaValue/Math.Pow(10, 6);
-                            bars.Add(new Bar { Position = ++indexPos, Value = ebitda, FillColor = ebitdaColor });
-
-                            ebit = yearlyFinancials.ElementAt(i).Earnings.EbitValue/Math.Pow(10, 6);
-                            bars.Add(new Bar { Position = ++indexPos, Value = ebit, FillColor = ebitColor });
-
-                            netIncome = yearlyFinancials.ElementAt(i).Earnings.NetIncomeValue/Math.Pow(10, 6);
-                            bars.Add(new Bar { Position = ++indexPos, Value = netIncome, FillColor = netIncColor });
-                        }
-                        xAxesYears.Add(new Tick(posTick, yearlyFinancials.ElementAt(i).Year.ToString()));
+                        revColor = revColor.WithAlpha(40);
+                        ebitdaColor = ebitdaColor.WithAlpha(40);
+                        ebitColor = ebitColor.WithAlpha(40);
+                        netIncColor = netIncColor.WithAlpha(40);
                     }
+
+                    // Track where this year's block begins
+                    double yearStartX = currentX;
+
+                    // 1. Revenue Bar
+                    double revenue = financial.Revenue / Math.Pow(10, 6);
+                    bars.Add(new Bar { Position = currentX, Value = revenue, FillColor = revColor, Size = 0.8 });
+                    currentX += 1 + barSpacing;
+
+                    if (financial.Earnings != null)
+                    {
+                        // 2. EBITDA Bar
+                        ebitda = financial.Earnings.EbitdaValue / Math.Pow(10, 6);
+                        bars.Add(new Bar { Position = currentX, Value = ebitda, FillColor = ebitdaColor, Size = 0.8 });
+                        currentX += 1 + barSpacing;
+
+                        // 3. EBIT Bar
+                        ebit = financial.Earnings.EbitValue / Math.Pow(10, 6);
+                        bars.Add(new Bar { Position = currentX, Value = ebit, FillColor = ebitColor, Size = 0.8 });
+                        currentX += 1 + barSpacing;
+
+                        // 4. Net Income Bar
+                        netIncome = financial.Earnings.NetIncomeValue / Math.Pow(10, 6);
+                        bars.Add(new Bar { Position = currentX, Value = netIncome, FillColor = netIncColor, Size = 0.8 });
+                        currentX += 1 + barSpacing;
+                    }
+
+                    // Track where this year's block ends
+                    double yearEndX = currentX - (1 + barSpacing);
+
+                    // Calculate the exact visual center of the group for the label
+                    double yearCenter = (yearStartX + yearEndX) / 2.0;
+                    xAxesYears.Add(new Tick(yearCenter, financial.Year.ToString()));
+
+                    // Add separation before starting the next year group
+                    currentX += yearSpacing;
                 }
                 catch (Exception ex)
                 {
@@ -94,7 +117,7 @@ namespace StockPresentationLib.Plot
                 }
             }
 
-            barArr = bars.ToArray();    
+            barArr = bars.ToArray();
             finPlot.Plot.Add.Bars(barArr);
             finPlot.Plot.Legend.FontName = ScottPlot.Fonts.Serif;
             finPlot.Plot.Legend.FontSize = 16;
@@ -147,10 +170,19 @@ namespace StockPresentationLib.Plot
             finPlot.Plot.Axes.Title.Label.Text = stockStr;
             finPlot.Plot.Axes.Bottom.TickGenerator = new ScottPlot.TickGenerators.NumericManual(xAxesYears.ToArray());
             finPlot.Plot.Axes.Bottom.MajorTickStyle.Length = 0;
-            finPlot.Plot.Axes.Margins(bottom: 0, left: 0.7, right: 0.7);
+
+            // Force ScottPlot to calculate correct data boundaries across all bars
+            finPlot.Plot.Axes.AutoScale();
+
+            // Dynamically pad the left and right margins so the edge bars don't clip into the border
+            finPlot.Plot.Axes.Margins(bottom: 0, left: 0.1, right: 0.1);
+
+            // Lock it to these exact bounds so it stretches and occupies the total figure area
+            var optimalLimits = finPlot.Plot.Axes.GetLimits();
+            finPlot.Plot.Axes.SetLimitsX(optimalLimits.XRange.Min, optimalLimits.XRange.Max);
 
             finPlot.Refresh();
-        }
+        }       
 
         public void PlotEbitdaGrowth(bool showPlot)
         {

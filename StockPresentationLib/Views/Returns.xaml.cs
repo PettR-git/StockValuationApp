@@ -39,7 +39,7 @@ namespace StockPresentationLib.Views
             {
                 if (returnsVM.Stock != null)
                 {
-                    if (returnsVM.Stock.Financials.Count > 0)
+                    if (returnsVM.Stock.YearlyFinancials.Count > 0)
                     {
                         stock = returnsVM.Stock;
                         plotReturns = new PlotReturns(WpfPlot2, stock);

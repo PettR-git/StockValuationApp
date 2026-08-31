@@ -12,7 +12,6 @@ namespace StockPresentationLib.ViewModel
     {
         private Stock _stock;
 
-        // Parameterless ctor for DI
         public CriteriasVM()
         {
         }
@@ -26,34 +25,34 @@ namespace StockPresentationLib.ViewModel
         {
             stock.StockScore = new StockLib.Main.Entities.Stocks.StockScore();
 
-            if (stock.Financials != null && stock.Financials.Any())
+            if (stock.YearlyFinancials != null && stock.YearlyFinancials.Any())
             {
-                double[] revenues = stock.Financials
+                double[] revenues = stock.YearlyFinancials
                     .Select(f => f.Revenue)
                     .DefaultIfEmpty(0)
                     .ToArray();
 
-                double[] earnings = stock.Financials
+                double[] earnings = stock.YearlyFinancials
                     .Select(f => f.Earnings?.NetIncomeValue ?? 0)
                     .ToArray();
 
-                double[] numOfShares = stock.Financials
+                double[] numOfShares = stock.YearlyFinancials
                     .Select(f => f.NmbrOfShares)
                     .ToArray();
 
-                double[] roes = stock.Financials
+                double[] roes = stock.YearlyFinancials
                     .Select(f => f.KeyFiguresDict != null && f.KeyFiguresDict.ContainsKey(KeyFigureTypes.ReturnOnEquity)
                                  ? (double)f.KeyFiguresDict[KeyFigureTypes.ReturnOnEquity]
                                  : 0)
                     .ToArray();
 
-                double[] roics = stock.Financials
+                double[] roics = stock.YearlyFinancials
                     .Select(f => f.KeyFiguresDict != null && f.KeyFiguresDict.ContainsKey(KeyFigureTypes.ReturnOnInvCap)
                                  ? (double)f.KeyFiguresDict[KeyFigureTypes.ReturnOnInvCap]
                                  : 0)
                     .ToArray();
 
-                var lastYearFinancials = stock.Financials.FirstOrDefault(f => f.Year == DateTime.Now.Year - 1 && f.KeyFiguresDict != null);
+                var lastYearFinancials = stock.YearlyFinancials.FirstOrDefault(f => f.Year == DateTime.Now.Year - 1 && f.KeyFiguresDict != null);
                 double evEbit = 0, evFcf = 0;
 
                 if (lastYearFinancials != null)

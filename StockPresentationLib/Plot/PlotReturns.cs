@@ -37,7 +37,7 @@ namespace StockPresentationLib.Plot
         {
             this.finPlot = finPlot;
             this.stock = stock;
-            yearlyFinancials = stock.Financials;
+            yearlyFinancials = stock.YearlyFinancials;
             palette = new ScottPlot.Palettes.Category10();
             roeVals = new List<double>();
             roicVals = new List<double>();  

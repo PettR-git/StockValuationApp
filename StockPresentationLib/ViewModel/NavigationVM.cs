@@ -17,6 +17,7 @@ namespace StockPresentationLib.ViewModel
         private ReturnsVM _returnsVM;
         private CriteriasVM _criteriasVM;
         private ConsensusVM _consensusVM;
+        private AnalysisVM _analysisVM;
 
         public object CurrentView
         {
@@ -70,6 +71,20 @@ namespace StockPresentationLib.ViewModel
             CurrentView = _criteriasVM;
         }
 
+        private void Analysis(object obj)
+        {
+            if (_analysisVM == null)
+            {
+                _analysisVM = _provider.GetRequiredService<AnalysisVM>();
+            }
+
+            if (_analysisVM.Stock != _currentStock)
+            {
+                _analysisVM.Stock = _currentStock;
+            }
+            CurrentView = _analysisVM;
+        }
+
         private void Consensus(object obj)
         {
             if (_consensusVM == null)
@@ -83,6 +98,7 @@ namespace StockPresentationLib.ViewModel
         public ICommand EarningsCommand { get; set; }
         public ICommand ReturnsCommand { get; set; }
         public ICommand CriteriasCommand { get; set; }
+        public ICommand AnalysisCommand { get; set; }
         public ICommand ConsesusCommand { get; set; }
 
         private void OnUpdateCurrentStock(object sender, Stock stock)
@@ -100,7 +116,8 @@ namespace StockPresentationLib.ViewModel
             EarningsCommand = new RelayCommand(Earnings);
             ReturnsCommand = new RelayCommand(Returns);
             CriteriasCommand = new RelayCommand(Criterias);
-            ConsesusCommand = new RelayCommand(Consensus);
+            //ConsesusCommand = new RelayCommand(Consensus);
+            AnalysisCommand = new RelayCommand(Analysis);
 
             // Initialize home VM from the provider and subscribe to its update event
             _homeVM = _provider.GetRequiredService<HomeVM>();

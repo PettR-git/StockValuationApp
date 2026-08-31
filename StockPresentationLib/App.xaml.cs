@@ -1,16 +1,17 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using StockPresentationLib.ViewModel;
-using StockPresentationLib.Views;
-using StockValuationApp.Main.Uri;
-using StockValuationApp.Entities.Stocks;
-using System.Windows;
-using System;
-using System.IO;
-using System.Diagnostics;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using StockLib.Abstraction;
+using StockLib.Main.Agents.Analyst;
 using StockPersistanceLib.Data;
 using StockPersistanceLib.Repositories;
-using StockLib.Abstraction;
+using StockPresentationLib.ViewModel;
+using StockPresentationLib.Views;
+using StockValuationApp.Entities.Stocks;
+using StockValuationApp.Main.Uri;
+using System;
+using System.Diagnostics;
+using System.IO;
+using System.Windows;
 
 namespace StockPresentationLib
 {
@@ -46,14 +47,14 @@ namespace StockPresentationLib
             services.AddSingleton<UriFinanceManager>();
             services.AddSingleton<IStockRepository, EfStockRepository>();
             services.AddSingleton<StockManager>();
+            services.AddSingleton<StockAnalysisOverviewAgent>();
 
             services.AddTransient<NavigationVM>();
             services.AddTransient<HomeVM>();
             services.AddTransient<EarningsVM>();
             services.AddTransient<ReturnsVM>();
             services.AddTransient<CriteriasVM>();
-            services.AddTransient<ConsensusVM>();
-
+            services.AddTransient<AnalysisVM>();
             services.AddTransient<MainWindow>();
 
             _serviceProvider = services.BuildServiceProvider();
@@ -62,7 +63,7 @@ namespace StockPresentationLib
             using (var ctx = dbContextFactory.CreateDbContext())
             {
                 ctx.Database.Migrate();
-                Debug.WriteLine("[App] Databasen has been reviewed and updated to the last migration.");
+                Debug.WriteLine("[App] Database has been reviewed and updated to the last migration.");
             }
 
             var stockManager = _serviceProvider.GetRequiredService<StockManager>();
@@ -82,9 +83,21 @@ namespace StockPresentationLib
                 var stockManager = _serviceProvider.GetService<StockManager>();
                 if (stockManager != null)
                 {
-                    Debug.WriteLine($"[App] Saving {stockManager.Count()} stocks to database...");
-                    stockManager.SaveAllAsync().GetAwaiter().GetResult();
-                    Debug.WriteLine("[App] Save completed");
+                    try
+                    {
+                        Debug.WriteLine($"[App] Saving {stockManager.Count()} stocks to database...");
+
+                        // Task.Run prevents UI SynchronizationContext deadlocks during shutdown
+                        Task.Run(async () => await stockManager.SaveAllAsync())
+                            .GetAwaiter()
+                            .GetResult();
+
+                        Debug.WriteLine("[App] Save completed");
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"[App Error] Exception during shutdown save: {ex.Message}");
+                    }
                 }
             }
             base.OnExit(e);

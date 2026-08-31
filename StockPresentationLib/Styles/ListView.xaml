@@ -13,20 +13,29 @@
                 <ControlTemplate TargetType="ListViewItem">
                     <Grid>
                         <Border x:Name="border" 
-                                Background="{TemplateBinding Background}" 
-                                BorderBrush="{TemplateBinding BorderBrush}" 
-                                BorderThickness="{TemplateBinding BorderThickness}">
-                           <ContentPresenter Margin="15,0,0,0"/> 
+                            Background="{TemplateBinding Background}" 
+                            BorderBrush="{TemplateBinding BorderBrush}" 
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                          SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
                         </Border>
+
+                        <!-- Bottom Divider Line -->
                         <Border Margin="0,5,5,0" Background="#FFA5CAAF" Height="1" VerticalAlignment="Bottom"/>
                     </Grid>
                     <ControlTemplate.Triggers>
-                        <Trigger Property="IsSelected" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="#FF56576A"/>
-                        </Trigger>
+                        <!-- Mouse Hover First -->
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="border" Property="Background" Value="#FF32333F"/>
                         </Trigger>
+
+                        <!-- Selection Second (Wins over Hover when row is selected) -->
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="#FF56576A"/>
+                        </Trigger>
+
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Foreground" Value="#272B2F"/>
                         </Trigger>

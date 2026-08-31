@@ -41,7 +41,7 @@ namespace StockPresentationLib.Views
             {
                 if (earningsVM.Stock != null)
                 {
-                    var financials = earningsVM.Stock.Financials;
+                    var financials = earningsVM.Stock.YearlyFinancials;
 
                     if (financials.Count() > 0 && earningsVM.PrevPlotEarnings?.StockStr != earningsVM.Stock.ToString())
                     {
@@ -65,7 +65,7 @@ namespace StockPresentationLib.Views
             {
                 if (earningsVM.Stock != null)
                 {
-                    if (earningsVM.Stock.Financials.Count > 0)
+                    if (earningsVM.Stock.YearlyFinancials.Count > 0)
                     {
                         if (earningsVM.PrevPlotEarnings == null || earningsVM.Stock.ToString() != earningsVM.PrevPlotEarnings.StockStr)
                         {
@@ -97,25 +97,6 @@ namespace StockPresentationLib.Views
 
         private void TabControl_Changed(object sender, RoutedEventArgs e)
         {
-            if(e.Source is TabControl)
-            {               
-                TabItem selectedTab = (TabItem)tabControl.SelectedItem;
-
-                if (selectedTab == tabGraph)
-                {                      
-                    //EarningsPlot();
-                }
-                else if(selectedTab == tabEarnings)
-                {
-
-                }
-                else if(selectedTab == tabKeyMetrics)
-                {
-                    //dgKeyMetrics.
-                    
-                }
-
-            }
         
         }
 

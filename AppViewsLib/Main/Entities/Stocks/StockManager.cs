@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using StockLib.Abstraction;
 using StockLib.Main.Entities.Stocks;
+using StockLib.Main.Entities.Stocks.Metrics;
 using StockValuationApp.Entities.Calculations;
 using StockValuationApp.Entities.Enums;
 using StockValuationApp.Entities.Stocks.Metrics;
@@ -64,21 +65,36 @@ namespace StockValuationApp.Entities.Stocks
         /// <param name="year"></param>
         /// <param name="metricType"></param>
         /// <returns>boolean</returns>
-        private (bool, YearlyFinancials) DoesFinanceObjExistFrYear(Stock stock, int year)
+        private (bool, YearlyFinancials?) DoesFinanceObjExistFrYear(Stock stock, int year)
         {
             bool yearExist = false;
-            YearlyFinancials yearlyFinancials = null;
+            YearlyFinancials? yearlyFinancials = null;
 
-            foreach (var yf in stock.Financials)
+            foreach (var yf in stock.YearlyFinancials)
             {
-                if (yf.Year == year)
+                if (yf != null && yf.Year == year)
                 {
                     yearExist = true;
                     yearlyFinancials = yf;
+                    break;
                 }
             }
 
             return(yearExist, yearlyFinancials);
+        }
+
+        public bool AddWeeklyPriceDataFrStock(WeeklyStockPricesEventArgs e)
+        {
+            Stock? stock = this.FirstOrDefault(s => s.Ticker == e.Symbol);
+
+            if (stock == null)
+            {
+                Console.WriteLine($"Stock with ticker {e.Symbol} not found.");
+                return false;
+            }
+
+            stock.WeeklyPrices = e.Bars.ToList();
+            return true;
         }
 
         /// <summary>
@@ -90,7 +106,14 @@ namespace StockValuationApp.Entities.Stocks
         /// <returns>succesfull creation/update</returns>
         public bool AddMetricDataFrStock(MetricEventArgs e)
         {
-            Stock stock = e.Stock;
+            Stock? stock = e.Stock;
+
+            if (stock == null)
+            {
+                Console.WriteLine($"Stock with ticker {e.Stock?.Ticker} not found.");
+                return false;
+            }
+
             int year = e.Year;
             decimal keyFigureVal = default;
 
@@ -99,7 +122,7 @@ namespace StockValuationApp.Entities.Stocks
             var netDebtTuple = (e.ShortTermDebt, e.LongTermDebt, e.CashAndEquivalents);
 
             //Calculate specific metric and determine if object creation or update is needed
-            (bool yfExist, YearlyFinancials yf) = DoesFinanceObjExistFrYear(stock, year);
+            (bool yfExist, YearlyFinancials? yf) = DoesFinanceObjExistFrYear(stock, year);
 
             if (yf == null)
             {
@@ -139,7 +162,7 @@ namespace StockValuationApp.Entities.Stocks
 
             if (yfExist == false)
             {
-                stock.Financials.Add(yf);
+                stock.YearlyFinancials.Add(yf);
             }
 
             SortKeyFinancialsByYear(stock);
@@ -208,31 +231,31 @@ namespace StockValuationApp.Entities.Stocks
         /// <param name="result"></param>
         private void UpdateOrCreateKeyFigure(Stock stock, YearlyFinancials yf, KeyFigureTypes keyFigure, decimal result)
         {
-            int index = stock.Financials.IndexOf(yf);
+            int index = stock.YearlyFinancials.IndexOf(yf);
 
             //if keyfigure dictionary doesnt exist, create dictionary and keyfigure
-            if(stock.Financials[index].KeyFiguresDict == null)
+            if(stock.YearlyFinancials[index].KeyFiguresDict == null)
             {
                 Dictionary<KeyFigureTypes, decimal> metricDict = new Dictionary<KeyFigureTypes, decimal>();
                 metricDict[keyFigure] = result;
 
-                stock.Financials[index].KeyFiguresDict = metricDict;
+                stock.YearlyFinancials[index].KeyFiguresDict = metricDict;
             }
             //if keyfigure in keyfigure dictionary doesnt exist, create keyfigure
-            else if (!stock.Financials[index].KeyFiguresDict.ContainsKey(keyFigure))
+            else if (!stock.YearlyFinancials[index].KeyFiguresDict.ContainsKey(keyFigure))
             {
-                stock.Financials[index].KeyFiguresDict.Add(keyFigure, result);
+                stock.YearlyFinancials[index].KeyFiguresDict.Add(keyFigure, result);
             }
             //keyfigure in keyfigure dictionary exist, update it
             else
             {
-                stock.Financials[index].KeyFiguresDict[keyFigure] = result;
+                stock.YearlyFinancials[index].KeyFiguresDict[keyFigure] = result;
             }
         }
 
         public void SortKeyFinancialsByYear(Stock stock)
         {
-            stock.Financials = stock.Financials.OrderBy(x => x.Year).ToList();
+            stock.YearlyFinancials = stock.YearlyFinancials.OrderBy(x => x.Year).ToList();
         }
 
         /// <summary>
@@ -268,7 +291,12 @@ namespace StockValuationApp.Entities.Stocks
                 },
                 [FinanceCategory.StockPrice] = new List<MetricDataTypes>
                 {
-                    MetricDataTypes.closePrice
+                    MetricDataTypes.closePrice,
+                    MetricDataTypes.openPrice,
+                    MetricDataTypes.highPrice,
+                    MetricDataTypes.lowPrice,
+                    MetricDataTypes.volume,
+                    MetricDataTypes.date
                 },
                 [FinanceCategory.SharesOutstanding] = new List<MetricDataTypes>
                 {
@@ -317,31 +345,38 @@ namespace StockValuationApp.Entities.Stocks
                     }
 
                     // Match by year 
-                    var jObj = jObjs?.FirstOrDefault(x => x["date"]?.ToString().StartsWith(targetYearStr) == true);
+                    var jObjYearly = jObjs?.FirstOrDefault(x => x["date"]?.ToString().StartsWith(targetYearStr) == true);
 
-                    if (jObj == null)
+                    if (jObjYearly == null)
                     {
                         noResCounter++;
                         continue;
                     }
 
+                    //Assigning yearly metrics 
                     foreach (var met in metrics)
                     {
                         try
-                        {                          
-                            var token = jObj[met.ToString()];
-                            if (token == null || !double.TryParse(token.ToString(), out double metricVal))
+                        {   
+                            var tokenYearly = jObjYearly[met.ToString()];
+                            if (tokenYearly == null || !double.TryParse(tokenYearly.ToString(), out double metricVal))
                             {
                                 Console.WriteLine($"Metric none or invalid: {met} at year {targetYear}");
                                 metricVal = 0;
                             }
 
-                            AssignMetric(args, met, metricVal);
+                            AssignYearlyMetric(args, met, metricVal);
                         }
                         catch (Exception ex)
                         {
                             Console.WriteLine($"Error parsing metric {met} for category {category} at year {targetYear}: {ex.Message}");
                         }
+                    }
+
+                    //Assign Daily stock prices
+                    if (category == FinanceCategory.StockPrice)
+                    {
+                        AssignWeeklyPrices(jObjs, stock);
                     }
                 }
 
@@ -354,11 +389,48 @@ namespace StockValuationApp.Entities.Stocks
             }
         }
 
+        private void AssignWeeklyPrices(List<JObject>? jObjs, Stock stock)
+        {
+            if(jObjs == null || jObjs.Count == 0)
+            {
+                Console.WriteLine($"No daily price data available for stock {stock.Ticker}");
+                return;
+            }   
+
+            // Populate the StockBar collection with Jobjs
+            List<StockBar> bars = jObjs.Select(jObj => new StockBar(
+                Symbol: stock.Ticker,
+                Timestamp: (DateTimeOffset)jObj[MetricDataTypes.date.ToString()]!, 
+                Open: (decimal)jObj[MetricDataTypes.openPrice.ToString()]!,
+                High: (decimal)jObj[MetricDataTypes.highPrice.ToString()]!,
+                Low: (decimal)jObj[MetricDataTypes.lowPrice.ToString()]!,
+                Close: (decimal)jObj[MetricDataTypes.closePrice.ToString()]!,
+                Volume: (long)jObj[MetricDataTypes.volume.ToString()]!
+            )).ToList();
+
+            // Ensure chronological ordering for chart rendering (oldest -> newest)
+            IReadOnlyList<StockBar> sortedBars = bars.OrderBy(b => b.Timestamp).ToList();
+
+            // Calculate date boundaries automatically from the populated list
+            DateTimeOffset startDate = sortedBars.Count > 0 ? sortedBars[0].Timestamp : DateTimeOffset.MinValue;
+            DateTimeOffset endDate = sortedBars.Count > 0 ? sortedBars[sortedBars.Count - 1].Timestamp : DateTimeOffset.MaxValue;
+
+            var args = new WeeklyStockPricesEventArgs(stock.Ticker, startDate, endDate, sortedBars);
+
+            OnWeeklyPricesLoaded(args, stock);     
+        }
+
+        //Thread-safe virtual OnEvent method 
+        protected virtual void OnWeeklyPricesLoaded(WeeklyStockPricesEventArgs e, Stock stock)
+        {          
+            stock.WeeklyStockPricesGiven?.Invoke(this, e);
+        }
+
         /// <summary>
         /// Assign parsed metric value to the appropriate MetricEventArgs property.
         /// Keep assignments centralized to avoid duplication.
         /// </summary>
-        private static void AssignMetric(MetricEventArgs args, MetricDataTypes met, double metricVal)
+        private static void AssignYearlyMetric(MetricEventArgs args, MetricDataTypes met, double metricVal)
         {
             switch (met)
             {
@@ -409,7 +481,6 @@ namespace StockValuationApp.Entities.Stocks
                     break;
 
                 default:
-                    // Unknown metric -> no-op
                     break;
             }
         }
