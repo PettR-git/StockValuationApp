@@ -53,7 +53,7 @@ namespace StockPresentationLib
             services.AddTransient<HomeVM>();
             services.AddTransient<EarningsVM>();
             services.AddTransient<ReturnsVM>();
-            services.AddTransient<CriteriasVM>();
+            services.AddTransient<FundamentalsVM>();
             services.AddTransient<AnalysisVM>();
             services.AddTransient<MainWindow>();
 

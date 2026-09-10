@@ -232,10 +232,13 @@ namespace StockPresentationLib.Views
                 return;
             }
 
-            Stock stock = _stockManager.CreateStock(name, ticker);
-            _stockManager.addItem(stock);
-            _homeVM.Stocks.Add(stock);
-            await SaveStocksAsync();
+            Stock? stock = _stockManager.CreateStock(name, ticker);
+            if (stock != null)
+            {
+                _stockManager.addItem(stock);
+                _homeVM.Stocks.Add(stock);
+                await SaveStocksAsync();
+            }
         }
 
         private void btnGraphs_Click(object sender, RoutedEventArgs e)
@@ -330,9 +333,7 @@ namespace StockPresentationLib.Views
 
             try
             {
-                Debug.WriteLine("[UI] Starting AI stock analysis...");
-                await _homeVM.AnalyzeStockWithAgentAsync();
-                Debug.WriteLine("[UI] AI stock analysis complete.");
+                await _homeVM.RunFullAgentQueue();
                 await SaveStocksAsync();
             }
             catch (Exception ex)

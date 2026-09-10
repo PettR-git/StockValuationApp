@@ -86,14 +86,14 @@
 
                     </Menu:Btn>
 
-                    <!--// Criterias //-->
+                    <!--// Fundamentals //-->
 
                     <Menu:Btn Style="{StaticResource BtnStyle}"
-                              Command="{Binding CriteriasCommand}">
+                              Command="{Binding FundamentalsCommand}">
 
                         <Grid>
 
-                            <TextBlock Text="Criterias"
+                            <TextBlock Text="Fund"
                                        Style="{StaticResource Text_Style}" 
                                        Foreground="#FFA5CAAF" />
 

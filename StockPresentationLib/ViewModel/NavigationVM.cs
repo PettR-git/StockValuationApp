@@ -15,7 +15,7 @@ namespace StockPresentationLib.ViewModel
         private HomeVM _homeVM;
         private EarningsVM _earningsVM;
         private ReturnsVM _returnsVM;
-        private CriteriasVM _criteriasVM;
+        private FundamentalsVM _fundamentalsVM;
         private ConsensusVM _consensusVM;
         private AnalysisVM _analysisVM;
 
@@ -57,18 +57,18 @@ namespace StockPresentationLib.ViewModel
             CurrentView = _returnsVM;
         }
 
-        private void Criterias(object obj)
+        private void Fundamentals(object obj)
         {
-            if (_criteriasVM == null)
+            if (_fundamentalsVM == null)
             {
-                _criteriasVM = _provider.GetRequiredService<CriteriasVM>();
+                _fundamentalsVM = _provider.GetRequiredService<FundamentalsVM>();
             }
 
-            if (_criteriasVM.Stock != _currentStock)
+            if (_fundamentalsVM.Stock != _currentStock)
             {
-                _criteriasVM.Stock = _currentStock;
+                _fundamentalsVM.Stock = _currentStock;
             }
-            CurrentView = _criteriasVM;
+            CurrentView = _fundamentalsVM;
         }
 
         private void Analysis(object obj)
@@ -97,7 +97,7 @@ namespace StockPresentationLib.ViewModel
         public ICommand HomeCommand { get; set; }
         public ICommand EarningsCommand { get; set; }
         public ICommand ReturnsCommand { get; set; }
-        public ICommand CriteriasCommand { get; set; }
+        public ICommand FundamentalsCommand { get; set; }
         public ICommand AnalysisCommand { get; set; }
         public ICommand ConsesusCommand { get; set; }
 
@@ -115,7 +115,7 @@ namespace StockPresentationLib.ViewModel
             HomeCommand = new RelayCommand(Home);
             EarningsCommand = new RelayCommand(Earnings);
             ReturnsCommand = new RelayCommand(Returns);
-            CriteriasCommand = new RelayCommand(Criterias);
+            FundamentalsCommand = new RelayCommand(Fundamentals);
             //ConsesusCommand = new RelayCommand(Consensus);
             AnalysisCommand = new RelayCommand(Analysis);
 

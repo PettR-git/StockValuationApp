@@ -59,7 +59,7 @@
                     </GridView>
                 </ListView.View>
             </ListView>
-            <Button x:Name="btnFinancialMetrics" Style="{StaticResource NormalButton}" Content="Metrics" HorizontalAlignment="Left" VerticalAlignment="Top" Click="btnCalculateValuation_Click" Margin="256,498,0,0" Height="28" Width="54"/>
+            <Button x:Name="btnFinancialMetrics" Style="{StaticResource NormalButton}" Content="Metrics" HorizontalAlignment="Left" VerticalAlignment="Top" Click="btnCalculateValuation_Click" Margin="247,157,0,0" Height="28" Width="54"/>
             <ListView x:Name="lvwAllStocks" ItemContainerStyle="{StaticResource CustomListViewItemStyle}" HorizontalAlignment="Left" Height="280" VerticalAlignment="Top" Width="284" Style="{StaticResource ListView_Style}" SelectionChanged="lvwAllStocks_SelectionChanged" Margin="26,206,0,0" SelectedItem="{Binding CurrentStock, Mode=TwoWay}" ItemsSource="{Binding Stocks, Mode=TwoWay}">
                 <ListView.View>
                     <GridView>
@@ -67,12 +67,12 @@
                     </GridView>
                 </ListView.View>
             </ListView>
-            <Button x:Name="btnAddStock" Content="Add Stock" Style="{StaticResource NormalButton}" HorizontalAlignment="Left" VerticalAlignment="Top" Click="btnAddStock_Click" Margin="66,159,0,0" Height="24" Width="84"/>
+            <Button x:Name="btnAddStock" Content="Add Stock" Style="{StaticResource NormalButton}" HorizontalAlignment="Left" VerticalAlignment="Top" Click="btnAddStock_Click" Margin="44,157,0,0" Height="27" Width="78"/>
             <TextBlock x:Name="tbkKeyFinancialFigures" FontWeight="Medium" Style="{StaticResource Text_Style}" Text="Key Financial Figures" VerticalAlignment="Top" Margin="334,28,0,0" FontSize="14" Foreground="#212529"/>
             <Button x:Name="btnDeleteYearlyFin" Content="Delete" Style="{StaticResource NormalButton}" Height="28" Width="66" HorizontalAlignment="Left" VerticalAlignment="Top" Click="btnDeleteYearlyFin_Click" Margin="470,498,0,0"/>
-            <Button x:Name="btnDeleteStock" Content="Delete Stock" Style="{StaticResource NormalButton}" HorizontalAlignment="Left" VerticalAlignment="Top" Click="btnDeleteStock_Click" Margin="190,158,0,0" Height="25" Width="86"/>
-            <Button x:Name="btnImportStockData" Content="Import Stock Data" Style="{StaticResource NormalButton}" Height="28" Width="110" HorizontalAlignment="Left" VerticalAlignment="Top" Click="btnImportStockData_Click" Margin="26,498,0,0"/>
-            <Button x:Name="btnAiAnalysis" Content="Start AI Analyzing" Style="{StaticResource NormalButton}" Height="28" Width="110" HorizontalAlignment="Left" VerticalAlignment="Top" Click="btnAiAnalysis_Click" Margin="141,498,0,0"/>
+            <Button x:Name="btnDeleteStock" Content="Delete Stock" Style="{StaticResource NormalButton}" HorizontalAlignment="Left" VerticalAlignment="Top" Click="btnDeleteStock_Click" Margin="136,157,0,0" Height="27" Width="94"/>
+            <Button x:Name="btnImportStockData" Content="Import Stock Data" Style="{StaticResource NormalButton}" Height="28" Width="110" HorizontalAlignment="Left" VerticalAlignment="Top" Click="btnImportStockData_Click" Margin="41,498,0,0"/>
+            <Button x:Name="btnAiAnalysis" Content="Start Full AI Analysis" Style="{StaticResource NormalButton}" Height="28" Width="124" HorizontalAlignment="Left" VerticalAlignment="Top" Click="btnAiAnalysis_Click" Margin="168,498,0,0"/>
         </Grid>
     </Grid>
 </UserControl>

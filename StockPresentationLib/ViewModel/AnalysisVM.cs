@@ -1,27 +1,41 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using Newtonsoft.Json.Linq;
+using OxyPlot;
+using OxyPlot.Series;
+using StockLib.Main.Agents.Analyst;
+using StockLib.Main.Agents.Analyst.Technical;
+using StockLib.Main.Entities.Stocks.Metrics;
 using StockPresentationLib.Utilities;
 using StockValuationApp.Entities.Stocks;
-using StockLib.Main.Entities.Stocks.Metrics;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using OxyPlot;
-using OxyPlot.Series;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace StockPresentationLib.ViewModel
 {
-    public class AnalysisVM : ViewModelBase
+    public partial class AnalysisVM : ViewModelBase
     {
-        private Stock _stock;
-        private string _valuationSummary;
-        private string _positives;
-        private string _riskFactor;
-        private string _overallRating;
+        private Stock? _stock;
+        private string? _valuationSummary;
+        private string? _positives;
+        private string? _riskFactor;
+        private string? _overallRating;
+
+        // Technical Analysis Fields
+        private string? _trendOutlook;
+        private string? _keySupportResistance;
+        private string? _mediumTermVerdict;
+        private string? _longTermVerdict;
+        private bool _isTechnicalAnalysisVisible;
+
         private IReadOnlyList<StockBar>? _allBars;
         private IReadOnlyList<StockBar> _filteredBars;
         private TimeInterval _selectedInterval;
-        private PlotModel _chartModel;
+        private PlotModel? _chartModel;
         private readonly StockManager? _stockManager;
 
         public AnalysisVM(StockManager? stockManager = null)
@@ -44,7 +58,7 @@ namespace StockPresentationLib.ViewModel
             };
         }
 
-        public Stock Stock
+        public Stock? Stock
         {
             get => _stock;
             set
@@ -67,7 +81,8 @@ namespace StockPresentationLib.ViewModel
                     }
 
                     OnPropertyChanged();
-                    ParseAgentJson();
+                    ParseOverviewJson();
+                    ParseTechnicalAnalysisJson(); // Enabled
                     RefreshCandleData();
                 }
             }
@@ -75,16 +90,53 @@ namespace StockPresentationLib.ViewModel
 
         private void OnStockPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(Stock.AgentAnalysisJson))
+            if (e.PropertyName == nameof(Stock.OverviewAgentJson))
             {
-                ParseAgentJson();
+                ParseOverviewJson();
+            }
+            else if (e.PropertyName == nameof(Stock.TechnicalAnalysisAgentJson))
+            {
+                ParseTechnicalAnalysisJson();
             }
         }
 
-        public string ValuationSummary { get => _valuationSummary; set { _valuationSummary = value; OnPropertyChanged(); } }
-        public string Positives { get => _positives; set { _positives = value; OnPropertyChanged(); } }
-        public string RiskFactor { get => _riskFactor; set { _riskFactor = value; OnPropertyChanged(); } }
-        public string OverallRating { get => _overallRating; set { _overallRating = value; OnPropertyChanged(); } }
+        // Fundamentals Properties
+        public string? ValuationSummary { get => _valuationSummary; set { _valuationSummary = value; OnPropertyChanged(); } }
+        public string? Positives { get => _positives; set { _positives = value; OnPropertyChanged(); } }
+        public string? RiskFactor { get => _riskFactor; set { _riskFactor = value; OnPropertyChanged(); } }
+        public string? OverallRating { get => _overallRating; set { _overallRating = value; OnPropertyChanged(); } }
+
+        // Technical Analysis Properties
+        public string? TrendOutlook { get => _trendOutlook; set { _trendOutlook = value; OnPropertyChanged(); } }
+        public string? KeySupportResistance { get => _keySupportResistance; set { _keySupportResistance = value; OnPropertyChanged(); } }
+        public string? MediumTermVerdict { get => _mediumTermVerdict; set { _mediumTermVerdict = value; OnPropertyChanged(); } }
+        public string? LongTermVerdict { get => _longTermVerdict; set { _longTermVerdict = value; OnPropertyChanged(); } }
+
+        public bool IsTechnicalAnalysisVisible
+        {
+            get => _isTechnicalAnalysisVisible;
+            set { _isTechnicalAnalysisVisible = value; OnPropertyChanged(); }
+        }
+
+        [RelayCommand]
+        private async Task OverviewAsync()
+        {
+            if (_stockManager != null && _stock != null)
+            {
+                await _stockManager.RunAgentAnalysisAsync(_stock, new StockAnalysisOverviewAgent());
+                await _stockManager.SaveAllAsync();
+            }
+        }
+
+        [RelayCommand]
+        private async Task TechnicalAnalysisAsync()
+        {
+            if (_stockManager != null && _stock != null)
+            {
+                await _stockManager.RunAgentAnalysisAsync(_stock, new TechnicalAnalysisAgent());
+                await _stockManager.SaveAllAsync();
+            }
+        }
 
         public IReadOnlyList<StockBar> FilteredBars
         {
@@ -106,18 +158,18 @@ namespace StockPresentationLib.ViewModel
             }
         }
 
-        public List<TimeInterval> AvailableIntervals { get; } = 
+        public List<TimeInterval> AvailableIntervals { get; } =
             Enum.GetValues(typeof(TimeInterval)).Cast<TimeInterval>().ToList();
 
-        public PlotModel ChartModel
+        public PlotModel? ChartModel
         {
             get => _chartModel;
             set { _chartModel = value; OnPropertyChanged(); }
         }
 
-        private void ParseAgentJson()
+        private void ParseOverviewJson()
         {
-            if (_stock == null || string.IsNullOrWhiteSpace(_stock.AgentAnalysisJson))
+            if (_stock == null || string.IsNullOrWhiteSpace(_stock.OverviewAgentJson))
             {
                 ResetFields("Select a stock with processed local AI insights.");
                 return;
@@ -125,7 +177,7 @@ namespace StockPresentationLib.ViewModel
 
             try
             {
-                var jsonObject = JObject.Parse(_stock.AgentAnalysisJson);
+                var jsonObject = JObject.Parse(_stock.OverviewAgentJson);
 
                 ValuationSummary = jsonObject["valuationSummary"]?.ToString() ?? "Not analyzed";
                 Positives = jsonObject["positives"]?.ToString() ?? "Not analyzed";
@@ -134,9 +186,35 @@ namespace StockPresentationLib.ViewModel
             }
             catch (Exception)
             {
-                // Fallback rendering structure if JSON contains unstructured text or alternative formats
                 ResetFields("Unable to parse structured JSON block.");
-                ValuationSummary = _stock.AgentAnalysisJson; // Let the raw output serve as copy
+                ValuationSummary = _stock.OverviewAgentJson;
+            }
+        }
+
+        private void ParseTechnicalAnalysisJson()
+        {
+            if (_stock == null || string.IsNullOrWhiteSpace(_stock.TechnicalAnalysisAgentJson))
+            {
+                IsTechnicalAnalysisVisible = false;
+                ResetTechnicalFields();
+                return;
+            }
+
+            try
+            {
+                var jsonObject = JObject.Parse(_stock.TechnicalAnalysisAgentJson);
+
+                TrendOutlook = jsonObject["trendOutlook"]?.ToString() ?? "Not analyzed";
+                KeySupportResistance = jsonObject["keySupportResistance"]?.ToString() ?? "Not analyzed";
+                MediumTermVerdict = jsonObject["mediumTermVerdict"]?.ToString() ?? "N/A";
+                LongTermVerdict = jsonObject["longTermVerdict"]?.ToString() ?? "N/A";
+
+                IsTechnicalAnalysisVisible = true;
+            }
+            catch (Exception)
+            {
+                IsTechnicalAnalysisVisible = false;
+                ResetTechnicalFields();
             }
         }
 
@@ -148,9 +226,14 @@ namespace StockPresentationLib.ViewModel
             OverallRating = "N/A";
         }
 
-        /// <summary>
-        /// Load price data for the current stock (called when stock is selected)
-        /// </summary>
+        private void ResetTechnicalFields()
+        {
+            TrendOutlook = null;
+            KeySupportResistance = null;
+            MediumTermVerdict = null;
+            LongTermVerdict = null;
+        }
+
         private void LoadPriceDataAsync()
         {
             if (_stock == null)
@@ -176,18 +259,22 @@ namespace StockPresentationLib.ViewModel
 
         private void UpdateCandleChart()
         {
+            if (_chartModel == null)
+            {
+                return;
+            }
+
             _chartModel.Series.Clear();
             _chartModel.Axes.Clear();
 
             if (_filteredBars == null || _filteredBars.Count == 0)
             {
                 _chartModel.Title = $"No data available ({_filteredBars?.Count ?? 0} bars)";
-                _chartModel.InvalidatePlot(true);
+                _chartModel?.InvalidatePlot(true);
                 ChartModel = new PlotModel { Title = "No data available" };
                 return;
             }
 
-            // Create candlestick series
             var candleSeries = new CandleStickSeries
             {
                 Title = "Price",
@@ -212,16 +299,15 @@ namespace StockPresentationLib.ViewModel
                     candleSeries.Items.Add(highLowItem);
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return;
             }
 
             _chartModel.Series.Add(candleSeries);
 
-            // Setup axes
-            var dateAxis = new OxyPlot.Axes.DateTimeAxis 
-            { 
+            var dateAxis = new OxyPlot.Axes.DateTimeAxis
+            {
                 Position = OxyPlot.Axes.AxisPosition.Bottom,
                 StringFormat = "yyyy-MM-dd",
                 TextColor = OxyColors.White,
@@ -229,8 +315,8 @@ namespace StockPresentationLib.ViewModel
                 MajorGridlineStyle = OxyPlot.LineStyle.None
             };
 
-            var valueAxis = new OxyPlot.Axes.LinearAxis 
-            { 
+            var valueAxis = new OxyPlot.Axes.LinearAxis
+            {
                 Position = OxyPlot.Axes.AxisPosition.Left,
                 TextColor = OxyColors.White,
                 TicklineColor = OxyColors.White,
@@ -244,7 +330,6 @@ namespace StockPresentationLib.ViewModel
             _chartModel.Title = $"{_stock?.Ticker ?? "Stock"} Price - {_filteredBars.Count} candles";
             _chartModel.InvalidatePlot(true);
 
-            // CRITICAL: Reassign to trigger binding update
             ChartModel = _chartModel;
         }
     }

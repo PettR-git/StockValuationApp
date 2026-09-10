@@ -8,15 +8,15 @@ using System.Linq;
 
 namespace StockPresentationLib.ViewModel
 {
-    public class CriteriasVM : ViewModelBase
+    public class FundamentalsVM : ViewModelBase
     {
-        private Stock _stock;
+        private Stock? _stock;
 
-        public CriteriasVM()
+        public FundamentalsVM()
         {
         }
 
-        public CriteriasVM(Stock stock)
+        public FundamentalsVM(Stock stock)
         {
             Stock = stock;
         }
@@ -78,13 +78,16 @@ namespace StockPresentationLib.ViewModel
             }
         }
 
-        public Stock Stock
+        public Stock? Stock
         {
             get { return _stock; }
             set {
                 _stock = value;
-                SetValuationScore(_stock);
-                OnPropertyChanged();
+                if (_stock != null)
+                {
+                    SetValuationScore(_stock);
+                    OnPropertyChanged();
+                }
             }
         }
     }

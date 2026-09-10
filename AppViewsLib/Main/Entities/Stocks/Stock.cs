@@ -19,9 +19,10 @@ namespace StockValuationApp.Entities.Stocks
     [Serializable]
     public class Stock : INotifyPropertyChanged
     {
-        private string? _agentAnalysisJson;
-        public EventHandler<MetricEventArgs> MetricsGiven;
-        public EventHandler<WeeklyStockPricesEventArgs> WeeklyStockPricesGiven;
+        private string? _agentOverviewJson;
+        private string? _agentTechnicalAnalysisJson;
+        public EventHandler<MetricEventArgs>? MetricsGiven;
+        public EventHandler<WeeklyStockPricesEventArgs>? WeeklyStockPricesGiven;
 
         public Stock()
         {
@@ -45,21 +46,34 @@ namespace StockValuationApp.Entities.Stocks
         public StockScore? StockScore { get; set; }
 
         //Agent analysis JSON string, which can be updated by the agent and will trigger UI updates when changed
-        public string? AgentAnalysisJson
+        public string? OverviewAgentJson
         {
-            get => _agentAnalysisJson;
+            get => _agentOverviewJson;
             set
             {
-                if (_agentAnalysisJson != value)
+                if (_agentOverviewJson != value)
                 {
-                    _agentAnalysisJson = value;
+                    _agentOverviewJson = value;
                     OnPropertyChanged(); 
                 }
             }
         }
 
+        public string? TechnicalAnalysisAgentJson
+        {
+            get => _agentTechnicalAnalysisJson;
+            set
+            {
+                if (_agentTechnicalAnalysisJson != value)
+                {
+                    _agentTechnicalAnalysisJson = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
         public event PropertyChangedEventHandler? PropertyChanged;
-        protected void OnPropertyChanged([CallerMemberName] string name = null) =>
+        protected void OnPropertyChanged([CallerMemberName] string? name = null) =>
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 
         public override string ToString()

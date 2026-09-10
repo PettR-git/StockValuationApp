@@ -25,7 +25,10 @@ namespace StockPersistanceLib.Data
                 entity.HasKey(s => s.Id);
                 entity.Property(s => s.Name).HasMaxLength(200).IsRequired();
                 entity.Property(s => s.Ticker).HasMaxLength(50).IsRequired();
-                entity.Property(s => s.AgentAnalysisJson)
+                entity.Property(s => s.OverviewAgentJson)
+                      .HasColumnType("TEXT")
+                      .IsRequired(false);
+                entity.Property(s => s.TechnicalAnalysisAgentJson)
                       .HasColumnType("TEXT")
                       .IsRequired(false);
                 entity.Property(s => s.LastPrice).HasColumnType("TEXT");

@@ -1,5 +1,9 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Microsoft.SemanticKernel;
+using Newtonsoft.Json.Linq;
 using StockLib.Abstraction;
+using StockLib.Main.Agents;
+using StockLib.Main.Agents.Analyst;
+using StockLib.Main.Agents.Analyst.Technical;
 using StockLib.Main.Entities.Stocks;
 using StockLib.Main.Entities.Stocks.Metrics;
 using StockValuationApp.Entities.Calculations;
@@ -18,6 +22,9 @@ namespace StockValuationApp.Entities.Stocks
         private Dictionary<FinanceCategory, List<MetricDataTypes>> metricTemplate;
 
         private readonly IStockRepository _repo;
+        private bool _isAgentAnalyzing;
+        private const int maxYearIndex = 10; // Number of years to fetch metrics for
+        private const int maxNoRes = 5; // Maximum number of categories that can return no results before skipping the year
 
         public StockManager(IStockRepository repo)
         {
@@ -45,7 +52,7 @@ namespace StockValuationApp.Entities.Stocks
         /// <param name="name"></param>
         /// <param name="ticker"></param>
         /// <returns>stock object</returns>
-        public Stock CreateStock(string name, string ticker)
+        public Stock? CreateStock(string name, string ticker)
         {
             if (string.IsNullOrEmpty(ticker) || string.IsNullOrEmpty(name))
                 return null;
@@ -313,9 +320,6 @@ namespace StockValuationApp.Entities.Stocks
         {
             if (stock == null) throw new ArgumentNullException(nameof(stock));
 
-            const int maxYearIndex = 5;
-            const int maxNoRes = 5;
-
             // Cache the current year 
             int currentYear = DateTime.Now.Year;
 
@@ -331,7 +335,7 @@ namespace StockValuationApp.Entities.Stocks
                 {
                     var category = kv.Key;
                     var metrics = kv.Value;
-                    List<JObject> jObjs = null;
+                    List<JObject>? jObjs = null;
 
                     try
                     {
@@ -485,5 +489,81 @@ namespace StockValuationApp.Entities.Stocks
             }
         }
 
+        public async Task RunAgentAnalysisAsync(Stock stock, StockAgentBase agent)
+        {
+            IsAgentAnalyzing = true;
+
+            try
+            {
+                string analysisResult = await Task.Run(async () =>
+                    await agent.AnalyzeAsync(stock)
+                );
+
+                SetJsonOutput(stock, agent.AgentName, analysisResult);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+            finally
+            {
+                IsAgentAnalyzing = false;
+            }
+        }
+
+        public async Task RunAllAgentsSequentiallyAsync(Stock stock)
+        {
+            if (stock == null)
+            {
+                return;
+            }
+
+            IsAgentAnalyzing = true;
+
+            var builder = Kernel.CreateBuilder();
+            builder.AddOllamaChatCompletion("llama3.1:8b", new Uri("http://127.0.0.1:11434"));
+            var sharedKernel = builder.Build();
+
+            var agents = new List<StockAgentBase>
+            {
+                new StockAnalysisOverviewAgent(sharedKernel),
+                new TechnicalAnalysisAgent(sharedKernel)
+            };
+
+            var queueRunner = new AgentQueueRunner(agents);
+
+            // Process one by one in sequence
+            await queueRunner.RunQueueAsync(stock, (agentName, jsonOutput) =>
+            {
+                // Fires as each agent finishes
+                Console.WriteLine($"[Completed {agentName}]: {jsonOutput}");
+
+                SetJsonOutput(stock, agentName, jsonOutput);
+            });
+
+            IsAgentAnalyzing = false;
+        }
+
+        private void SetJsonOutput(Stock stock, string agentName, string jsonOutput)
+        {
+            switch(agentName)
+            {
+                case "Stock Overview Agent":
+                    stock.OverviewAgentJson = jsonOutput;
+                    break;
+                case "Technical Analysis Agent":
+                    stock.TechnicalAnalysisAgentJson = jsonOutput;
+                    break;
+                default:
+                    Console.WriteLine($"Unknown agent: {agentName}");
+                    break;
+            }
+        }
+
+        public bool IsAgentAnalyzing
+        {
+            get => _isAgentAnalyzing;
+            set { _isAgentAnalyzing = value; }
+        }
     }
 }

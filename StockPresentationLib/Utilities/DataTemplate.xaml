@@ -2,10 +2,11 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:vm="clr-namespace:StockPresentationLib.ViewModel"
                     xmlns:view="clr-namespace:StockPresentationLib.Views">
+
     <DataTemplate DataType="{x:Type vm:HomeVM}">
         <view:Home />
     </DataTemplate>
-    
+
     <DataTemplate DataType="{x:Type vm:EarningsVM}">
         <view:Earnings />
     </DataTemplate>
@@ -14,8 +15,8 @@
         <view:Returns />
     </DataTemplate>
 
-    <DataTemplate DataType="{x:Type vm:CriteriasVM}">
-        <view:Criterias />
+    <DataTemplate DataType="{x:Type vm:FundamentalsVM}">
+        <view:Fundamentals />
     </DataTemplate>
 
     <DataTemplate DataType="{x:Type vm:AnalysisVM}">

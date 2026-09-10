@@ -19,7 +19,7 @@
 
             <!-- 1. Fundamentals (AI) Tab -->
             <TabItem x:Name="tabGraph" 
-                     Header="Fundamentals (AI)" 
+                     Header="Overview" 
                      FontFamily="/Fonts/#Rubik" 
                      Background="#212529" 
                      Foreground="#FFA5CAAF" 
@@ -38,19 +38,25 @@
                                     Margin="0,0,0,12" 
                                     BorderBrush="#FFA5CAAF" 
                                     BorderThickness="1">
-                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                    <TextBlock Text="Overall Thesis: " 
-                                               Style="{StaticResource Text_Style}" 
-                                               FontWeight="Bold" 
-                                               FontSize="14" 
-                                               Foreground="#FFFFFF"/>
-                                    <TextBlock Text="{Binding OverallRating, FallbackValue='N/A'}" 
-                                               Style="{StaticResource Text_Style}" 
-                                               FontWeight="Bold" 
-                                               FontSize="14" 
-                                               Foreground="#FFA5CAAF" 
-                                               Margin="8,0,0,0"/>
-                                </StackPanel>
+
+                                <DockPanel LastChildFill="True">
+                                    <!-- 1. Dock button FIRST to reserve space on the right -->
+                                    <Button DockPanel.Dock="Right"
+                                            Content="AI Analyze" 
+                                            Name="btnOverviewAnalyze"
+                                            Command="{Binding OverviewCommand}"
+                                            Style="{StaticResource NormalButton}" 
+                                            Width="80" 
+                                            Height="30"
+                                            VerticalAlignment="Top"
+                                            Margin="12,0,0,0"/>
+
+                                    <!-- 2. Text fills ALL remaining space on the left and wraps -->
+                                    <TextBlock TextWrapping="Wrap" VerticalAlignment="Center">
+                                        <Run Text="Overall Thesis: " FontWeight="Bold" Foreground="#FFFFFF" FontSize="14"/>
+                                        <Run Text="{Binding OverallRating, FallbackValue='N/A'}" FontWeight="Bold" Foreground="#FFA5CAAF" FontSize="14"/>
+                                    </TextBlock>
+                                </DockPanel>
                             </Border>
 
                             <!-- 2. Valuation & Business Model Card -->
@@ -128,44 +134,100 @@
                      FontFamily="/Fonts/#Rubik" 
                      Background="#212529" 
                      Foreground="#FFA5CAAF">
+                <TabItem.Resources>
+                    <!-- Ensure BooleanToVisibilityConverter is available -->
+                    <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+                </TabItem.Resources>
+
                 <Grid Background="#212529">
                     <Grid.RowDefinitions>
+                        <!-- Row 0: Top Toolbar -->
                         <RowDefinition Height="Auto"/>
+                        <!-- Row 1: Chart takes all remaining space -->
                         <RowDefinition Height="*"/>
+                        <!-- Row 2: Dynamic Cards section (Auto-resizes when visible) -->
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <!-- Time Interval Selection -->
-                    <StackPanel Grid.Row="0" 
-                                Orientation="Horizontal" 
-                                Margin="10,10,10,10" 
-                                VerticalAlignment="Center">
-                        <TextBlock Text="Time Interval: " 
-                                   Foreground="#FFA5CAAF" 
-                                   FontFamily="/Fonts/#Rubik"
-                                   FontSize="12"
-                                   VerticalAlignment="Center"
-                                   Margin="0,0,10,0"/>
-                        <ComboBox ItemsSource="{Binding AvailableIntervals}"
-                                  SelectedItem="{Binding SelectedInterval}"
-                                  Background="#2C3036"
-                                  Foreground="#E0E0E0"
-                                  BorderBrush="#FFA5CAAF"
-                                  BorderThickness="1"
-                                  Padding="8,4"
-                                  MinWidth="120"
-                                  FontFamily="/Fonts/#Rubik"
-                                  FontSize="11"/>
-                    </StackPanel>
+                    <!-- Row 0: Toolbar -->
+                    <DockPanel Grid.Row="0" Margin="10">
+                        <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" VerticalAlignment="Center">
+                            <TextBlock Text="Time Interval: " 
+                                       Foreground="#FFA5CAAF" 
+                                       FontFamily="/Fonts/#Rubik"
+                                       FontSize="12"
+                                       VerticalAlignment="Center"
+                                       Margin="0,0,10,0"/>
+                            <ComboBox ItemsSource="{Binding AvailableIntervals}"
+                                      SelectedItem="{Binding SelectedInterval}"
+                                      Background="#2C3036"
+                                      Foreground="#E0E0E0"
+                                      BorderBrush="#FFA5CAAF"
+                                      BorderThickness="1"
+                                      Padding="8,4"
+                                      MinWidth="120"
+                                      FontFamily="/Fonts/#Rubik"
+                                      FontSize="11"/>
+                        </StackPanel>
 
-                    <!-- Candlestick Chart using OxyPlot -->
+                        <Button Content="AI Analyze"
+                                DockPanel.Dock="Right"
+                                HorizontalAlignment="Right"
+                                Style="{StaticResource NormalButton}"
+                                Command="{Binding TechnicalAnalysisCommand}"
+                                Width="100"
+                                Height="30"/>
+                    </DockPanel>
+
+                    <!-- Row 1: OxyPlot Chart (Expands to fill available space) -->
                     <oxy:PlotView Grid.Row="1"
                                   Model="{Binding ChartModel}"
                                   Background="#212529"
                                   Foreground="#E0E0E0"
-                                  Margin="10"/>
+                                  Margin="10,0,10,10"/>
+
+                    <!-- Row 2: AI Analysis Cards (Collapsed by default) -->
+                    <UniformGrid Grid.Row="2" 
+                                 Columns="2" 
+                                 Rows="2" 
+                                 Margin="10,0,10,10"
+                                 Visibility="{Binding IsTechnicalAnalysisVisible, Converter={StaticResource BoolToVis}}">
+
+                        <!-- Card 1: Trend Outlook -->
+                        <Border Background="#2C3036" CornerRadius="8" Padding="10" Margin="4">
+                            <StackPanel>
+                                <TextBlock Text="Trend Outlook" FontWeight="Bold" Foreground="#FFA5CAAF" FontSize="12" Margin="0,0,0,4"/>
+                                <TextBlock Text="{Binding TrendOutlook, FallbackValue='N/A'}" Foreground="#E0E0E0" TextWrapping="Wrap" FontSize="11"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Card 2: Key Support & Resistance -->
+                        <Border Background="#2C3036" CornerRadius="8" Padding="10" Margin="4">
+                            <StackPanel>
+                                <TextBlock Text="Support / Resistance" FontWeight="Bold" Foreground="#FFA5CAAF" FontSize="12" Margin="0,0,0,4"/>
+                                <TextBlock Text="{Binding KeySupportResistance, FallbackValue='N/A'}" Foreground="#E0E0E0" TextWrapping="Wrap" FontSize="11"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Card 3: Medium-Term Verdict -->
+                        <Border Background="#2C3036" CornerRadius="8" Padding="10" Margin="4">
+                            <StackPanel>
+                                <TextBlock Text="Medium-Term Verdict" FontWeight="Bold" Foreground="#81C784" FontSize="12" Margin="0,0,0,4"/>
+                                <TextBlock Text="{Binding MediumTermVerdict, FallbackValue='N/A'}" Foreground="#E0E0E0" TextWrapping="Wrap" FontSize="11"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Card 4: Long-Term Verdict -->
+                        <Border Background="#2C3036" CornerRadius="8" Padding="10" Margin="4">
+                            <StackPanel>
+                                <TextBlock Text="Long-Term Verdict" FontWeight="Bold" Foreground="#81C784" FontSize="12" Margin="0,0,0,4"/>
+                                <TextBlock Text="{Binding LongTermVerdict, FallbackValue='N/A'}" Foreground="#E0E0E0" TextWrapping="Wrap" FontSize="11"/>
+                            </StackPanel>
+                        </Border>
+
+                    </UniformGrid>
                 </Grid>
             </TabItem>
-
         </TabControl>
     </Grid>
 </UserControl>

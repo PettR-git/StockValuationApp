@@ -13,20 +13,25 @@ namespace StockPresentationLib.Plot
     public class PlotCriterias
     {
         private Stock stock;
-        private List<ScottPlot.RadarSeries> valuationSeries;
+        private List<ScottPlot.RadarSeries>? valuationSeries;
 
-        public PlotCriterias(Stock stock) 
+        public PlotCriterias(Stock stock)
         {
             this.stock = stock;
         }
 
         public void PlotValuation(WpfPlot valPlot)
         {
+            if (stock.StockScore == null)
+            {
+                return;
+            }
+
             //Revgrowth Score
             valuationSeries = new List<ScottPlot.RadarSeries>()
             {
                 new ScottPlot.RadarSeries() {Values = [
-                    stock.StockScore.RevGrowthScore, 
+                    stock.StockScore.RevGrowthScore,
                     stock.StockScore.EpsGrowthScore,
                     stock.StockScore.EvEbitScore,
                     stock.StockScore.EvFcfScore,
@@ -39,9 +44,14 @@ namespace StockPresentationLib.Plot
             var valHexagon = valPlot.Plot.Add.Radar(valuationSeries);
 
             valHexagon.LineColor = ScottPlot.Color.FromHex("#A5CAAF");
-            valHexagon.Labels = new string[] { "Revenue CAGR (5yrs)", "Eps CAGR (5yrs)", "EV/EBIT", "EV/FCF", "ROE & ROIC"}
-                .Select(s => new Label() { Text = s, Alignment = Alignment.MiddleCenter, ForeColor = ScottPlot.Color.FromHex("#A5CAAF"), 
-                        FontSize = 16, FontName= Fonts.Serif
+            valHexagon.Labels = new string[] { "Revenue CAGR (5yrs)", "Eps CAGR (5yrs)", "EV/EBIT", "EV/FCF", "ROE & ROIC" }
+                .Select(s => new Label()
+                {
+                    Text = s,
+                    Alignment = Alignment.MiddleCenter,
+                    ForeColor = ScottPlot.Color.FromHex("#A5CAAF"),
+                    FontSize = 16,
+                    FontName = Fonts.Serif
                 })
                 .ToArray();
 
@@ -58,6 +68,11 @@ namespace StockPresentationLib.Plot
 
         public void PlotMoat(WpfPlot moatPlot)
         {
+            if (stock.StockScore == null)
+            {
+                return;
+            }
+
             valuationSeries = new List<ScottPlot.RadarSeries>()
             {
                 new ScottPlot.RadarSeries() {Values = [
@@ -75,7 +90,11 @@ namespace StockPresentationLib.Plot
 
             valHexagon.LineColor = ScottPlot.Color.FromHex("#A5CAAF");
             valHexagon.Labels = new string[] { "Network Effects", "Cost Advantages", "Switching Costs", "Scalability", "Intangible Assets" }
-                .Select(s => new Label() { Text = s, Alignment = Alignment.MiddleCenter, ForeColor = ScottPlot.Color.FromHex("#A5CAAF"),
+                .Select(s => new Label()
+                {
+                    Text = s,
+                    Alignment = Alignment.MiddleCenter,
+                    ForeColor = ScottPlot.Color.FromHex("#A5CAAF"),
                     FontSize = 16,
                     FontName = Fonts.Serif
                 })
@@ -94,6 +113,11 @@ namespace StockPresentationLib.Plot
 
         public void PlotUnderParam(WpfPlot marketPlot)
         {
+            if (stock.StockScore == null)
+            {
+                return;
+            }
+
             valuationSeries = new List<ScottPlot.RadarSeries>()
             {
                 new ScottPlot.RadarSeries() {Values = [
@@ -111,7 +135,11 @@ namespace StockPresentationLib.Plot
 
             valHexagon.LineColor = ScottPlot.Color.FromHex("#A5CAAF");
             valHexagon.Labels = new string[] { "Sector Growth", "Consensus", "Non-Disruptive Sector", "Margin Expansion", "Sector Volatility" }
-                .Select(s => new Label() { Text = s, Alignment = Alignment.MiddleCenter, ForeColor = ScottPlot.Color.FromHex("#A5CAAF"),
+                .Select(s => new Label()
+                {
+                    Text = s,
+                    Alignment = Alignment.MiddleCenter,
+                    ForeColor = ScottPlot.Color.FromHex("#A5CAAF"),
                     FontSize = 16,
                     FontName = Fonts.Serif
                 })

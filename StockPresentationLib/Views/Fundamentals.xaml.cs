@@ -8,23 +8,17 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+
 
 namespace StockPresentationLib.Views
 {
     /// <summary>
-    /// Interaction logic for Criterias.xaml
+    /// Interaction logic for Fundamentals.xaml
     /// </summary>
-    public partial class Criterias : UserControl
+    public partial class Fundamentals : UserControl
     {
         private PlotCriterias plotCriterias;
-        public Criterias()
+        public Fundamentals()
         {
             InitializeComponent();
 
@@ -35,12 +29,12 @@ namespace StockPresentationLib.Views
         {
             Stock stock = null;
 
-            if (this.DataContext is CriteriasVM criteriasVM)
+            if (this.DataContext is FundamentalsVM fundamentalsVM)
             {
-                if (criteriasVM.Stock != null)
+                if (fundamentalsVM.Stock != null)
                 {
-                    stock = criteriasVM.Stock;
-                    plotCriterias = new PlotCriterias(criteriasVM.Stock);
+                    stock = fundamentalsVM.Stock;
+                    plotCriterias = new PlotCriterias(fundamentalsVM.Stock);
 
                     plotCriterias.PlotValuation(WpfPlotValuation);
                     plotCriterias.PlotMoat(WpfPlotMoat);
